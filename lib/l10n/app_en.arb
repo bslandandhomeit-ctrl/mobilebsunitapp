@@ -1,0 +1,251 @@
+{
+  "@@locale": "en",
+  "appTitle": "BS Units",
+  "home": "Home",
+  "more": "More",
+  "projects": "Projects",
+  "units": "Units",
+  "unitTypes": "Unit Types",
+  "searchByUnitCode": "Search by unit code…",
+  "loadMore": "Load More",
+  "noProjectsFound": "No projects yet.",
+  "noUnitsFound": "No units found.",
+
+  "phoneNumber": "Phone number",
+  "password": "Password",
+  "logIn": "Log in",
+  "forgotPassword": "Forgot password?",
+  "pleaseEnterPhoneAndPassword": "Please enter your phone number and password.",
+
+  "resetPassword": "Reset Password",
+  "enterPhoneForCode": "Enter your phone number to receive a verification code by SMS.",
+  "sendCode": "Send Code",
+  "enterCodeSentTo": "Enter the code sent to {phone}.",
+  "@enterCodeSentTo": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "verificationCode": "Verification code",
+  "verify": "Verify",
+  "enterNewPassword": "Enter your new password.",
+  "newPassword": "New password",
+  "changePassword": "Change Password",
+  "currentPassword": "Current password",
+  "newPasswordMinChars": "New password (min. 6 characters)",
+
+  "profile": "Profile",
+  "name": "Name",
+  "email": "Email",
+  "gender": "Gender",
+  "male": "Male",
+  "female": "Female",
+  "birthdate": "Birthdate",
+  "notSet": "Not set",
+  "save": "Save",
+
+  "members": "Members",
+  "noMembersFound": "No members yet.",
+
+  "notifications": "Notifications",
+  "noNotificationsFound": "No notifications yet.",
+
+  "announcements": "Announcements",
+  "noPostsFound": "No posts yet.",
+
+  "holdRequests": "Hold Requests",
+  "depositRequests": "Deposit Requests",
+  "contractRequests": "Contract Requests",
+  "noHoldRequestsFound": "No hold requests found.",
+  "noDepositRequestsFound": "No deposit requests found.",
+  "noContractRequestsFound": "No contract requests found.",
+  "requestHold": "Request Hold",
+  "convertToDeposit": "Convert to Deposit",
+  "requestContract": "Request Contract",
+  "changeUnitTerms": "Change unit / terms",
+  "approve": "Approve",
+  "reject": "Reject",
+  "cancel": "Cancel",
+  "submitHoldRequest": "Submit Hold Request",
+  "submitDepositRequest": "Submit Deposit Request",
+  "submitContractRequest": "Submit Contract Request",
+  "holdDuration": "Hold duration: {days} day{days, plural, one{} other{s}}",
+  "@holdDuration": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "unitStatus": "Status",
+  "noActionsAvailable": "No actions available for this unit right now.",
+  "comments": "Comments",
+  "addComment": "Add a comment…",
+  "noCommentsYet": "No comments yet.",
+
+  "customer": "Customer",
+  "unit": "Unit",
+  "depositAndDiscount": "Deposit & Discount",
+  "paymentOption": "Payment Option",
+  "remark": "Remark (optional)",
+
+  "viewContract": "View Contract",
+  "requestCancelReason": "Reason",
+
+  "loanCalculator": "Loan Calculator",
+  "supportCenter": "Support Center",
+  "aboutApp": "About BS Units",
+  "logOut": "Log out",
+
+  "search": "Search",
+  "somethingWentWrong": "Something went wrong. Please try again.",
+  "cannotReachServer": "Cannot reach the server. Check your connection.",
+
+  "updateRequired": "Update Required",
+  "update": "Update",
+  "retry": "Retry",
+  "unitsByStatus": "Units by status",
+
+  "attachPhotos": "Attach photos",
+  "error": "Error",
+  "failedToPostComment": "Failed to post comment.",
+  "depositInProgressHint": "This unit has a deposit in progress. Once it's approved, request the contract from My Requests > Deposit Requests.",
+
+  "passwordChanged": "Password changed",
+  "passwordChangedMessage": "Your password has been updated.",
+
+  "profileUpdated": "Profile updated",
+  "profileUpdatedMessage": "Your profile has been saved.",
+
+  "passwordReset": "Password reset",
+  "passwordResetMessage": "You can now log in with your new password.",
+
+  "notification": "Notification",
+
+  "post": "Post",
+  "failedToLoadPost": "Failed to load post.",
+
+  "reasonRequired": "Reason (required)",
+  "reasonOptional": "Reason (optional)",
+  "back": "Back",
+  "confirm": "Confirm",
+  "unknownStatus": "Unknown status",
+  "unitNumber": "Unit #{id}",
+  "@unitNumber": {
+    "placeholders": { "id": { "type": "String" } }
+  },
+  "cancelHoldRequest": "Cancel hold request",
+  "cancelDepositRequest": "Cancel deposit request",
+  "cancelContractRequest": "Cancel contract request",
+  "rejectHoldRequest": "Reject hold request",
+  "rejectDepositRequest": "Reject deposit request",
+  "rejectContractRequest": "Reject contract request",
+  "contract": "Contract",
+
+  "holdRequested": "Hold requested",
+  "holdRequestedMessage": "Your hold request for {unit} was submitted.",
+  "@holdRequestedMessage": {
+    "placeholders": { "unit": { "type": "String" } }
+  },
+  "holdSubmitDescription": "Submitting this request will place a temporary hold on this unit pending approval.",
+
+  "requestDeposit": "Request Deposit",
+  "listedPrice": "Listed price: {price}",
+  "@listedPrice": {
+    "placeholders": { "price": { "type": "String" } }
+  },
+  "customerName": "Customer name",
+  "customerPhone": "Customer phone",
+  "addSecondCustomer": "Add a second customer (co-buyer)",
+  "secondCustomerName": "Second customer name",
+  "secondCustomerPhone": "Second customer phone",
+  "depositAmount": "Deposit amount",
+  "otherDiscountAllowance": "Other discount allowance",
+  "useCustomLoanTerms": "Use custom loan terms instead of a preset option",
+  "loanDurationYears": "Loan duration (years)",
+  "annualInterestRate": "Annual interest rate (%)",
+  "specialDiscountPercent": "Special discount (%)",
+  "hasFirstPayment": "Has a first payment",
+  "firstPaymentDurationMonths": "First payment duration (months)",
+  "firstPaymentPercentage": "First payment percentage (%)",
+  "depositRequested": "Deposit requested",
+  "depositRequestedMessage": "Your deposit request for {unit} was submitted.",
+  "@depositRequestedMessage": {
+    "placeholders": { "unit": { "type": "String" } }
+  },
+
+  "requestContractTitle": "Request Contract",
+  "depositRequestLabel": "Deposit Request",
+  "depositRequestSummary": "#{id} · Unit #{unitId}",
+  "@depositRequestSummary": {
+    "placeholders": { "id": { "type": "String" }, "unitId": { "type": "String" } }
+  },
+  "signedDate": "Signed date",
+  "firstPaymentDate": "First payment date",
+  "attachSignedContractHint": "Attach at least one photo of the signed contract.",
+  "attachmentRequiredError": "At least one attachment (e.g. signed contract page) is required.",
+  "gallery": "Gallery",
+  "camera": "Camera",
+  "contractRequested": "Contract requested",
+  "contractRequestedMessage": "Your contract request was submitted.",
+
+  "changeUnitTermsTitle": "Change Unit / Terms",
+  "currentUnit": "Current unit",
+  "searchDifferentUnitHint": "Search for a different unit (leave blank to keep current)",
+  "newUnitLabel": "New unit: {name}",
+  "@newUnitLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "updated": "Updated",
+  "depositRequestUpdatedMessage": "The deposit request was updated.",
+  "saveChanges": "Save Changes",
+
+  "paymentOptions": "Payment Options",
+  "noPaymentOptionsForUnitType": "No payment options for this unit type.",
+  "depositAmountShort": "Deposit: {amount}",
+  "@depositAmountShort": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "loanDurationYearsShort": "{years} yrs",
+  "@loanDurationYearsShort": {
+    "placeholders": { "years": { "type": "String" } }
+  },
+  "interestPercentShort": "{percent}% interest",
+  "@interestPercentShort": {
+    "placeholders": { "percent": { "type": "String" } }
+  },
+
+  "unitsByStatusTitle": "{project} — Units by Status",
+  "@unitsByStatusTitle": {
+    "placeholders": { "project": { "type": "String" } }
+  },
+  "failedToLoadUnits": "Failed to load units.",
+
+  "searchUnitCodeHint": "Search unit code…",
+  "startTypingUnitCode": "Start typing a unit code.",
+
+  "loanAmount": "Loan amount",
+  "numberOfMonths": "Number of months",
+  "calculate": "Calculate",
+  "monthlyPayment": "Monthly payment",
+  "totalPayment": "Total payment",
+  "totalInterest": "Total interest",
+
+  "telegramGroup": "Telegram Group",
+
+  "versionLabel": "Version {version} ({build})",
+  "@versionLabel": {
+    "placeholders": { "version": { "type": "String" }, "build": { "type": "String" } }
+  },
+
+  "failedToLoadContractPdf": "Failed to load the contract PDF.",
+
+  "updateRequiredMessage": "A new version ({version}) is required to continue using this app.",
+  "@updateRequiredMessage": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+
+  "documentScanner": "Document Scanner",
+  "documentScannerHint": "Take a photo of a document or ID card, crop it, and save it to your gallery.",
+  "takePhoto": "Take Photo",
+  "scanAnother": "Scan Another",
+  "done": "Done",
+  "imageSaved": "Image saved",
+  "imageSavedToGallery": "The image was saved to your gallery.",
+  "failedToSaveImage": "Failed to save the image.",
+  "cropImage": "Crop Image"
+}

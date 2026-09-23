@@ -1,0 +1,251 @@
+{
+  "@@locale": "km",
+  "appTitle": "BS Units",
+  "home": "ទំព័រដើម",
+  "more": "ផ្សេងៗ",
+  "projects": "គម្រោង",
+  "units": "អចលនទ្រព្យ",
+  "unitTypes": "ប្រភេទអចលនទ្រព្យ",
+  "searchByUnitCode": "ស្វែងរកតាមលេខអចលនទ្រព្យ…",
+  "loadMore": "មើលបន្ថែម",
+  "noProjectsFound": "មិនទាន់មានគម្រោងទេ។",
+  "noUnitsFound": "រកមិនឃើញអចលនទ្រព្យទេ។",
+
+  "phoneNumber": "លេខទូរស័ព្ទ",
+  "password": "ពាក្យសម្ងាត់",
+  "logIn": "ចូល",
+  "forgotPassword": "ភ្លេចពាក្យសម្ងាត់?",
+  "pleaseEnterPhoneAndPassword": "សូមបញ្ចូលលេខទូរស័ព្ទ និងពាក្យសម្ងាត់របស់អ្នក។",
+
+  "resetPassword": "កំណត់ពាក្យសម្ងាត់ឡើងវិញ",
+  "enterPhoneForCode": "សូមបញ្ចូលលេខទូរស័ព្ទរបស់អ្នកដើម្បីទទួលកូដផ្ទៀងផ្ទាត់តាមសារ SMS។",
+  "sendCode": "ផ្ញើកូដ",
+  "enterCodeSentTo": "សូមបញ្ចូលកូដដែលបានផ្ញើទៅ {phone}។",
+  "@enterCodeSentTo": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+  "verificationCode": "កូដផ្ទៀងផ្ទាត់",
+  "verify": "ផ្ទៀងផ្ទាត់",
+  "enterNewPassword": "សូមបញ្ចូលពាក្យសម្ងាត់ថ្មីរបស់អ្នក។",
+  "newPassword": "ពាក្យសម្ងាត់​ថ្មី",
+  "changePassword": "ផ្លាស់ប្តូរពាក្យសម្ងាត់",
+  "currentPassword": "ពាក្យសម្ងាត់​បច្ចុប្បន្ន",
+  "newPasswordMinChars": "ពាក្យសម្ងាត់​ថ្មី (យ៉ាងតិច ៦ តួអក្សរ)",
+
+  "profile": "ប្រូហ្វាល",
+  "name": "ឈ្មោះ",
+  "email": "អុីម៉ែល",
+  "gender": "ភេទ",
+  "male": "ប្រុស",
+  "female": "ស្រី",
+  "birthdate": "ថ្ងៃខែឆ្នាំកំណើត",
+  "notSet": "មិនទាន់កំណត់",
+  "save": "រក្សាទុក",
+
+  "members": "សមាជិកក្រុម",
+  "noMembersFound": "មិនទាន់មានសមាជិកទេ។",
+
+  "notifications": "សេចក្ដីជូនដំណឹង",
+  "noNotificationsFound": "មិនទាន់មានសេចក្ដីជូនដំណឹងទេ។",
+
+  "announcements": "សេចក្ដីប្រកាស",
+  "noPostsFound": "មិនទាន់មានសេចក្ដីប្រកាសទេ។",
+
+  "holdRequests": "សំម្នើរព្យួរ",
+  "depositRequests": "សំម្នើរកក់ប្រាក់",
+  "contractRequests": "សំម្នើរកុងត្រា",
+  "noHoldRequestsFound": "រកមិនឃើញសំម្នើរព្យួរទេ។",
+  "noDepositRequestsFound": "រកមិនឃើញសំម្នើរកក់ប្រាក់ទេ។",
+  "noContractRequestsFound": "រកមិនឃើញសំម្នើរកុងត្រាទេ។",
+  "requestHold": "ស្នើរព្យួរ",
+  "convertToDeposit": "ប្តូរទៅជាកក់ប្រាក់",
+  "requestContract": "ស្នើរកុងត្រា",
+  "changeUnitTerms": "ផ្លាស់ប្តូរអចលនទ្រព្យ",
+  "approve": "អនុម័ត",
+  "reject": "បដិសេធ",
+  "cancel": "បោះបង់",
+  "submitHoldRequest": "ដាក់ស្នើសំម្នើរព្យួរ",
+  "submitDepositRequest": "ដាក់ស្នើសំម្នើរកក់ប្រាក់",
+  "submitContractRequest": "ដាក់ស្នើសំម្នើរកុងត្រា",
+  "holdDuration": "រយៈពេលព្យួរ៖ {days} ថ្ងៃ",
+  "@holdDuration": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "unitStatus": "ស្ថានភាព",
+  "noActionsAvailable": "គ្មានសកម្មភាពសម្រាប់អចលនទ្រព្យនេះទេនៅពេលនេះ។",
+  "comments": "មតិយោបល់",
+  "addComment": "បន្ថែមមតិយោបល់…",
+  "noCommentsYet": "មិនទាន់មានមតិយោបល់ទេ។",
+
+  "customer": "អតិថិជន",
+  "unit": "អចលនទ្រព្យ",
+  "depositAndDiscount": "ប្រាក់កក់ និង ការបញ្ចុះតម្លៃ",
+  "paymentOption": "ជម្រើសនៃការបង់ប្រាក់",
+  "remark": "សម្គាល់ (ស្រេចចិត្ត)",
+
+  "viewContract": "ពិនិត្យកុងត្រា",
+  "requestCancelReason": "មូលហេតុ",
+
+  "loanCalculator": "គណនាកម្ចី",
+  "supportCenter": "មជ្ឈមណ្ឌលជំនួយ",
+  "aboutApp": "អំពី BS Units",
+  "logOut": "ចាកចេញ",
+
+  "search": "ស្វែងរក",
+  "somethingWentWrong": "មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។",
+  "cannotReachServer": "មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេបានទេ។ សូមពិនិត្យការតភ្ជាប់អ៊ីនធឺណិតរបស់អ្នក។",
+
+  "updateRequired": "តម្រូវឱ្យធ្វើបច្ចុប្បន្នភាព",
+  "update": "ធ្វើបច្ចុប្បន្នភាព",
+  "retry": "ព្យាយាមម្តងទៀត",
+  "unitsByStatus": "អចលនទ្រព្យតាមស្ថានភាព",
+
+  "attachPhotos": "ភ្ជាប់រូបភាព",
+  "error": "កំហុស",
+  "failedToPostComment": "បរាជ័យក្នុងការផ្ញើមតិយោបល់។",
+  "depositInProgressHint": "អចលនទ្រព្យនេះកំពុងស្ថិតក្នុងដំណើរការកក់ប្រាក់។ នៅពេលវាត្រូវបានអនុម័ត សូមស្នើសុំកុងត្រាតាមរយៈ សំណើររបស់ខ្ញុំ > សំម្នើរកក់ប្រាក់។",
+
+  "passwordChanged": "ពាក្យសម្ងាត់ត្រូវបានផ្លាស់ប្តូរ",
+  "passwordChangedMessage": "ពាក្យសម្ងាត់របស់អ្នកត្រូវបានធ្វើបច្ចុប្បន្នភាព។",
+
+  "profileUpdated": "ប្រូហ្វាលត្រូវបានធ្វើបច្ចុប្បន្នភាព",
+  "profileUpdatedMessage": "ប្រូហ្វាលរបស់អ្នកត្រូវបានរក្សាទុក។",
+
+  "passwordReset": "ពាក្យសម្ងាត់ត្រូវបានកំណត់ឡើងវិញ",
+  "passwordResetMessage": "ឥឡូវអ្នកអាចចូលដោយប្រើពាក្យសម្ងាត់ថ្មីរបស់អ្នក។",
+
+  "notification": "សេចក្ដីជូនដំណឹង",
+
+  "post": "ប្រកាស",
+  "failedToLoadPost": "បរាជ័យក្នុងការផ្ទុកប្រកាស។",
+
+  "reasonRequired": "មូលហេតុ (ត្រូវការ)",
+  "reasonOptional": "មូលហេតុ (ស្រេចចិត្ត)",
+  "back": "ត្រឡប់ក្រោយ",
+  "confirm": "បញ្ជាក់",
+  "unknownStatus": "ស្ថានភាពមិនស្គាល់",
+  "unitNumber": "អចលនទ្រព្យ #{id}",
+  "@unitNumber": {
+    "placeholders": { "id": { "type": "String" } }
+  },
+  "cancelHoldRequest": "បោះបង់សំម្នើរព្យួរ",
+  "cancelDepositRequest": "បោះបង់សំម្នើរកក់ប្រាក់",
+  "cancelContractRequest": "បោះបង់សំម្នើរកុងត្រា",
+  "rejectHoldRequest": "បដិសេធសំម្នើរព្យួរ",
+  "rejectDepositRequest": "បដិសេធសំម្នើរកក់ប្រាក់",
+  "rejectContractRequest": "បដិសេធសំម្នើរកុងត្រា",
+  "contract": "កុងត្រា",
+
+  "holdRequested": "បានស្នើសុំព្យួរ",
+  "holdRequestedMessage": "សំម្នើរព្យួររបស់អ្នកសម្រាប់ {unit} ត្រូវបានដាក់ស្នើ។",
+  "@holdRequestedMessage": {
+    "placeholders": { "unit": { "type": "String" } }
+  },
+  "holdSubmitDescription": "ការដាក់ស្នើសំម្នើរនេះនឹងធ្វើការព្យួរអចលនទ្រព្យនេះជាបណ្តោះអាសន្នរហូតដល់មានការអនុម័ត។",
+
+  "requestDeposit": "ស្នើសុំកក់ប្រាក់",
+  "listedPrice": "តម្លៃដាក់លក់៖ {price}",
+  "@listedPrice": {
+    "placeholders": { "price": { "type": "String" } }
+  },
+  "customerName": "ឈ្មោះអតិថិជន",
+  "customerPhone": "លេខទូរស័ព្ទអតិថិជន",
+  "addSecondCustomer": "បន្ថែមអតិថិជនទីពីរ (អ្នកទិញរួម)",
+  "secondCustomerName": "ឈ្មោះអតិថិជនទីពីរ",
+  "secondCustomerPhone": "លេខទូរស័ព្ទអតិថិជនទីពីរ",
+  "depositAmount": "ចំនួនប្រាក់កក់",
+  "otherDiscountAllowance": "ការបញ្ចុះតម្លៃផ្សេងទៀត",
+  "useCustomLoanTerms": "ប្រើលក្ខខណ្ឌកម្ចីផ្ទាល់ខ្លួន ជំនួសឱ្យជម្រើសដែលមានស្រាប់",
+  "loanDurationYears": "រយៈពេលកម្ចី (ឆ្នាំ)",
+  "annualInterestRate": "អត្រាការប្រាក់ប្រចាំឆ្នាំ (%)",
+  "specialDiscountPercent": "ការបញ្ចុះតម្លៃពិសេស (%)",
+  "hasFirstPayment": "មានការបង់ប្រាក់លើកដំបូង",
+  "firstPaymentDurationMonths": "រយៈពេលបង់ប្រាក់លើកដំបូង (ខែ)",
+  "firstPaymentPercentage": "ភាគរយបង់ប្រាក់លើកដំបូង (%)",
+  "depositRequested": "បានស្នើសុំកក់ប្រាក់",
+  "depositRequestedMessage": "សំម្នើរកក់ប្រាក់របស់អ្នកសម្រាប់ {unit} ត្រូវបានដាក់ស្នើ។",
+  "@depositRequestedMessage": {
+    "placeholders": { "unit": { "type": "String" } }
+  },
+
+  "requestContractTitle": "ស្នើសុំកុងត្រា",
+  "depositRequestLabel": "សំម្នើរកក់ប្រាក់",
+  "depositRequestSummary": "#{id} · អចលនទ្រព្យ #{unitId}",
+  "@depositRequestSummary": {
+    "placeholders": { "id": { "type": "String" }, "unitId": { "type": "String" } }
+  },
+  "signedDate": "កាលបរិច្ឆេទចុះហត្ថលេខា",
+  "firstPaymentDate": "កាលបរិច្ឆេទបង់ប្រាក់លើកដំបូង",
+  "attachSignedContractHint": "សូមភ្ជាប់រូបភាពយ៉ាងតិចមួយសន្លឹកនៃកុងត្រាដែលបានចុះហត្ថលេខា។",
+  "attachmentRequiredError": "ត្រូវការឯកសារភ្ជាប់យ៉ាងតិចមួយ (ឧទាហរណ៍ ទំព័រកុងត្រាដែលបានចុះហត្ថលេខា)។",
+  "gallery": "វិចិត្រសាល",
+  "camera": "កាមេរ៉ា",
+  "contractRequested": "បានស្នើសុំកុងត្រា",
+  "contractRequestedMessage": "សំម្នើរកុងត្រារបស់អ្នកត្រូវបានដាក់ស្នើ។",
+
+  "changeUnitTermsTitle": "ផ្លាស់ប្តូរអចលនទ្រព្យ / លក្ខខណ្ឌ",
+  "currentUnit": "អចលនទ្រព្យបច្ចុប្បន្ន",
+  "searchDifferentUnitHint": "ស្វែងរកអចលនទ្រព្យផ្សេង (ទុកទទេដើម្បីរក្សាទុកបច្ចុប្បន្ន)",
+  "newUnitLabel": "អចលនទ្រព្យថ្មី៖ {name}",
+  "@newUnitLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "updated": "បានធ្វើបច្ចុប្បន្នភាព",
+  "depositRequestUpdatedMessage": "សំម្នើរកក់ប្រាក់ត្រូវបានធ្វើបច្ចុប្បន្នភាព។",
+  "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+
+  "paymentOptions": "ជម្រើសនៃការបង់ប្រាក់",
+  "noPaymentOptionsForUnitType": "គ្មានជម្រើសនៃការបង់ប្រាក់សម្រាប់ប្រភេទអចលនទ្រព្យនេះទេ។",
+  "depositAmountShort": "ប្រាក់កក់៖ {amount}",
+  "@depositAmountShort": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "loanDurationYearsShort": "{years} ឆ្នាំ",
+  "@loanDurationYearsShort": {
+    "placeholders": { "years": { "type": "String" } }
+  },
+  "interestPercentShort": "ការប្រាក់ {percent}%",
+  "@interestPercentShort": {
+    "placeholders": { "percent": { "type": "String" } }
+  },
+
+  "unitsByStatusTitle": "{project} — អចលនទ្រព្យតាមស្ថានភាព",
+  "@unitsByStatusTitle": {
+    "placeholders": { "project": { "type": "String" } }
+  },
+  "failedToLoadUnits": "បរាជ័យក្នុងការផ្ទុកអចលនទ្រព្យ។",
+
+  "searchUnitCodeHint": "ស្វែងរកលេខអចលនទ្រព្យ…",
+  "startTypingUnitCode": "សូមចាប់ផ្តើមវាយលេខអចលនទ្រព្យ។",
+
+  "loanAmount": "ចំនួនប្រាក់កម្ចី",
+  "numberOfMonths": "ចំនួនខែ",
+  "calculate": "គណនា",
+  "monthlyPayment": "ការបង់ប្រាក់ប្រចាំខែ",
+  "totalPayment": "ការបង់ប្រាក់សរុប",
+  "totalInterest": "ការប្រាក់សរុប",
+
+  "telegramGroup": "ក្រុម Telegram",
+
+  "versionLabel": "កំណែ {version} ({build})",
+  "@versionLabel": {
+    "placeholders": { "version": { "type": "String" }, "build": { "type": "String" } }
+  },
+
+  "failedToLoadContractPdf": "បរាជ័យក្នុងការផ្ទុកឯកសារកុងត្រា PDF។",
+
+  "updateRequiredMessage": "តម្រូវឱ្យមានកំណែថ្មី ({version}) ដើម្បីបន្តប្រើកម្មវិធីនេះ។",
+  "@updateRequiredMessage": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+
+  "documentScanner": "ស្កេនឯកសារ",
+  "documentScannerHint": "ថតរូបឯកសារ ឬអត្តសញ្ញាណប័ណ្ណ កាត់រូបភាព រួចរក្សាទុកទៅកាន់វិចិត្រសាលរបស់អ្នក។",
+  "takePhoto": "ថតរូប",
+  "scanAnother": "ស្កេនម្តងទៀត",
+  "done": "រួចរាល់",
+  "imageSaved": "រូបភាពត្រូវបានរក្សាទុក",
+  "imageSavedToGallery": "រូបភាពត្រូវបានរក្សាទុកទៅកាន់វិចិត្រសាលរបស់អ្នក។",
+  "failedToSaveImage": "បរាជ័យក្នុងការរក្សាទុករូបភាព។",
+  "cropImage": "កាត់រូបភាព"
+}

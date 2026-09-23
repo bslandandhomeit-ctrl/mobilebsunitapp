@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "348592057665",
+    "firebase_url": "https://contract-register.firebaseio.com",
+    "project_id": "contract-register",
+    "storage_bucket": "contract-register.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348592057665:android:ba8ab629e6bb7f5a",
+        "android_client_info": {
+          "package_name": "com.bslandandhome.bscontract"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyMb7RADmKq7ybN9OhhySvhARb5til6bQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348592057665:android:f96b386b4770f532",
+        "android_client_info": {
+          "package_name": "com.bslandandhome.bsunits"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyMb7RADmKq7ybN9OhhySvhARb5til6bQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348592057665:android:78adaa5ad7ac6f5c",
+        "android_client_info": {
+          "package_name": "com.bslandandhome.bsunits.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyMb7RADmKq7ybN9OhhySvhARb5til6bQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

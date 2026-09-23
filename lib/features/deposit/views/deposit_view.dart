@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../../core/widgets/reason_dialog.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../contract_request/views/contract_request_form_view.dart';
+import '../controllers/deposit_controller.dart';
+import '../models/unit_deposit_request.dart';
+import 'change_unit_deposit_view.dart';
+
+class DepositView extends GetView<DepositController> {
+  const DepositView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final user = Get.find<AuthController>().currentUser.value;
+    final canApprove = user?.canApproveDeposit ?? false;
+    final canCancel = user?.canCancelDeposit ?? false;
+    bool isOwner(UnitDepositRequest r) => user != null && r.isOwnedBy(user.id);
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.depositRequests)),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              onChanged: (v) => controller.searchQuery.value = v,
+              decoration: InputDecoration(
+                hintText: l10n.searchByUnitCode,
+                prefixIcon: const Icon(Icons.search),
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value && controller.requests.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (controller.errorMessage.value != null && controller.requests.isEmpty) {
+                return Center(child: Text(controller.errorMessage.value!));
+              }
+              final items = controller.filteredRequests;
+              if (items.isEmpty) {
+                return Center(child: Text(l10n.noDepositRequestsFound));
+              }
+              return RefreshIndicator(
+                onRefresh: controller.load,
+                child: ListView.separated(
+                  itemCount: items.length,
+                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final r = items[index];
+                    return ListTile(
+                      title: Text(r.unitCode ?? l10n.unitNumber('${r.unitId ?? '-'}')),
+                      subtitle: Text(r.status ?? l10n.unknownStatus),
+                      trailing: _actionsFor(context, l10n, r, canApprove, canCancel, isOwner(r)),
+                    );
+                  },
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget? _actionsFor(
+    BuildContext context,
+    AppLocalizations l10n,
+    UnitDepositRequest r,
+    bool canApprove,
+    bool canCancel,
+    bool isOwner,
+  ) {
+    final status = r.status?.toUpperCase();
+    final actions = <Widget>[];
+
+    // Verified against the backend: approve/reject only while PENDING
+    // (unit_controller or sale_manager). Cancel/"request contract"/
+    // "change unit" only while APPROVED or OVERDUE — cancel is
+    // unit_controller only, the other two are owner-only.
+    if (status == 'PENDING' && canApprove) {
+      actions.addAll([
+        IconButton(
+          icon: const Icon(Icons.check, color: Colors.green),
+          tooltip: l10n.approve,
+          onPressed: () => controller.approve(r.id),
+        ),
+        IconButton(
+          icon: const Icon(Icons.close, color: Colors.red),
+          tooltip: l10n.reject,
+          onPressed: () => controller.reject(r.id),
+        ),
+      ]);
+    }
+    if ((status == 'APPROVED' || status == 'OVERDUE') && canCancel) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.cancel_outlined),
+          tooltip: l10n.cancel,
+          onPressed: () async {
+            final reason = await promptForReason(context, title: l10n.cancelDepositRequest, required: true);
+            if (reason != null && reason.isNotEmpty) controller.cancel(r.id, reason: reason);
+          },
+        ),
+      );
+    }
+    if ((status == 'APPROVED' || status == 'OVERDUE') && isOwner) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.swap_horiz),
+          tooltip: l10n.changeUnitTerms,
+          onPressed: () => Get.to(() => ChangeUnitDepositView(depositRequest: r)),
+        ),
+      );
+    }
+    if (status == 'APPROVED' && isOwner) {
+      actions.add(
+        TextButton(
+          onPressed: () => Get.to(() => ContractRequestFormView(depositRequest: r)),
+          child: Text(l10n.contract),
+        ),
+      );
+    }
+
+    if (actions.isEmpty) return null;
+    return Row(mainAxisSize: MainAxisSize.min, children: actions);
+  }
+}
