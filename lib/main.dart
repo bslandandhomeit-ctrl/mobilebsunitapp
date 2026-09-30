@@ -8,6 +8,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'app/bindings/initial_binding.dart';
 import 'app/routes/app_pages.dart';
 import 'app/theme/app_theme.dart';
+import 'core/network/tls_intermediates.dart';
 import 'core/storage/local_storage.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
@@ -17,6 +18,7 @@ const _oneSignalAppId = '25dd12b1-8fda-4085-8ba7-4bea5c12dfb3';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  trustServerIntermediates();
   await LocalStorage.init();
 
   // Both Android (google-services.json) and iOS are registered in the

@@ -22,14 +22,11 @@
 class ApiConstants {
   ApiConstants._();
 
-  // Pointed at the local dev server while production's cert issue (above)
-  // is unresolved. 10.0.2.2 is the Android emulator's fixed alias for the
-  // host machine's own localhost — a real physical device would need the
-  // host's actual LAN IP instead. Requires: XAMPP MySQL running, and
-  // `php artisan serve --host=127.0.0.1 --port=8000` (+ the :8001 asset
-  // server) from D:\ProjectEASTGROUP\app\htdocs. Switch back to
-  // 'https://contract.chaktomukcity.com/' once the server's cert is fixed.
-  static const String baseUrl = 'http://10.0.2.2:8000/';
+  // Production. Its incomplete TLS chain (above) is worked around by
+  // `trustServerIntermediates()` in core/network/tls_intermediates.dart.
+  // For the local dev server instead, use 'http://10.0.2.2:8000/' (the
+  // Android emulator's alias for the host's localhost).
+  static const String baseUrl = 'https://contract.chaktomukcity.com/';
 
   static const String oauthClientId = '2';
   static const String oauthClientSecret = 'Y4ond2PoAgrmNiU3ZhxJmQ2tk44ZBj44S3VLeaRn';
