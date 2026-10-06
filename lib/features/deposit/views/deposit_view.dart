@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
 import '../../../core/widgets/reason_dialog.dart';
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../contract_request/views/contract_request_form_view.dart';
@@ -19,18 +21,18 @@ class DepositView extends GetView<DepositController> {
     final canApprove = user?.canApproveDeposit ?? false;
     final canCancel = user?.canCancelDeposit ?? false;
     bool isOwner(UnitDepositRequest r) => user != null && r.isOwnedBy(user.id);
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(l10n.depositRequests)),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
             child: TextField(
               onChanged: (v) => controller.searchQuery.value = v,
               decoration: InputDecoration(
                 hintText: l10n.searchByUnitCode,
                 prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
+
                 isDense: true,
               ),
             ),
@@ -40,24 +42,35 @@ class DepositView extends GetView<DepositController> {
               if (controller.isLoading.value && controller.requests.isEmpty) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (controller.errorMessage.value != null && controller.requests.isEmpty) {
-                return Center(child: Text(controller.errorMessage.value!));
+              if (controller.errorMessage.value != null &&
+                  controller.requests.isEmpty) {
+                return AppEmptyState(message: controller.errorMessage.value!);
               }
               final items = controller.filteredRequests;
               if (items.isEmpty) {
-                return Center(child: Text(l10n.noDepositRequestsFound));
+                return AppEmptyState(message: l10n.noDepositRequestsFound);
               }
               return RefreshIndicator(
                 onRefresh: controller.load,
                 child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                  physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: items.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final r = items[index];
-                    return ListTile(
-                      title: Text(r.unitCode ?? l10n.unitNumber('${r.unitId ?? '-'}')),
-                      subtitle: Text(r.status ?? l10n.unknownStatus),
-                      trailing: _actionsFor(context, l10n, r, canApprove, canCancel, isOwner(r)),
+                    return AppRequestCard(
+                      title:
+                          r.unitCode ?? l10n.unitNumber('${r.unitId ?? '-'}'),
+                      status: r.status ?? l10n.unknownStatus,
+                      actions: _actionsFor(
+                        context,
+                        l10n,
+                        r,
+                        canApprove,
+                        canCancel,
+                        isOwner(r),
+                      ),
                     );
                   },
                 ),
@@ -104,8 +117,14 @@ class DepositView extends GetView<DepositController> {
           icon: const Icon(Icons.cancel_outlined),
           tooltip: l10n.cancel,
           onPressed: () async {
-            final reason = await promptForReason(context, title: l10n.cancelDepositRequest, required: true);
-            if (reason != null && reason.isNotEmpty) controller.cancel(r.id, reason: reason);
+            final reason = await promptForReason(
+              context,
+              title: l10n.cancelDepositRequest,
+              required: true,
+            );
+            if (reason != null && reason.isNotEmpty) {
+              controller.cancel(r.id, reason: reason);
+            }
           },
         ),
       );
@@ -115,20 +134,27 @@ class DepositView extends GetView<DepositController> {
         IconButton(
           icon: const Icon(Icons.swap_horiz),
           tooltip: l10n.changeUnitTerms,
-          onPressed: () => Get.to(() => ChangeUnitDepositView(depositRequest: r)),
+          onPressed: () =>
+              Get.to(() => ChangeUnitDepositView(depositRequest: r)),
         ),
       );
     }
     if (status == 'APPROVED' && isOwner) {
       actions.add(
         TextButton(
-          onPressed: () => Get.to(() => ContractRequestFormView(depositRequest: r)),
+          onPressed: () =>
+              Get.to(() => ContractRequestFormView(depositRequest: r)),
           child: Text(l10n.contract),
         ),
       );
     }
 
     if (actions.isEmpty) return null;
-    return Row(mainAxisSize: MainAxisSize.min, children: actions);
+    return Wrap(
+      spacing: 4,
+      runSpacing: 8,
+      alignment: WrapAlignment.end,
+      children: actions,
+    );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/projects_repository.dart';
 import '../models/project.dart';
@@ -33,7 +35,9 @@ class _FloorPlanViewState extends State<FloorPlanView> {
 
   Future<void> _load() async {
     try {
-      _unitsByStatus = await _repository.getUnitsForFloorPlan(widget.project.id);
+      _unitsByStatus = await _repository.getUnitsForFloorPlan(
+        widget.project.id,
+      );
     } catch (_) {
       if (mounted) _error = AppLocalizations.of(context)!.failedToLoadUnits;
     } finally {
@@ -44,42 +48,53 @@ class _FloorPlanViewState extends State<FloorPlanView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.unitsByStatusTitle(widget.project.displayName))),
+    return AppPage(
+      appBar: AppBar(
+        title: Text(l10n.unitsByStatusTitle(widget.project.displayName)),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text(_error!))
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: _unitsByStatus.entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${entry.key} (${entry.value.length})',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: entry.value
-                                .map(
-                                  (u) => ActionChip(
-                                    label: Text(u.name),
-                                    onPressed: () => Get.to(() => UnitDetailView(unit: u)),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
+          ? AppEmptyState(message: _error!)
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              children: _unitsByStatus.entries.map((entry) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: AppPanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: AppStatusBadge(entry.key)),
+                            const SizedBox(width: 12),
+                            Text(
+                              '${entry.value.length}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: entry.value
+                              .map(
+                                (u) => ActionChip(
+                                  label: Text(u.name),
+                                  onPressed: () =>
+                                      Get.to(() => UnitDetailView(unit: u)),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
     );
   }
 }

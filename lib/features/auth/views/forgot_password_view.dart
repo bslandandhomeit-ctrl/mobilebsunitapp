@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/password_reset_repository.dart';
 
@@ -91,19 +93,38 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(l10n.resetPassword)),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ..._stepContent(l10n),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        child: AppPanel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: List.generate(
+                  3,
+                  (index) => Expanded(
+                    child: Container(
+                      height: 4,
+                      margin: const EdgeInsets.only(right: 6, bottom: 24),
+                      decoration: BoxDecoration(
+                        color: index <= _step.index
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              ..._stepContent(l10n),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(_error!, style: const TextStyle(color: Colors.red)),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -118,7 +139,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           TextField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
-            decoration: InputDecoration(labelText: l10n.phoneNumber, border: const OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.phoneNumber),
           ),
           const SizedBox(height: 24),
           _submitButton(l10n.sendCode, _requestCode),
@@ -130,7 +151,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           TextField(
             controller: _codeController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: l10n.verificationCode, border: const OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.verificationCode),
           ),
           const SizedBox(height: 24),
           _submitButton(l10n.verify, _verifyCode),
@@ -142,7 +163,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           TextField(
             controller: _passwordController,
             obscureText: true,
-            decoration: InputDecoration(labelText: l10n.newPassword, border: const OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.newPassword),
           ),
           const SizedBox(height: 24),
           _submitButton(l10n.resetPassword, _resetPassword),
@@ -154,7 +175,11 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     return ElevatedButton(
       onPressed: _isSubmitting ? null : onPressed,
       child: _isSubmitting
-          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
           : Text(label),
     );
   }

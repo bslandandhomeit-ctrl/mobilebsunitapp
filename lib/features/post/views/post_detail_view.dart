@@ -1,7 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/post_repository.dart';
 import '../models/post.dart';
@@ -39,38 +40,34 @@ class _PostDetailViewState extends State<PostDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(_post?.title ?? AppLocalizations.of(context)!.post)),
+    return AppPage(
+      appBar: AppBar(
+        title: Text(_post?.title ?? AppLocalizations.of(context)!.post),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text(_error!))
-              : ListView(
-                  children: [
-                    if (_post!.featuredImageUrl != null)
-                      CachedNetworkImage(
-                        imageUrl: _post!.featuredImageUrl!,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
-                        errorWidget: (_, _, _) => const SizedBox(height: 200),
+          ? AppEmptyState(message: _error!)
+          : ListView(
+              children: [
+                if (_post!.featuredImageUrl != null)
+                  AppImage(url: _post!.featuredImageUrl!, height: 200),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _post!.title ?? '',
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _post!.title ?? '',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 16),
-                          HtmlWidget(_post!.content ?? ''),
-                        ],
-                      ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      HtmlWidget(_post!.content ?? ''),
+                    ],
+                  ),
                 ),
+              ],
+            ),
     );
   }
 }

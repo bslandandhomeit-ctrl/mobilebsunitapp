@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/contract_request_repository.dart';
 
@@ -35,19 +37,23 @@ class _ContractPdfViewState extends State<ContractPdfView> {
       await file.writeAsBytes(bytes, flush: true);
       if (mounted) setState(() => _localPath = file.path);
     } catch (_) {
-      if (mounted) setState(() => _error = AppLocalizations.of(context)!.failedToLoadContractPdf);
+      if (mounted) {
+        setState(
+          () => _error = AppLocalizations.of(context)!.failedToLoadContractPdf,
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.contract)),
       body: _error != null
-          ? Center(child: Text(_error!))
+          ? AppEmptyState(message: _error!)
           : _localPath == null
-              ? const Center(child: CircularProgressIndicator())
-              : PDFView(filePath: _localPath!),
+          ? const Center(child: CircularProgressIndicator())
+          : PDFView(filePath: _localPath!),
     );
   }
 }

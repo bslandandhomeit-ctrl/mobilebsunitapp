@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/project_detail_controller.dart';
 import '../models/unit.dart';
@@ -14,14 +16,15 @@ class ProjectDetailView extends GetView<ProjectDetailController> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(
         title: Text(controller.project.displayName),
         actions: [
           IconButton(
             icon: const Icon(Icons.grid_view_outlined),
             tooltip: l10n.unitsByStatus,
-            onPressed: () => Get.to(() => FloorPlanView(project: controller.project)),
+            onPressed: () =>
+                Get.to(() => FloorPlanView(project: controller.project)),
           ),
         ],
       ),
@@ -30,46 +33,55 @@ class ProjectDetailView extends GetView<ProjectDetailController> {
           return const Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null && controller.units.isEmpty) {
-          return Center(child: Text(controller.errorMessage.value!));
+          return AppEmptyState(message: controller.errorMessage.value!);
         }
         return RefreshIndicator(
           onRefresh: controller.loadUnits,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 28),
             children: [
               if (controller.project.unitTypes.isNotEmpty) ...[
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(l10n.unitTypes, style: Theme.of(context).textTheme.titleLarge),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  child: Text(
+                    l10n.unitTypes,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
-                SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: controller.project.unitTypes.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final unitType = controller.project.unitTypes[index];
-                      return ActionChip(
-                        label: Text(unitType.displayName),
-                        onPressed: () => Get.to(() => UnitTypeDetailView(unitType: unitType)),
-                      );
-                    },
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: controller.project.unitTypes
+                        .map(
+                          (unitType) => ActionChip(
+                            label: Text(unitType.displayName),
+                            onPressed: () => Get.to(
+                              () => UnitTypeDetailView(unitType: unitType),
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ],
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(l10n.units, style: Theme.of(context).textTheme.titleLarge),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                child: Text(
+                  l10n.units,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TextField(
                   onChanged: (v) => controller.searchQuery.value = v,
                   decoration: InputDecoration(
                     hintText: l10n.searchByUnitCode,
                     prefixIcon: const Icon(Icons.search),
-                    border: const OutlineInputBorder(),
+
                     isDense: true,
                   ),
                 ),
@@ -78,13 +90,18 @@ class ProjectDetailView extends GetView<ProjectDetailController> {
               if (controller.filteredUnits.isEmpty)
                 Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Center(child: Text(l10n.noUnitsFound)),
+                  child: AppEmptyState(message: l10n.noUnitsFound),
                 )
               else
-                ...controller.filteredUnits.map((u) => _UnitTile(unit: u)),
+                ...controller.filteredUnits.map(
+                  (u) => Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                    child: _UnitTile(unit: u),
+                  ),
+                ),
               if (controller.units.isNotEmpty && controller.hasMore)
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
                   child: Center(
                     child: controller.isLoadingMore.value
                         ? const CircularProgressIndicator()
@@ -109,9 +126,9 @@ class _UnitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(unit.name),
-      trailing: Chip(label: Text(unit.status ?? 'UNKNOWN')),
+    return AppUnitTile(
+      name: unit.name,
+      status: unit.status ?? AppLocalizations.of(context)!.unknownStatus,
       onTap: () => Get.to(() => UnitDetailView(unit: unit)),
     );
   }

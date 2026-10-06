@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/auth_repository.dart';
 import '../models/user.dart';
@@ -41,32 +42,39 @@ class _MembersViewState extends State<MembersView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(l10n.members)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Text(_error!))
-              : _members.isEmpty
-                  ? Center(child: Text(l10n.noMembersFound))
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        itemCount: _members.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final m = _members[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: m.avatarUrl != null ? NetworkImage(m.avatarUrl!) : null,
-                              child: m.avatarUrl == null ? const Icon(Icons.person) : null,
-                            ),
-                            title: Text(m.name),
-                            subtitle: Text(m.phoneNumber ?? ''),
-                          );
-                        },
+          ? AppEmptyState(message: _error!)
+          : _members.isEmpty
+          ? AppEmptyState(message: l10n.noMembersFound)
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                itemCount: _members.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final m = _members[index];
+                  return Card(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: m.avatarUrl != null
+                            ? NetworkImage(m.avatarUrl!)
+                            : null,
+                        child: m.avatarUrl == null
+                            ? const Icon(Icons.person)
+                            : null,
                       ),
+                      title: Text(m.name),
+                      subtitle: Text(m.phoneNumber ?? ''),
                     ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
-/// Works around `contract.chaktomukcity.com` serving an incomplete TLS
-/// chain (see [ApiConstants]): its Let's Encrypt leaf is issued by YE2, but
-/// the server doesn't send YE2 (it sends unrelated Sectigo certs instead).
-/// Android/Dart don't fetch missing intermediates, so the handshake fails.
+/// Works around `contract.chaktomukcity.com` serving unrelated Sectigo
+/// certificates instead of its Let's Encrypt issuer chain.
+/// Android/Dart do not fetch the missing intermediates automatically.
 ///
-/// Registers the missing intermediates — YE2 and ISRG Root YE cross-signed
-/// by ISRG Root X2 (already trusted by Android/Dart) — so a valid chain can
-/// be built. Fetched 2026-09-30 from the leaf's/YE2's AIA URLs
-/// (ye2.i.lencr.org, ye.i.lencr.org). Remove once the server is fixed.
+/// Registers YE1 and YE2 (the server has used both during renewals), plus
+/// ISRG Root YE cross-signed by ISRG Root X2. Certificate validation stays
+/// enabled. YE1 was fetched from letsencrypt.org/certs/gen-y/int-ye1.pem
+/// on 2026-10-05; the other certificates were fetched on 2026-09-30.
+/// Remove this workaround once the server supplies the correct chain.
 void trustServerIntermediates() {
   try {
     SecurityContext.defaultContext
@@ -20,6 +20,22 @@ void trustServerIntermediates() {
 }
 
 const _intermediatesPem = '''
+-----BEGIN CERTIFICATE-----
+MIICizCCAhGgAwIBAgIQXd1w3TH4AchcGGp6BLgK/jAKBggqhkjOPQQDAzAuMQsw
+CQYDVQQGEwJVUzENMAsGA1UEChMESVNSRzEQMA4GA1UEAxMHUm9vdCBZRTAeFw0y
+NTA5MDMwMDAwMDBaFw0yODA5MDIyMzU5NTlaMDMxCzAJBgNVBAYTAlVTMRYwFAYD
+VQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQDEwNZRTEwdjAQBgcqhkjOPQIBBgUr
+gQQAIgNiAAQHZVB1/mimla2hfSurylScjPMZaOJXLz/NnAc2sylm8WDyhU9Ccp+z
+ASQi5vSwGGJjSGklkD9fdPR8GpyDIOIjCEfrnbt/v+ZSEPLLEGbaM6EccDbN7p9x
+teIm2Avf+ryjge4wgeswDgYDVR0PAQH/BAQDAgGGMBMGA1UdJQQMMAoGCCsGAQUF
+BwMBMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFLsgykcL/tflnPmPCSqj
+jDdFsbzYMB8GA1UdIwQYMBaAFKPIJlqOoUzQNWP8myPIOq5W809WMDIGCCsGAQUF
+BwEBBCYwJDAiBggrBgEFBQcwAoYWaHR0cDovL3llLmkubGVuY3Iub3JnLzATBgNV
+HSAEDDAKMAgGBmeBDAECATAnBgNVHR8EIDAeMBygGqAYhhZodHRwOi8veWUuYy5s
+ZW5jci5vcmcvMAoGCCqGSM49BAMDA2gAMGUCMQDgjUEahFT/h3DRakqiPZpLvPgf
+Zwkt6K2EOMmh1nvEzl83eMLYcod4GCl3b0J1Nn0CMBNYmEQJb4CEG5WoOe7aRn/L
+VKu6saHmHEynI7ysIPd8zQsK1HdmhlHKlw9Z5GpGvA==
+-----END CERTIFICATE-----
 -----BEGIN CERTIFICATE-----
 MIICjDCCAhGgAwIBAgIQTfOxXdbAeExQfNN7WObxFTAKBggqhkjOPQQDAzAuMQsw
 CQYDVQQGEwJVUzENMAsGA1UEChMESVNSRzEQMA4GA1UEAxMHUm9vdCBZRTAeFw0y

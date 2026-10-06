@@ -575,4 +575,10 @@ class AppLocalizationsKm extends AppLocalizations {
 
   @override
   String get cropImage => 'កាត់រូបភាព';
+
+  @override
+  String get showPassword => 'បង្ហាញពាក្យសម្ងាត់';
+
+  @override
+  String get hidePassword => 'លាក់ពាក្យសម្ងាត់';
 }

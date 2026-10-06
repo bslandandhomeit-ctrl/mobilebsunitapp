@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../projects/data/payment_option_repository.dart';
 import '../../projects/data/projects_repository.dart';
@@ -61,7 +63,8 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
     }
     setState(() => _isSearching = true);
     try {
-      _searchResults = (await _projectsRepository.searchUnits(term.trim())).items;
+      _searchResults = (await _projectsRepository.searchUnits(term.trim()))
+          .items;
     } catch (_) {
       // Ignore — keep last results.
     } finally {
@@ -80,7 +83,9 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
     final unitTypeId = unit.unitTypeId;
     if (unitTypeId == null) return;
     try {
-      _paymentOptions = (await _paymentOptionRepository.getByUnitTypeId(unitTypeId)).items;
+      _paymentOptions = (await _paymentOptionRepository.getByUnitTypeId(
+        unitTypeId,
+      )).items;
       if (mounted) setState(() {});
     } catch (_) {
       // Non-fatal — custom loan terms remain available.
@@ -98,16 +103,27 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
       await _repository.changeUnit(
         id: widget.depositRequest.id,
         unitId: targetUnitId,
-        otherDiscountAllowance: double.tryParse(_otherDiscountController.text.trim()) ?? 0,
-        remark: _remarkController.text.trim().isEmpty ? null : _remarkController.text.trim(),
-        paymentOptionId: _useCustomLoanTerms ? null : _selectedPaymentOption?.id,
-        loanDuration: _useCustomLoanTerms ? int.tryParse(_loanDurationController.text.trim()) : null,
-        interest: _useCustomLoanTerms ? double.tryParse(_interestController.text.trim()) : null,
-        specialDiscount:
-            _useCustomLoanTerms ? double.tryParse(_specialDiscountController.text.trim()) : null,
+        otherDiscountAllowance:
+            double.tryParse(_otherDiscountController.text.trim()) ?? 0,
+        remark: _remarkController.text.trim().isEmpty
+            ? null
+            : _remarkController.text.trim(),
+        paymentOptionId: _useCustomLoanTerms
+            ? null
+            : _selectedPaymentOption?.id,
+        loanDuration: _useCustomLoanTerms
+            ? int.tryParse(_loanDurationController.text.trim())
+            : null,
+        interest: _useCustomLoanTerms
+            ? double.tryParse(_interestController.text.trim())
+            : null,
+        specialDiscount: _useCustomLoanTerms
+            ? double.tryParse(_specialDiscountController.text.trim())
+            : null,
         isFirstPayment: _useCustomLoanTerms ? _isFirstPayment : null,
-        firstPaymentDuration:
-            _useCustomLoanTerms ? int.tryParse(_firstPaymentDurationController.text.trim()) : null,
+        firstPaymentDuration: _useCustomLoanTerms
+            ? int.tryParse(_firstPaymentDurationController.text.trim())
+            : null,
         firstPaymentPercentage: _useCustomLoanTerms
             ? double.tryParse(_firstPaymentPercentageController.text.trim())
             : null,
@@ -139,24 +155,34 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(l10n.changeUnitTermsTitle)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         children: [
-          Text(l10n.currentUnit, style: Theme.of(context).textTheme.labelMedium),
-          Text(widget.depositRequest.unitCode ?? l10n.unitNumber('${widget.depositRequest.unitId ?? '-'}')),
+          Text(
+            l10n.currentUnit,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          Text(
+            widget.depositRequest.unitCode ??
+                l10n.unitNumber('${widget.depositRequest.unitId ?? '-'}'),
+          ),
           const SizedBox(height: 16),
           TextField(
             controller: _unitSearchController,
             onChanged: _searchUnits,
             decoration: InputDecoration(
               labelText: l10n.searchDifferentUnitHint,
-              border: const OutlineInputBorder(),
+
               suffixIcon: _isSearching
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                     )
                   : null,
             ),
@@ -166,35 +192,40 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
               margin: const EdgeInsets.only(top: 4),
               child: Column(
                 children: _searchResults
-                    .map((u) => ListTile(
-                          title: Text(u.name),
-                          trailing: Chip(label: Text(u.status ?? 'UNKNOWN')),
-                          onTap: () => _selectUnit(u),
-                        ))
+                    .map(
+                      (u) => ListTile(
+                        title: Text(u.name),
+                        trailing: Chip(label: Text(u.status ?? 'UNKNOWN')),
+                        onTap: () => _selectUnit(u),
+                      ),
+                    )
                     .toList(),
               ),
             ),
           if (_selectedUnit != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(l10n.newUnitLabel(_selectedUnit!.name), style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                l10n.newUnitLabel(_selectedUnit!.name),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           const SizedBox(height: 24),
           TextField(
             controller: _otherDiscountController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: l10n.otherDiscountAllowance,
-              border: const OutlineInputBorder(),
-            ),
+            decoration: InputDecoration(labelText: l10n.otherDiscountAllowance),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _remarkController,
-            decoration: InputDecoration(labelText: l10n.remark, border: const OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.remark),
           ),
           const SizedBox(height: 24),
-          Text(l10n.paymentOption, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            l10n.paymentOption,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           if (_paymentOptions.isNotEmpty)
             SwitchListTile(
@@ -205,28 +236,37 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
             ),
           if (!_useCustomLoanTerms && _paymentOptions.isNotEmpty)
             DropdownButtonFormField<PaymentOption>(
+              isExpanded: true,
               initialValue: _selectedPaymentOption,
-              decoration: InputDecoration(labelText: l10n.paymentOption, border: const OutlineInputBorder()),
-              items: _paymentOptions.map((o) => DropdownMenuItem(value: o, child: Text(o.name))).toList(),
+              decoration: InputDecoration(labelText: l10n.paymentOption),
+              items: _paymentOptions
+                  .map((o) => DropdownMenuItem(value: o, child: Text(o.name)))
+                  .toList(),
               onChanged: (v) => setState(() => _selectedPaymentOption = v),
             )
           else ...[
             TextField(
               controller: _loanDurationController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: l10n.loanDurationYears, border: const OutlineInputBorder()),
+              decoration: InputDecoration(labelText: l10n.loanDurationYears),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _interestController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.annualInterestRate, border: const OutlineInputBorder()),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(labelText: l10n.annualInterestRate),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _specialDiscountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.specialDiscountPercent, border: const OutlineInputBorder()),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: l10n.specialDiscountPercent,
+              ),
             ),
             const SizedBox(height: 8),
             SwitchListTile(
@@ -241,16 +281,16 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: l10n.firstPaymentDurationMonths,
-                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _firstPaymentPercentageController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   labelText: l10n.firstPaymentPercentage,
-                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -263,7 +303,11 @@ class _ChangeUnitDepositViewState extends State<ChangeUnitDepositView> {
           ElevatedButton(
             onPressed: _isSubmitting ? null : _submit,
             child: _isSubmitting
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : Text(l10n.saveChanges),
           ),
         ],

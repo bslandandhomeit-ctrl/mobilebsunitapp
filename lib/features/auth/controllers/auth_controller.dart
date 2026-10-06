@@ -1,3 +1,5 @@
+import '../../../core/constants/api_constants.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -13,6 +15,7 @@ class AuthController extends GetxController {
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final isPasswordVisible = false.obs;
 
   final isLoading = false.obs;
   final errorMessage = RxnString();
@@ -64,6 +67,7 @@ class AuthController extends GetxController {
   /// setup), so [_watchPushSubscriptionChanges] also retries via an
   /// observer whenever it changes.
   Future<void> _registerPushSubscription() async {
+    if (!ApiConstants.isProduction) return;
     final playerId = OneSignal.User.pushSubscription.id;
     if (playerId == null || playerId.length != 36) return;
     try {
@@ -74,6 +78,7 @@ class AuthController extends GetxController {
   }
 
   void _watchPushSubscriptionChanges() {
+    if (!ApiConstants.isProduction) return;
     _pushObserver = (_) {
       if (LocalStorage.isLoggedIn) _registerPushSubscription();
     };

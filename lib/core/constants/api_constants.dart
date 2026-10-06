@@ -11,14 +11,13 @@
 /// production (2026-09-11; the stale Postman "test" secret returned
 /// `invalid_client` here, this one does not).
 ///
-/// KNOWN SERVER ISSUE (2026-09-11): `contract.chaktomukcity.com`'s TLS cert
-/// chain is incomplete — it serves only its leaf certificate, not the
-/// required Let's Encrypt intermediate. Confirmed independent of this app
+/// KNOWN SERVER ISSUE (2026-10-05): `contract.chaktomukcity.com`'s TLS cert
+/// chain supplies unrelated Sectigo certificates instead of the
+/// required Let's Encrypt intermediates. Confirmed independent of this app
 /// (`openssl s_client -connect contract.chaktomukcity.com:443` fails the
 /// same way from a plain host machine). Until the server is reconfigured to
-/// serve the full chain, requests from this app (and likely many strict
-/// TLS clients) will fail with a certificate verification error. Not
-/// something to fix here — flag it to whoever manages that server.
+/// serve the full chain, this app registers the missing issuers with
+/// `trustServerIntermediates()` while keeping certificate validation enabled.
 class ApiConstants {
   ApiConstants._();
 
@@ -26,10 +25,22 @@ class ApiConstants {
   // `trustServerIntermediates()` in core/network/tls_intermediates.dart.
   // For the local dev server instead, use 'http://10.0.2.2:8000/' (the
   // Android emulator's alias for the host's localhost).
-  static const String baseUrl = 'https://contract.chaktomukcity.com/';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://contract.chaktomukcity.com/',
+  );
 
-  static const String oauthClientId = '2';
-  static const String oauthClientSecret = 'Y4ond2PoAgrmNiU3ZhxJmQ2tk44ZBj44S3VLeaRn';
+  static const bool isProduction =
+      baseUrl == 'https://contract.chaktomukcity.com/';
+
+  static const String oauthClientId = String.fromEnvironment(
+    'OAUTH_CLIENT_ID',
+    defaultValue: '2',
+  );
+  static const String oauthClientSecret = String.fromEnvironment(
+    'OAUTH_CLIENT_SECRET',
+    defaultValue: 'Y4ond2PoAgrmNiU3ZhxJmQ2tk44ZBj44S3VLeaRn',
+  );
 
   static const String oauthTokenPath = 'oauth/token';
   static const String whoamiPath = 'api/whoami';
@@ -47,9 +58,11 @@ class ApiConstants {
   static const String changePasswordPath = 'api/whoami/change_password';
   static const String membersPath = 'api/whoami/members';
   static const String forgetPasswordPath = 'api/users/forgetPassword';
-  static const String generateResetTokenPath = 'api/users/generateResetPasswordToken';
+  static const String generateResetTokenPath =
+      'api/users/generateResetPasswordToken';
   static const String resetPasswordPath = 'api/users/resetPassword';
   static const String appVersionPath = 'api/app_version';
   static const String onesignalPlayerIdPath = 'api/whoami/onesignal_player_id';
-  static String contractPdfPath(int contractId) => 'api/contract/$contractId/pdf';
+  static String contractPdfPath(int contractId) =>
+      'api/contract/$contractId/pdf';
 }

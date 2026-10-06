@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/auth_repository.dart';
 
@@ -50,46 +52,44 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(l10n.changePassword)),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _currentController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: l10n.currentPassword,
-                border: const OutlineInputBorder(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        child: AppPanel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _currentController,
+                obscureText: true,
+                decoration: InputDecoration(labelText: l10n.currentPassword),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _newController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: l10n.newPasswordMinChars,
-                border: const OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _newController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: l10n.newPasswordMinChars,
+                ),
               ),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(_error!, style: const TextStyle(color: Colors.red)),
+              ],
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isSubmitting ? null : _submit,
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.changePassword),
+              ),
             ],
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.changePassword),
-            ),
-          ],
+          ),
         ),
       ),
     );

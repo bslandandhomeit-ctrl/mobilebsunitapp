@@ -247,5 +247,7 @@
   "imageSaved": "Image saved",
   "imageSavedToGallery": "The image was saved to your gallery.",
   "failedToSaveImage": "Failed to save the image.",
-  "cropImage": "Crop Image"
+  "cropImage": "Crop Image",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password"
 }

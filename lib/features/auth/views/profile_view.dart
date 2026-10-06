@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/auth_controller.dart';
 import '../data/auth_repository.dart';
@@ -32,12 +34,17 @@ class _ProfileViewState extends State<ProfileView> {
     super.initState();
     final user = Get.find<AuthController>().currentUser.value;
     _emailController.text = user?.email ?? '';
-    _gender = (user?.gender == 'Male' || user?.gender == 'Female') ? user!.gender : null;
+    _gender = (user?.gender == 'Male' || user?.gender == 'Female')
+        ? user!.gender
+        : null;
     _birthdate = user?.birthdate;
   }
 
   Future<void> _pickAvatar() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (picked != null) setState(() => _newAvatar = picked);
   }
 
@@ -58,7 +65,9 @@ class _ProfileViewState extends State<ProfileView> {
     });
     try {
       final updated = await _repository.updateProfile(
-        email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
+        email: _emailController.text.trim().isEmpty
+            ? null
+            : _emailController.text.trim(),
         gender: _gender,
         birthdate: _birthdate,
         avatarPath: _newAvatar?.path,
@@ -85,10 +94,10 @@ class _ProfileViewState extends State<ProfileView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final user = Get.find<AuthController>().currentUser.value;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(l10n.profile)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         children: [
           Center(
             child: GestureDetector(
@@ -97,8 +106,10 @@ class _ProfileViewState extends State<ProfileView> {
                 radius: 48,
                 backgroundImage: _newAvatar != null
                     ? FileImage(File(_newAvatar!.path))
-                    : (user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null)
-                        as ImageProvider?,
+                    : (user?.avatarUrl != null
+                              ? NetworkImage(user!.avatarUrl!)
+                              : null)
+                          as ImageProvider?,
                 child: _newAvatar == null && user?.avatarUrl == null
                     ? const Icon(Icons.camera_alt_outlined, size: 32)
                     : null,
@@ -106,21 +117,39 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           ),
           const SizedBox(height: 24),
-          Text(l10n.name, style: Theme.of(context).textTheme.labelMedium),
-          Text(user?.name ?? '', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          Text(l10n.phoneNumber, style: Theme.of(context).textTheme.labelMedium),
-          Text(user?.phoneNumber ?? '', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 16),
+          AppPanel(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(l10n.name, style: Theme.of(context).textTheme.labelMedium),
+                Text(
+                  user?.name ?? '',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.phoneNumber,
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+                Text(
+                  user?.phoneNumber ?? '',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(labelText: l10n.email, border: const OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.email),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _gender,
-            decoration: InputDecoration(labelText: l10n.gender, border: const OutlineInputBorder()),
+            decoration: InputDecoration(labelText: l10n.gender),
             items: [
               DropdownMenuItem(value: 'Male', child: Text(l10n.male)),
               DropdownMenuItem(value: 'Female', child: Text(l10n.female)),
@@ -131,7 +160,11 @@ class _ProfileViewState extends State<ProfileView> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(l10n.birthdate),
-            subtitle: Text(_birthdate == null ? l10n.notSet : _birthdate!.toIso8601String().split('T').first),
+            subtitle: Text(
+              _birthdate == null
+                  ? l10n.notSet
+                  : _birthdate!.toIso8601String().split('T').first,
+            ),
             trailing: const Icon(Icons.calendar_today),
             onTap: _pickBirthdate,
           ),

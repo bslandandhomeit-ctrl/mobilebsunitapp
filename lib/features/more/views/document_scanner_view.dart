@@ -1,11 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Matches the original app's "Document Scanner" More-menu item
@@ -26,7 +28,10 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
 
   Future<void> _scan() async {
     final l10n = AppLocalizations.of(context)!;
-    final photo = await _picker.pickImage(source: ImageSource.camera, imageQuality: 90);
+    final photo = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 90,
+    );
     if (photo == null) return;
 
     final cropped = await ImageCropper().cropImage(
@@ -54,34 +59,50 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(l10n.documentScanner)),
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_savedPreview != null) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(_savedPreview!, height: 220, fit: BoxFit.contain),
+          child: AppPanel(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_savedPreview != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      _savedPreview!,
+                      height: 220,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ] else ...[
+                  Icon(
+                    Icons.document_scanner_outlined,
+                    size: 72,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(l10n.documentScannerHint, textAlign: TextAlign.center),
+                  const SizedBox(height: 24),
+                ],
+                ElevatedButton.icon(
+                  onPressed: _isBusy ? null : _scan,
+                  icon: _isBusy
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.camera_alt_outlined),
+                  label: Text(
+                    _savedPreview == null ? l10n.takePhoto : l10n.scanAnother,
+                  ),
                 ),
-                const SizedBox(height: 24),
-              ] else ...[
-                Icon(Icons.document_scanner_outlined, size: 72, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(height: 16),
-                Text(l10n.documentScannerHint, textAlign: TextAlign.center),
-                const SizedBox(height: 24),
               ],
-              ElevatedButton.icon(
-                onPressed: _isBusy ? null : _scan,
-                icon: _isBusy
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.camera_alt_outlined),
-                label: Text(_savedPreview == null ? l10n.takePhoto : l10n.scanAnother),
-              ),
-            ],
+            ),
           ),
         ),
       ),

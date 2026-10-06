@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../deposit/views/deposit_request_form_view.dart';
 import '../../hold/views/hold_request_form_view.dart';
@@ -92,81 +94,118 @@ class _UnitDetailViewState extends State<UnitDetailView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return AppPage(
       appBar: AppBar(title: Text(widget.unit.name)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         children: [
-          Text(l10n.unitStatus, style: Theme.of(context).textTheme.labelMedium),
-          Chip(label: Text(widget.unit.status ?? 'UNKNOWN')),
-          const SizedBox(height: 24),
-          ..._actionsFor(context, widget.unit.status?.toUpperCase()),
-          const Divider(height: 40),
-          Text(l10n.comments, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _commentController,
-                  decoration: InputDecoration(
-                    hintText: l10n.addComment,
-                    border: const OutlineInputBorder(),
-                    isDense: true,
+          AppPanel(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const AppIconTile(Icons.home_work_outlined),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        widget.unit.name,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.unitStatus,
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppStatusBadge(
+                    widget.unit.status ?? l10n.unknownStatus,
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add_photo_alternate_outlined),
-                tooltip: l10n.attachPhotos,
-                onPressed: _addPhotos,
-              ),
-              IconButton(
-                icon: _isPostingComment
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.send),
-                onPressed: _isPostingComment ? null : _postComment,
-              ),
-            ],
+                const SizedBox(height: 24),
+                ..._actionsFor(context, widget.unit.status?.toUpperCase()),
+              ],
+            ),
           ),
-          if (_pendingPhotos.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (var i = 0; i < _pendingPhotos.length; i++)
-                    Stack(
+          const SizedBox(height: 28),
+          AppSectionTitle(l10n.comments),
+          AppPanel(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _commentController,
+                  decoration: InputDecoration(hintText: l10n.addComment),
+                  minLines: 2,
+                  maxLines: 5,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.add_photo_alternate_outlined),
+                      tooltip: l10n.attachPhotos,
+                      onPressed: _addPhotos,
+                    ),
+                    IconButton(
+                      icon: _isPostingComment
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.send),
+                      tooltip: l10n.addComment,
+                      onPressed: _isPostingComment ? null : _postComment,
+                    ),
+                  ],
+                ),
+                if (_pendingPhotos.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            File(_pendingPhotos[i].path),
-                            width: 64,
-                            height: 64,
-                            fit: BoxFit.cover,
+                        for (var i = 0; i < _pendingPhotos.length; i++)
+                          Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  File(_pendingPhotos[i].path),
+                                  width: 88,
+                                  height: 88,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: IconButton(
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                  ),
+                                  tooltip: l10n.cancel,
+                                  icon: const Icon(Icons.cancel, size: 20),
+                                  onPressed: () => _removePendingPhoto(i),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        Positioned(
-                          top: -8,
-                          right: -8,
-                          child: IconButton(
-                            icon: const Icon(Icons.cancel, size: 18),
-                            onPressed: () => _removePendingPhoto(i),
-                          ),
-                        ),
                       ],
                     ),
-                ],
-              ),
+                  ),
+                const SizedBox(height: 12),
+              ],
             ),
-          const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 16),
           if (_isLoadingComments)
             const Center(child: CircularProgressIndicator())
           else if (_comments.isEmpty)
@@ -194,7 +233,8 @@ class _UnitDetailViewState extends State<UnitDetailView> {
                                     width: 64,
                                     height: 64,
                                     fit: BoxFit.cover,
-                                    errorWidget: (_, _, _) => const SizedBox(width: 64, height: 64),
+                                    errorWidget: (_, _, _) =>
+                                        const SizedBox(width: 64, height: 64),
                                   ),
                                 ),
                               )
@@ -226,30 +266,29 @@ class _UnitDetailViewState extends State<UnitDetailView> {
         // "This functionality is currently disable." if tapped.
         return [
           ElevatedButton(
-            onPressed: () => Get.to(() => HoldRequestFormView(unit: widget.unit)),
+            onPressed: () =>
+                Get.to(() => HoldRequestFormView(unit: widget.unit)),
             child: Text(l10n.requestHold),
           ),
           const SizedBox(height: 12),
           ElevatedButton(
-            onPressed: () => Get.to(() => DepositRequestFormView(unit: widget.unit)),
+            onPressed: () =>
+                Get.to(() => DepositRequestFormView(unit: widget.unit)),
             child: Text(l10n.requestDeposit),
           ),
         ];
       case 'HOLD':
         return [
           ElevatedButton(
-            onPressed: () => Get.to(() => DepositRequestFormView(unit: widget.unit)),
+            onPressed: () =>
+                Get.to(() => DepositRequestFormView(unit: widget.unit)),
             child: Text(l10n.convertToDeposit),
           ),
         ];
       case 'DEPOSIT':
-        return [
-          Text(l10n.depositInProgressHint),
-        ];
+        return [Text(l10n.depositInProgressHint)];
       default:
-        return [
-          Text(l10n.noActionsAvailable),
-        ];
+        return [Text(l10n.noActionsAvailable)];
     }
   }
 }

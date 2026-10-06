@@ -577,4 +577,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cropImage => 'Crop Image';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
 }

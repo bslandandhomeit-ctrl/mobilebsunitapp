@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 
 import '../../../core/widgets/reason_dialog.dart';
+import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/hold_controller.dart';
@@ -12,19 +14,20 @@ class HoldView extends GetView<HoldController> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final canApprove = Get.find<AuthController>().currentUser.value?.canApproveHold ?? false;
-    return Scaffold(
+    final canApprove =
+        Get.find<AuthController>().currentUser.value?.canApproveHold ?? false;
+    return AppPage(
       appBar: AppBar(title: Text(l10n.holdRequests)),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
             child: TextField(
               onChanged: (v) => controller.searchQuery.value = v,
               decoration: InputDecoration(
                 hintText: l10n.searchByUnitCode,
                 prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
+
                 isDense: true,
               ),
             ),
@@ -34,18 +37,21 @@ class HoldView extends GetView<HoldController> {
               if (controller.isLoading.value && controller.requests.isEmpty) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (controller.errorMessage.value != null && controller.requests.isEmpty) {
-                return Center(child: Text(controller.errorMessage.value!));
+              if (controller.errorMessage.value != null &&
+                  controller.requests.isEmpty) {
+                return AppEmptyState(message: controller.errorMessage.value!);
               }
               final items = controller.filteredRequests;
               if (items.isEmpty) {
-                return Center(child: Text(l10n.noHoldRequestsFound));
+                return AppEmptyState(message: l10n.noHoldRequestsFound);
               }
               return RefreshIndicator(
                 onRefresh: controller.load,
                 child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                  physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: items.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final r = items[index];
                     final status = r.status?.toUpperCase();
@@ -72,16 +78,25 @@ class HoldView extends GetView<HoldController> {
                     } else if (status == 'APPROVED') {
                       trailing = TextButton(
                         onPressed: () async {
-                          final reason = await promptForReason(context, title: l10n.cancelHoldRequest);
-                          if (reason != null) controller.cancel(r.id, reason: reason.isEmpty ? null : reason);
+                          final reason = await promptForReason(
+                            context,
+                            title: l10n.cancelHoldRequest,
+                          );
+                          if (reason != null) {
+                            controller.cancel(
+                              r.id,
+                              reason: reason.isEmpty ? null : reason,
+                            );
+                          }
                         },
                         child: Text(l10n.cancel),
                       );
                     }
-                    return ListTile(
-                      title: Text(r.unitCode ?? l10n.unitNumber('${r.unitId ?? '-'}')),
-                      subtitle: Text(r.status ?? l10n.unknownStatus),
-                      trailing: trailing,
+                    return AppRequestCard(
+                      title:
+                          r.unitCode ?? l10n.unitNumber('${r.unitId ?? '-'}'),
+                      status: r.status ?? l10n.unknownStatus,
+                      actions: trailing,
                     );
                   },
                 ),
