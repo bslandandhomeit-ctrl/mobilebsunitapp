@@ -32,8 +32,9 @@ android {
 
     defaultConfig {
         // Matches the "dev" package registered in google-services.json (Firebase project: contract-register).
-        // Switch to com.bslandandhome.bsunits for production release builds.
-        applicationId = "com.bslandandhome.bsunits.dev"
+        // Production release builds use com.bslandandhome.bsunits: tools/release/build-release.sh
+        // passes it as the Gradle property bsAppId (ORG_GRADLE_PROJECT_bsAppId).
+        applicationId = (project.findProperty("bsAppId") as String?) ?: "com.bslandandhome.bsunits.dev"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

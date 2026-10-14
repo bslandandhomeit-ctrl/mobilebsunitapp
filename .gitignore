@@ -49,3 +49,6 @@ app.*.map.json
 
 # Isolated local backend, database credentials and runtime files
 .local-backend/
+
+# Release builds produced by tools/release/build-release.sh
+/release/
