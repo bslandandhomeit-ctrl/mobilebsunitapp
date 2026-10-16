@@ -6,12 +6,6 @@ import '../../auth/controllers/auth_controller.dart';
 import '../../auth/views/change_password_view.dart';
 import '../../auth/views/members_view.dart';
 import '../../auth/views/profile_view.dart';
-import '../../contract_request/controllers/contract_request_controller.dart';
-import '../../contract_request/views/contract_request_view.dart';
-import '../../deposit/controllers/deposit_controller.dart';
-import '../../deposit/views/deposit_view.dart';
-import '../../hold/controllers/hold_controller.dart';
-import '../../hold/views/hold_view.dart';
 import '../../notification/controllers/notification_controller.dart';
 import '../../notification/views/notification_view.dart';
 import '../../post/controllers/post_controller.dart';
@@ -92,36 +86,6 @@ class MoreView extends StatelessWidget {
                     () => const PostView(),
                     binding: BindingsBuilder(() {
                       Get.put(PostController());
-                    }),
-                  ),
-                ),
-                _MenuTile(
-                  leading: const Icon(Icons.pan_tool_outlined),
-                  title: Text(l10n.holdRequests),
-                  onTap: () => Get.to(
-                    () => const HoldView(),
-                    binding: BindingsBuilder(() {
-                      Get.put(HoldController());
-                    }),
-                  ),
-                ),
-                _MenuTile(
-                  leading: const Icon(Icons.savings_outlined),
-                  title: Text(l10n.depositRequests),
-                  onTap: () => Get.to(
-                    () => const DepositView(),
-                    binding: BindingsBuilder(() {
-                      Get.put(DepositController());
-                    }),
-                  ),
-                ),
-                _MenuTile(
-                  leading: const Icon(Icons.description_outlined),
-                  title: Text(l10n.contractRequests),
-                  onTap: () => Get.to(
-                    () => const ContractRequestView(),
-                    binding: BindingsBuilder(() {
-                      Get.put(ContractRequestController());
                     }),
                   ),
                 ),

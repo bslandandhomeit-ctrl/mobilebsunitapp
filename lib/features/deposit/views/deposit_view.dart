@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../core/widgets/reason_dialog.dart';
 import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../requests/views/request_detail_view.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../contract_request/views/contract_request_form_view.dart';
 import '../controllers/deposit_controller.dart';
@@ -28,7 +29,7 @@ class DepositView extends GetView<DepositController> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
             child: TextField(
-              onChanged: (v) => controller.searchQuery.value = v,
+              onChanged: controller.search,
               decoration: InputDecoration(
                 hintText: l10n.searchByUnitCode,
                 prefixIcon: const Icon(Icons.search),
@@ -44,22 +45,48 @@ class DepositView extends GetView<DepositController> {
               }
               if (controller.errorMessage.value != null &&
                   controller.requests.isEmpty) {
-                return AppEmptyState(message: controller.errorMessage.value!);
+                return AppEmptyState(
+                  message: controller.errorMessage.value!,
+                  action: TextButton(
+                    onPressed: controller.load,
+                    child: Text(l10n.retry),
+                  ),
+                );
               }
               final items = controller.filteredRequests;
               if (items.isEmpty) {
-                return AppEmptyState(message: l10n.noDepositRequestsFound);
+                return AppEmptyState(
+                  message: l10n.noDepositRequestsFound,
+                  action: TextButton(
+                    onPressed: controller.load,
+                    child: Text(l10n.retry),
+                  ),
+                );
               }
               return RefreshIndicator(
                 onRefresh: controller.load,
                 child: ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
                   physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: items.length,
+                  itemCount: items.length + (controller.hasMore.value ? 1 : 0),
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
+                    if (index == items.length) {
+                      return Center(
+                        child: controller.isLoadingMore.value
+                            ? const CircularProgressIndicator()
+                            : TextButton(
+                                onPressed: controller.loadMore,
+                                child: Text(l10n.loadMore),
+                              ),
+                      );
+                    }
                     final r = items[index];
                     return AppRequestCard(
+                      onTap: () => Get.to(
+                        () => RequestDetailView(id: r.id, hold: false),
+                      ),
+                      summary: RequestSummary(data: r.details, hold: false),
                       title:
                           r.unitCode ?? l10n.unitNumber('${r.unitId ?? '-'}'),
                       status: r.status ?? l10n.unknownStatus,

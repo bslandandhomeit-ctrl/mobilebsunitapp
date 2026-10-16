@@ -9,6 +9,9 @@ class PaymentOption {
     this.loanDuration,
     this.interest,
     this.specialDiscount,
+    this.isFirstPayment = false,
+    this.firstPaymentPercentage,
+    this.firstPaymentDuration,
   });
 
   factory PaymentOption.fromJson(Map<String, dynamic> json) => PaymentOption(
@@ -18,7 +21,13 @@ class PaymentOption {
     depositAmount: (json['deposit_amount'] as num?)?.toDouble(),
     loanDuration: json['loan_duration'] as int?,
     interest: (json['interest'] as num?)?.toDouble(),
-    specialDiscount: (json['special_discount'] as num?)?.toDouble(),
+    specialDiscount: double.tryParse('${json['special_discount']}'),
+    isFirstPayment:
+        json['is_first_payment'] == true || json['is_first_payment'] == 1,
+    firstPaymentPercentage: double.tryParse(
+      '${json['first_payment_percentage']}',
+    ),
+    firstPaymentDuration: (json['first_payment_duration'] as num?)?.toInt(),
   );
 
   final int id;
@@ -28,4 +37,7 @@ class PaymentOption {
   final int? loanDuration;
   final double? interest;
   final double? specialDiscount;
+  final bool isFirstPayment;
+  final double? firstPaymentPercentage;
+  final int? firstPaymentDuration;
 }

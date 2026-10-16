@@ -6,11 +6,17 @@ import '../models/unit_hold_request.dart';
 class HoldRepository {
   final ApiClient _client = ApiClient.instance;
 
-  Future<PaginatedResponse<UnitHoldRequest>> getAll({int? projectId}) async {
+  Future<PaginatedResponse<UnitHoldRequest>> getAll({
+    int? projectId,
+    int page = 1,
+    String? term,
+  }) async {
     final response = await _client.get<Map<String, dynamic>>(
       ApiConstants.unitHoldRequestsPath,
       queryParameters: {
-        'embed': 'createdBy,actionedBy,unit,action',
+        'embed': 'createdBy,actionedBy,unit.unitType.project',
+        'page': page,
+        'term': ?term,
         'project_id': ?projectId,
       },
     );
@@ -40,11 +46,9 @@ class HoldRepository {
     data: {'action_reason': ?reason},
   );
 
-  Future<void> approve(int id) => _client.post(
-    '${ApiConstants.unitHoldRequestsPath}/$id/approve',
-  );
+  Future<void> approve(int id) =>
+      _client.post('${ApiConstants.unitHoldRequestsPath}/$id/approve');
 
-  Future<void> reject(int id) => _client.post(
-    '${ApiConstants.unitHoldRequestsPath}/$id/reject',
-  );
+  Future<void> reject(int id) =>
+      _client.post('${ApiConstants.unitHoldRequestsPath}/$id/reject');
 }

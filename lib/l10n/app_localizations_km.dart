@@ -581,4 +581,227 @@ class AppLocalizationsKm extends AppLocalizations {
 
   @override
   String get hidePassword => 'លាក់ពាក្យសម្ងាត់';
+
+  @override
+  String get unitCode => 'លេខកូដយូនីត';
+
+  @override
+  String get project => 'គម្រោង';
+
+  @override
+  String get unitType => 'ប្រភេទយូនីត';
+
+  @override
+  String get unitPriceLabel => 'តម្លៃយូនីត (\$)';
+
+  @override
+  String get houseSizeLabel => 'ទំហំផ្ទះ';
+
+  @override
+  String get landSizeLabel => 'ទំហំដី';
+
+  @override
+  String get bedroomsLabel => 'បន្ទប់គេង';
+
+  @override
+  String get bathroomsLabel => 'បន្ទប់ទឹក';
+
+  @override
+  String get livingRoomsLabel => 'បន្ទប់ទទួលភ្ញៀវ';
+
+  @override
+  String get kitchensLabel => 'ផ្ទះបាយ';
+
+  @override
+  String get swimmingPoolsLabel => 'អាងហែលទឹក';
+
+  @override
+  String get unitInformationTitle => 'ព័ត៌មានយូនីត';
+
+  @override
+  String get contractPriceNote =>
+      'នេះជាតម្លៃកិច្ចសន្យាមុនការបញ្ចុះតម្លៃផ្សេងៗ។';
+
+  @override
+  String get holdTabLabel => 'សំណើកក់ទុក';
+
+  @override
+  String get depositTabLabel => 'សំណើកក់ប្រាក់';
+
+  @override
+  String get contractTabLabel => 'សំណើកិច្ចសន្យា';
+
+  @override
+  String get filterTitle => 'តម្រង';
+
+  @override
+  String get allProjectsLabel => 'គម្រោងទាំងអស់';
+
+  @override
+  String get availableAndUnavailable => 'ទំនេរ និងមិនទំនេរ';
+
+  @override
+  String get allStatusesLabel => 'ស្ថានភាពទាំងអស់';
+
+  @override
+  String get applyFiltersLabel => 'អនុវត្តតម្រង';
+
+  @override
+  String get detailLoadError =>
+      'មិនអាចទាញយកព័ត៌មានយូនីតថ្មីបានទេ។ សូមព្យាយាមម្ដងទៀត។';
+
+  @override
+  String get previewLabel => 'មើលជាមុន';
+
+  @override
+  String get exteriorLabel => 'ផ្នែកខាងក្រៅ';
+
+  @override
+  String get interiorLabel => 'ផ្នែកខាងក្នុង';
+
+  @override
+  String get floorPlanLabel => 'ប្លង់ជាន់';
+
+  @override
+  String get noImagesLabel => 'មិនមានរូបភាព';
+
+  @override
+  String get paymentOptionsLoadError =>
+      'មិនអាចទាញយកជម្រើសបង់ប្រាក់បានទេ។ សូមព្យាយាមម្ដងទៀត ឬជ្រើសរើស ផ្សេងទៀត។';
+
+  @override
+  String get requiredFieldLabel => 'សូមបំពេញព័ត៌មាននេះ។';
+
+  @override
+  String get invalidPhoneLabel =>
+      'សូមបញ្ចូលលេខទូរសព្ទចាប់ផ្តើមដោយ 0 (៩–១០ ខ្ទង់)។';
+
+  @override
+  String get invalidNumberLabel =>
+      'សូមបញ្ចូលលេខត្រឹមត្រូវក្នុងចន្លោះដែលបានអនុញ្ញាត។';
+
+  @override
+  String get customerInformationTitle => 'ព័ត៌មានអតិថិជន';
+
+  @override
+  String get customerOneNameLabel => 'នាមត្រកូល និងនាមខ្លួន (អតិថិជនទី១) *';
+
+  @override
+  String get customerTwoNameLabel => 'នាមត្រកូល និងនាមខ្លួន (អតិថិជនទី២)';
+
+  @override
+  String get customerOneGenderLabel => 'ភេទ (អតិថិជនទី១) *';
+
+  @override
+  String get customerTwoGenderLabel => 'ភេទ (អតិថិជនទី២)';
+
+  @override
+  String get customerPhonesTitle => 'លេខទូរសព្ទ (អតិថិជន)';
+
+  @override
+  String get phoneLineOneLabel => 'លេខទី១ *';
+
+  @override
+  String get phoneLineTwoLabel => 'លេខទី២';
+
+  @override
+  String get otherDiscountDepositTitle => 'ការបញ្ចុះតម្លៃផ្សេង និងប្រាក់កក់';
+
+  @override
+  String get otherDiscountNote =>
+      'ការបញ្ចុះតម្លៃរបស់ក្រុមហ៊ុនដែលបង្ហាញក្នុងកិច្ចសន្យា មិនមែនការបញ្ចុះតម្លៃរបស់ភ្នាក់ងារទេ។ ត្រូវការអនុម័តពីអ្នកគ្រប់គ្រងការលក់។';
+
+  @override
+  String get promotionalDiscountLabel => 'ការបញ្ចុះតម្លៃប្រូម៉ូសិន (\$)';
+
+  @override
+  String get promotionalDiscountNote =>
+      'ប្រព័ន្ធគណនាដោយស្វ័យប្រវត្តិតាមប្រូម៉ូសិនកំពុងដំណើរការ។';
+
+  @override
+  String get noneLabel => 'គ្មាន';
+
+  @override
+  String get otherLabel => 'ផ្សេងទៀត';
+
+  @override
+  String get standardLabel => 'ស្តង់ដារ';
+
+  @override
+  String get otherPaymentOptionNote =>
+      'ជម្រើសបង់ប្រាក់ផ្សេងត្រូវការអនុម័តពីអ្នកគ្រប់គ្រងការលក់។';
+
+  @override
+  String get installmentMonthsLabel => 'រយៈពេលបង់រំលស់ (ខែ)';
+
+  @override
+  String get downPaymentLabel => 'ប្រាក់បង់ដំបូង';
+
+  @override
+  String get downPaymentAmountLabel => 'ចំនួនប្រាក់បង់ដំបូង (\$)';
+
+  @override
+  String get remarkPlaceholder => 'បញ្ចូលកំណត់សម្គាល់របស់អ្នក…';
+
+  @override
+  String get saveLabel => 'រក្សាទុក';
+
+  @override
+  String get nextLabel => 'បន្ទាប់';
+
+  @override
+  String get yes => 'បាទ/ចាស';
+
+  @override
+  String get no => 'ទេ';
+
+  @override
+  String get holdButtonLabel => 'កក់ទុក';
+
+  @override
+  String get depositButtonLabel => 'កក់ប្រាក់';
+
+  @override
+  String get customPaymentHint =>
+      'ជ្រើសរើស ផ្សេងទៀត ដើម្បីបញ្ចូលលក្ខខណ្ឌបង់ប្រាក់ផ្ទាល់ខ្លួន។';
+
+  @override
+  String get holdDaysLabel => 'ចំនួនថ្ងៃ';
+
+  @override
+  String get expirationDateLabel => 'ថ្ងៃផុតកំណត់';
+
+  @override
+  String get holdDateLabel => 'ថ្ងៃស្នើសុំកក់';
+
+  @override
+  String get requestDateLabel => 'ថ្ងៃស្នើសុំ';
+
+  @override
+  String get requestedByLabel => 'អ្នកស្នើសុំ';
+
+  @override
+  String get receivedAmountLabel => 'ប្រាក់បានទទួល';
+
+  @override
+  String get salesManagerLabel => 'អ្នកគ្រប់គ្រងការលក់';
+
+  @override
+  String get unitControllerLabel => 'អ្នកគ្រប់គ្រងយូនីត';
+
+  @override
+  String get floorLabel => 'ជាន់';
+
+  @override
+  String get holdRequestTitle => 'សំណើកក់';
+
+  @override
+  String get depositRequestTitle => 'សំណើប្រាក់កក់';
+
+  @override
+  String get requestAttachmentsTitle => 'ឯកសារភ្ជាប់ *';
+
+  @override
+  String get requestAttachmentsNote =>
+      'រួមមាន៖ អត្តសញ្ញាណប័ណ្ណ លិខិតឆ្លងដែន ឬឯកសារពាក់ព័ន្ធផ្សេងទៀត។';
 }

@@ -6,6 +6,7 @@
 class UnitDepositRequest {
   UnitDepositRequest({
     required this.id,
+    this.details = const {},
     this.userId,
     this.unitId,
     this.unitCode,
@@ -15,17 +16,22 @@ class UnitDepositRequest {
     this.createdAt,
   });
 
-  factory UnitDepositRequest.fromJson(Map<String, dynamic> json) => UnitDepositRequest(
-    id: json['id'] as int,
-    userId: json['user_id'] as int?,
-    unitId: json['unit_id'] as int?,
-    unitCode: (json['unit'] as Map<String, dynamic>?)?['code']?.toString(),
-    status: json['status']?.toString(),
-    depositAmount: (json['deposit_amount'] as num?)?.toDouble(),
-    otherDiscountAllowance: (json['other_discount_allowance'] as num?)?.toDouble(),
-    createdAt: json['created_at']?.toString(),
-  );
+  factory UnitDepositRequest.fromJson(Map<String, dynamic> json) =>
+      UnitDepositRequest(
+        id: json['id'] as int,
+        details: json,
+        userId: json['user_id'] as int?,
+        unitId: json['unit_id'] as int?,
+        unitCode: (json['unit'] as Map<String, dynamic>?)?['code']?.toString(),
+        status: json['status']?.toString(),
+        depositAmount: double.tryParse('${json['deposit_amount']}'),
+        otherDiscountAllowance: double.tryParse(
+          '${json['other_discount_allowance']}',
+        ),
+        createdAt: json['created_at']?.toString(),
+      );
 
+  final Map<String, dynamic> details;
   final int id;
   final int? userId;
   final int? unitId;

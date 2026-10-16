@@ -18,6 +18,39 @@ class ProjectsRepository {
     return PaginatedResponse.fromJson(response.data!, Project.fromJson);
   }
 
+  Future<Unit> getUnit(int id) async {
+    final response = await _client.get<Map<String, dynamic>>(
+      '${ApiConstants.unitsPath}/$id',
+      queryParameters: {
+        'embed':
+            'unitType.project,unitType.media,unitType.activeDiscountPromotions',
+      },
+    );
+    return Unit.fromJson(PaginatedResponse.unwrap(response.data));
+  }
+
+  Future<PaginatedResponse<Unit>> browseUnits({
+    int? projectId,
+    int? unitTypeId,
+    String? status,
+    String? term,
+    int page = 1,
+  }) async {
+    final response = await _client.get<Map<String, dynamic>>(
+      ApiConstants.unitsPath,
+      queryParameters: {
+        'project_id': ?projectId,
+        'unit_type_id': ?unitTypeId,
+        'status': ?status,
+        'term': ?term,
+        'page': page,
+        'per_page': 20,
+        'embed': 'unitType.project',
+      },
+    );
+    return PaginatedResponse.fromJson(response.data!, Unit.fromJson);
+  }
+
   Future<Project> getProject(int id) async {
     final response = await _client.get<Map<String, dynamic>>(
       '${ApiConstants.projectsPath}/$id',
@@ -28,13 +61,23 @@ class ProjectsRepository {
 
   Future<PaginatedResponse<Unit>> getUnitsForProject(
     int projectId, {
-    List<String> statuses = const ['AVAILABLE', 'UNAVAILABLE', 'HOLD', 'DEPOSIT', 'CONTRACT'],
+    List<String> statuses = const [
+      'AVAILABLE',
+      'UNAVAILABLE',
+      'HOLD',
+      'DEPOSIT',
+      'CONTRACT',
+    ],
     int perPage = 20,
     int page = 1,
   }) async {
     final response = await _client.get<Map<String, dynamic>>(
       '${ApiConstants.projectsPath}/$projectId/units',
-      queryParameters: {'status': statuses.join(','), 'per_page': perPage, 'page': page},
+      queryParameters: {
+        'status': statuses.join(','),
+        'per_page': perPage,
+        'page': page,
+      },
     );
     return PaginatedResponse.fromJson(response.data!, Unit.fromJson);
   }
@@ -43,7 +86,10 @@ class ProjectsRepository {
   /// (2026-09-11): `term` does a `code LIKE %term%` across all published
   /// projects. This is what the original app's `AutoSuggestionActivity`
   /// called.
-  Future<PaginatedResponse<Unit>> searchUnits(String term, {int perPage = 20}) async {
+  Future<PaginatedResponse<Unit>> searchUnits(
+    String term, {
+    int perPage = 20,
+  }) async {
     final response = await _client.get<Map<String, dynamic>>(
       ApiConstants.unitsPath,
       queryParameters: {'term': term, 'per_page': perPage},
@@ -51,7 +97,9 @@ class ProjectsRepository {
     return PaginatedResponse.fromJson(response.data!, Unit.fromJson);
   }
 
-  Future<PaginatedResponse<UnitType>> getUnitTypesForProject(int projectId) async {
+  Future<PaginatedResponse<UnitType>> getUnitTypesForProject(
+    int projectId,
+  ) async {
     final response = await _client.get<Map<String, dynamic>>(
       '${ApiConstants.projectsPath}/$projectId/unit_types',
     );
@@ -70,7 +118,10 @@ class ProjectsRepository {
     return unitsByStatus.map(
       (status, list) => MapEntry(
         status,
-        (list as List).whereType<Map<String, dynamic>>().map(Unit.fromJson).toList(),
+        (list as List)
+            .whereType<Map<String, dynamic>>()
+            .map(Unit.fromJson)
+            .toList(),
       ),
     );
   }

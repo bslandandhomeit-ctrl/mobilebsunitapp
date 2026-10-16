@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -8,394 +7,593 @@ import '../../../l10n/app_localizations.dart';
 import '../../projects/data/payment_option_repository.dart';
 import '../../projects/models/payment_option.dart';
 import '../../projects/models/unit.dart';
+import '../../projects/views/unit_information_card.dart';
 import '../data/deposit_repository.dart';
 
 class DepositRequestFormView extends StatefulWidget {
   const DepositRequestFormView({super.key, required this.unit});
-
   final Unit unit;
-
   @override
   State<DepositRequestFormView> createState() => _DepositRequestFormViewState();
 }
 
 class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _repository = DepositRepository();
-  final _paymentOptionRepository = PaymentOptionRepository();
-
-  final _depositAmountController = TextEditingController();
-  final _otherDiscountController = TextEditingController(text: '0');
-  final _customerNameController = TextEditingController();
-  final _customerPhoneController = TextEditingController();
-  final _customer2NameController = TextEditingController();
-  final _customer2PhoneController = TextEditingController();
-  final _remarkController = TextEditingController();
-
-  // Custom loan term controllers (used when no payment option is selected).
-  final _loanDurationController = TextEditingController();
-  final _interestController = TextEditingController();
-  final _specialDiscountController = TextEditingController();
-  final _firstPaymentDurationController = TextEditingController();
-  final _firstPaymentPercentageController = TextEditingController();
-
-  int _customerGender = 1; // 1 = Male, 2 = Female
-  int? _customer2Gender;
-  bool _hasSecondCustomer = false;
-  bool _isFirstPayment = false;
-  bool _useCustomLoanTerms = false;
-  PaymentOption? _selectedPaymentOption;
-
-  List<PaymentOption> _paymentOptions = [];
-  bool _loadingOptions = true;
-  bool _isSubmitting = false;
-  String? _error;
-
+  final _form = GlobalKey<FormState>();
+  final _scroll = ScrollController();
+  final _name = TextEditingController(), _name2 = TextEditingController();
+  final _phone = TextEditingController(), _phone2 = TextEditingController();
+  final _deposit = TextEditingController(),
+      _discount = TextEditingController(text: '0');
+  final _remark = TextEditingController(),
+      _special = TextEditingController(text: '0');
+  final _downAmount = TextEditingController(text: '0'),
+      _downDuration = TextEditingController(text: '0');
+  final _interest = TextEditingController(text: '0'),
+      _duration = TextEditingController(text: '0');
+  int _step = 0, _paymentChoice = 0;
+  int? _gender, _gender2;
+  bool _downPayment = false,
+      _specialOther = false,
+      _saving = false,
+      _loadingOptions = true;
+  String? _error, _optionsError;
+  List<PaymentOption> _options = [];
   @override
   void initState() {
     super.initState();
-    _loadPaymentOptions();
+    _loadOptions();
   }
 
-  Future<void> _loadPaymentOptions() async {
-    final unitTypeId = widget.unit.unitTypeId;
-    if (unitTypeId != null) {
-      try {
-        _paymentOptions = (await _paymentOptionRepository.getByUnitTypeId(
-          unitTypeId,
-        )).items;
-      } catch (_) {
-        // Non-fatal — the agent can still enter custom loan terms.
-      }
-    }
-    if (mounted) {
-      setState(() {
-        _loadingOptions = false;
-        _useCustomLoanTerms = _paymentOptions.isEmpty;
-      });
-    }
-  }
-
-  Future<void> _submit() async {
+  Future<void> _loadOptions() async {
     setState(() {
-      _isSubmitting = true;
-      _error = null;
+      _loadingOptions = true;
+      _optionsError = null;
     });
     try {
-      await _repository.create(
-        unitId: widget.unit.id,
-        depositAmount:
-            double.tryParse(_depositAmountController.text.trim()) ?? 0,
-        otherDiscountAllowance:
-            double.tryParse(_otherDiscountController.text.trim()) ?? 0,
-        customerName: _customerNameController.text.trim(),
-        customerGender: _customerGender,
-        customerPhoneNumber: _customerPhoneController.text.trim(),
-        customerName2: _hasSecondCustomer
-            ? _customer2NameController.text.trim()
-            : null,
-        customerGender2: _hasSecondCustomer ? _customer2Gender : null,
-        customerPhoneNumber2: _hasSecondCustomer
-            ? _customer2PhoneController.text.trim()
-            : null,
-        remark: _remarkController.text.trim().isEmpty
-            ? null
-            : _remarkController.text.trim(),
-        paymentOptionId: _useCustomLoanTerms
-            ? null
-            : _selectedPaymentOption?.id,
-        loanDuration: _useCustomLoanTerms
-            ? int.tryParse(_loanDurationController.text.trim())
-            : null,
-        interest: _useCustomLoanTerms
-            ? double.tryParse(_interestController.text.trim())
-            : null,
-        specialDiscount: _useCustomLoanTerms
-            ? double.tryParse(_specialDiscountController.text.trim())
-            : null,
-        isFirstPayment: _useCustomLoanTerms ? _isFirstPayment : null,
-        firstPaymentDuration: _useCustomLoanTerms
-            ? int.tryParse(_firstPaymentDurationController.text.trim())
-            : null,
-        firstPaymentPercentage: _useCustomLoanTerms
-            ? double.tryParse(_firstPaymentPercentageController.text.trim())
-            : null,
-      );
-      if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      Get.back(result: true);
-      Get.snackbar(
-        l10n.depositRequested,
-        l10n.depositRequestedMessage(widget.unit.name),
-      );
-    } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      if (widget.unit.unitTypeId != null) {
+        _options = (await PaymentOptionRepository().getByUnitTypeId(
+          widget.unit.unitTypeId!,
+        )).items;
+      }
+    } catch (_) {
+      if (mounted) {
+        _optionsError = AppLocalizations.of(context)!.paymentOptionsLoadError;
+      }
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) setState(() => _loadingOptions = false);
     }
   }
 
   @override
   void dispose() {
-    _depositAmountController.dispose();
-    _otherDiscountController.dispose();
-    _customerNameController.dispose();
-    _customerPhoneController.dispose();
-    _customer2NameController.dispose();
-    _customer2PhoneController.dispose();
-    _remarkController.dispose();
-    _loanDurationController.dispose();
-    _interestController.dispose();
-    _specialDiscountController.dispose();
-    _firstPaymentDurationController.dispose();
-    _firstPaymentPercentageController.dispose();
+    for (final c in [
+      _name,
+      _name2,
+      _phone,
+      _phone2,
+      _deposit,
+      _discount,
+      _remark,
+      _special,
+      _downAmount,
+      _downDuration,
+      _interest,
+      _duration,
+    ]) {
+      c.dispose();
+    }
+    _scroll.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return AppPage(
-      appBar: AppBar(title: Text(l10n.requestDeposit)),
-      body: _loadingOptions
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-              children: [
-                AppPanel(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AppSectionTitle(l10n.unit),
-                      Text(
-                        widget.unit.name,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      if (widget.unit.price != null)
-                        Text(l10n.listedPrice(formatUsd(widget.unit.price!))),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                AppPanel(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AppSectionTitle(l10n.customer),
-                      TextField(
-                        controller: _customerNameController,
-                        decoration: InputDecoration(
-                          labelText: l10n.customerName,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _GenderDropdown(
-                        value: _customerGender,
-                        onChanged: (v) => setState(() => _customerGender = v!),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _customerPhoneController,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          labelText: l10n.customerPhone,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.addSecondCustomer),
-                        value: _hasSecondCustomer,
-                        onChanged: (v) =>
-                            setState(() => _hasSecondCustomer = v ?? false),
-                      ),
-                      if (_hasSecondCustomer) ...[
-                        TextField(
-                          controller: _customer2NameController,
-                          decoration: InputDecoration(
-                            labelText: l10n.secondCustomerName,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _GenderDropdown(
-                          value: _customer2Gender,
-                          onChanged: (v) =>
-                              setState(() => _customer2Gender = v),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _customer2PhoneController,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            labelText: l10n.secondCustomerPhone,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                AppPanel(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AppSectionTitle(l10n.depositAndDiscount),
-                      TextField(
-                        controller: _depositAmountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: l10n.depositAmount,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _otherDiscountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: l10n.otherDiscountAllowance,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _remarkController,
-                        decoration: InputDecoration(labelText: l10n.remark),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                AppPanel(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AppSectionTitle(l10n.paymentOption),
-                      if (_paymentOptions.isNotEmpty)
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.useCustomLoanTerms),
-                          value: _useCustomLoanTerms,
-                          onChanged: (v) =>
-                              setState(() => _useCustomLoanTerms = v),
-                        ),
-                      if (!_useCustomLoanTerms)
-                        DropdownButtonFormField<PaymentOption>(
-                          isExpanded: true,
-                          initialValue: _selectedPaymentOption,
-                          decoration: InputDecoration(
-                            labelText: l10n.paymentOption,
-                          ),
-                          items: _paymentOptions
-                              .map(
-                                (o) => DropdownMenuItem(
-                                  value: o,
-                                  child: Text(o.name),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _selectedPaymentOption = v),
-                        )
-                      else ...[
-                        TextField(
-                          controller: _loanDurationController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: l10n.loanDurationYears,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _interestController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: l10n.annualInterestRate,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _specialDiscountController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: l10n.specialDiscountPercent,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(l10n.hasFirstPayment),
-                          value: _isFirstPayment,
-                          onChanged: (v) => setState(() => _isFirstPayment = v),
-                        ),
-                        if (_isFirstPayment) ...[
-                          TextField(
-                            controller: _firstPaymentDurationController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: l10n.firstPaymentDurationMonths,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _firstPaymentPercentageController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: l10n.firstPaymentPercentage,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (_error != null) ...[
-                  const SizedBox(height: 12),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
-                ],
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submit,
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.submitDepositRequest),
-                ),
-              ],
-            ),
+  void _go(int step) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _step = step;
+      _error = null;
+    });
+    if (_scroll.hasClients) _scroll.jumpTo(0);
+  }
+
+  void _next() {
+    if (_form.currentState!.validate()) _go(_step + 1);
+  }
+
+  Future<void> _save() async {
+    if (!_form.currentState!.validate()) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final custom = _paymentChoice == -1;
+    try {
+      await _repository.create(
+        unitId: widget.unit.id,
+        depositAmount: double.parse(_deposit.text.trim()),
+        otherDiscountAllowance: double.parse(_discount.text.trim()),
+        customerName: _name.text.trim(),
+        customerGender: _gender!,
+        customerPhoneNumber: _phone.text.trim(),
+        customerName2: _name2.text.trim().isEmpty ? null : _name2.text.trim(),
+        customerGender2: _name2.text.trim().isEmpty ? null : _gender2,
+        customerPhoneNumber2: _phone2.text.trim().isEmpty
+            ? null
+            : _phone2.text.trim(),
+        remark: _remark.text.trim().isEmpty ? null : _remark.text.trim(),
+        paymentOptionId: _paymentChoice > 0 ? _paymentChoice : null,
+        loanDuration: custom ? int.parse(_duration.text.trim()) : null,
+        interest: custom ? double.parse(_interest.text.trim()) : null,
+        specialDiscount: custom
+            ? (_specialOther ? double.parse(_special.text.trim()) : 0)
+            : null,
+        isFirstPayment: custom ? _downPayment : null,
+        firstPaymentDuration: custom
+            ? (_downPayment ? int.parse(_downDuration.text.trim()) : 0)
+            : null,
+        firstPaymentAmount: custom
+            ? (_downPayment ? double.parse(_downAmount.text.trim()) : 0)
+            : null,
+      );
+      if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
+      Get.back(result: true);
+      Get.snackbar(
+        l.depositRequested,
+        l.depositRequestedMessage(widget.unit.name),
+      );
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  String? _required(String? value) => value == null || value.trim().isEmpty
+      ? AppLocalizations.of(context)!.requiredFieldLabel
+      : null;
+  String? _phoneValid(String? value, {bool optional = false}) {
+    if (optional && (value ?? '').trim().isEmpty) return null;
+    return RegExp(r'^0\d{8,9}$').hasMatch((value ?? '').trim())
+        ? null
+        : AppLocalizations.of(context)!.invalidPhoneLabel;
+  }
+
+  Widget _money(
+    TextEditingController controller,
+    String label, {
+    String? note,
+    double max = 999999999.99,
+    bool integer = false,
+    bool positive = false,
+    bool enabled = true,
+  }) {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        enabled: enabled,
+        keyboardType: TextInputType.numberWithOptions(decimal: !integer),
+        decoration: InputDecoration(
+          labelText: label,
+          helperText: note,
+          helperMaxLines: 6,
+        ),
+        validator: (v) {
+          if (!enabled) return null;
+          final value = double.tryParse((v ?? '').trim());
+          if (value == null ||
+              !value.isFinite ||
+              value < (positive ? .01 : 0) ||
+              value > max ||
+              (integer && value != value.roundToDouble())) {
+            return l.invalidNumberLabel;
+          }
+          return null;
+        },
+      ),
     );
   }
-}
 
-class _GenderDropdown extends StatelessWidget {
-  const _GenderDropdown({required this.value, required this.onChanged});
+  Widget _customerStep(AppLocalizations l) => AppPanel(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppSectionTitle(l.customerInformationTitle),
+        TextFormField(
+          controller: _name,
+          validator: _required,
+          maxLength: 255,
+          decoration: InputDecoration(
+            labelText: l.customerOneNameLabel,
+            counterText: '',
+          ),
+        ),
+        const SizedBox(height: 16),
+        _genderField(l, false),
+        const SizedBox(height: 24),
+        TextFormField(
+          controller: _name2,
+          maxLength: 255,
+          decoration: InputDecoration(
+            labelText: l.customerTwoNameLabel,
+            counterText: '',
+          ),
+        ),
+        const SizedBox(height: 16),
+        _genderField(l, true),
+        const SizedBox(height: 24),
+        Text(
+          l.customerPhonesTitle,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _phone,
+          validator: _phoneValid,
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            labelText: l.phoneLineOneLabel,
+            hintText: '012345678',
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _phone2,
+          validator: (v) => _phoneValid(v, optional: true),
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            labelText: l.phoneLineTwoLabel,
+            hintText: '012345678',
+          ),
+        ),
+      ],
+    ),
+  );
+  Widget _genderField(AppLocalizations l, bool second) =>
+      DropdownButtonFormField<int>(
+        key: ValueKey('gender-$second'),
+        initialValue: second ? _gender2 : _gender,
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: second
+              ? l.customerTwoGenderLabel
+              : l.customerOneGenderLabel,
+        ),
+        items: [
+          DropdownMenuItem(value: 1, child: Text(l.male)),
+          DropdownMenuItem(value: 2, child: Text(l.female)),
+        ],
+        validator: (v) =>
+            v == null && (!second || _name2.text.trim().isNotEmpty)
+            ? l.requiredFieldLabel
+            : null,
+        onChanged: (v) => setState(() {
+          if (second) {
+            _gender2 = v;
+          } else {
+            _gender = v;
+          }
+        }),
+      );
+  Widget _discountStep(AppLocalizations l) => AppPanel(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppSectionTitle(l.otherDiscountDepositTitle),
+        _money(
+          _discount,
+          '${l.otherDiscountAllowance} (\$)',
+          note: l.otherDiscountNote,
+        ),
+        _money(_deposit, '${l.depositAmount} (\$) *'),
+        TextFormField(
+          readOnly: true,
+          initialValue: formatUsd(widget.unit.promotionAmount ?? 0),
+          decoration: InputDecoration(
+            labelText: l.promotionalDiscountLabel,
+            helperText: l.promotionalDiscountNote,
+            helperMaxLines: 3,
+          ),
+        ),
+      ],
+    ),
+  );
+  Widget _paymentStep(AppLocalizations l) {
+    final selected = _options.where((o) => o.id == _paymentChoice).firstOrNull;
+    return AppPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppSectionTitle(l.paymentOption),
+          TextFormField(
+            controller: _remark,
+            minLines: 3,
+            maxLines: 5,
+            maxLength: 500,
+            decoration: InputDecoration(
+              labelText: l.remark,
+              hintText: l.remarkPlaceholder,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_loadingOptions) const LinearProgressIndicator(),
+          if (_optionsError != null) ...[
+            Text(_optionsError!),
+            TextButton(onPressed: _loadOptions, child: Text(l.retry)),
+          ],
+          DropdownButtonFormField<int>(
+            key: ValueKey('payment-$_paymentChoice'),
+            initialValue: _paymentChoice,
+            isExpanded: true,
+            decoration: InputDecoration(labelText: l.paymentOption),
+            items: [
+              DropdownMenuItem(value: 0, child: Text(l.noneLabel)),
+              ..._options.map(
+                (o) => DropdownMenuItem(
+                  value: o.id,
+                  child: Text(
+                    o.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              DropdownMenuItem(value: -1, child: Text(l.otherLabel)),
+            ],
+            onChanged: _loadingOptions
+                ? null
+                : (v) => setState(() => _paymentChoice = v ?? 0),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            l.otherPaymentOptionNote,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 20),
+          if (selected != null) ...[
+            _summary(
+              l.specialDiscountPercent,
+              '${selected.specialDiscount ?? 0}%',
+            ),
+            _summary(l.annualInterestRate, '${selected.interest ?? 0}%'),
+            _summary(l.installmentMonthsLabel, '${selected.loanDuration ?? 0}'),
+            _summary(
+              l.downPaymentLabel,
+              selected.isFirstPayment ? l.yes : l.no,
+            ),
+            if (selected.isFirstPayment) ...[
+              _summary(
+                l.firstPaymentPercentage,
+                '${selected.firstPaymentPercentage ?? 0}%',
+              ),
+              _summary(
+                l.firstPaymentDurationMonths,
+                '${selected.firstPaymentDuration ?? 0}',
+              ),
+            ],
+          ],
+          if (_paymentChoice <= 0) ...[
+            if (_paymentChoice == 0)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  l.customPaymentHint,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            Text(
+              l.specialDiscountPercent,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<bool>(
+              segments: [
+                ButtonSegment(value: false, label: Text(l.standardLabel)),
+                ButtonSegment(value: true, label: Text(l.otherLabel)),
+              ],
+              selected: {_specialOther},
+              onSelectionChanged: _paymentChoice == 0
+                  ? null
+                  : (v) => setState(() => _specialOther = v.first),
+            ),
+            const SizedBox(height: 16),
+            if (_specialOther)
+              _money(
+                _special,
+                l.specialDiscountPercent,
+                max: 100,
+                enabled: _paymentChoice == -1,
+              ),
+            DropdownButtonFormField<bool>(
+              initialValue: _downPayment,
+              isExpanded: true,
+              decoration: InputDecoration(labelText: l.downPaymentLabel),
+              items: [
+                DropdownMenuItem(value: false, child: Text(l.no)),
+                DropdownMenuItem(value: true, child: Text(l.yes)),
+              ],
+              onChanged: _paymentChoice == 0
+                  ? null
+                  : (v) => setState(() => _downPayment = v ?? false),
+            ),
+            const SizedBox(height: 16),
+            ...[
+              _money(
+                _downAmount,
+                l.downPaymentAmountLabel,
+                positive: true,
+                enabled: _paymentChoice == -1 && _downPayment,
+              ),
+              _money(
+                _downDuration,
+                l.firstPaymentDurationMonths,
+                integer: true,
+                positive: true,
+                enabled: _paymentChoice == -1 && _downPayment,
+              ),
+            ],
+            _money(
+              _interest,
+              l.annualInterestRate,
+              enabled: _paymentChoice == -1,
+            ),
+            _money(
+              _duration,
+              l.installmentMonthsLabel,
+              integer: true,
+              enabled: _paymentChoice == -1,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
-  final int? value;
-  final ValueChanged<int?> onChanged;
-
+  Widget _summary(String label, String value) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Wrap(
+      spacing: 12,
+      runSpacing: 4,
+      children: [
+        Text(label),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+      ],
+    ),
+  );
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return DropdownButtonFormField<int>(
-      isExpanded: true,
-      initialValue: value,
-      decoration: InputDecoration(labelText: l10n.gender),
-      items: [
-        DropdownMenuItem(value: 1, child: Text(l10n.male)),
-        DropdownMenuItem(value: 2, child: Text(l10n.female)),
-      ],
-      onChanged: onChanged,
+    final l = AppLocalizations.of(context)!;
+    final titles = [
+      l.customerInformationTitle,
+      l.unitInformationTitle,
+      l.otherDiscountDepositTitle,
+      l.paymentOption,
+    ];
+    return PopScope(
+      canPop: _step == 0 && !_saving,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !_saving && _step > 0) _go(_step - 1);
+      },
+      child: AppPage(
+        appBar: AppBar(title: Text(l.requestDeposit)),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '${_step + 1} / 4',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          titles[_step],
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      for (var i = 0; i < 4; i++)
+                        Expanded(
+                          child: Container(
+                            height: 4,
+                            margin: EdgeInsets.only(right: i == 3 ? 0 : 6),
+                            decoration: BoxDecoration(
+                              color: i <= _step
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Form(
+                key: _form,
+                child: ListView(
+                  controller: _scroll,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  children: [
+                    KeyedSubtree(
+                      key: ValueKey(_step),
+                      child: switch (_step) {
+                        0 => _customerStep(l),
+                        1 => UnitInformationCard(unit: widget.unit),
+                        2 => _discountStep(l),
+                        _ => _paymentStep(l),
+                      },
+                    ),
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                          _error!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Row(
+                  children: [
+                    if (_step > 0) ...[
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _saving ? null : () => _go(_step - 1),
+                          child: Text(l.back),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: _saving
+                            ? null
+                            : (_step == 3 ? _save : _next),
+                        child: _saving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(_step == 3 ? l.saveLabel : l.nextLabel),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

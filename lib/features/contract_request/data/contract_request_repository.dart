@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 
@@ -5,23 +7,43 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/models/paginated_response.dart';
 import '../../../core/network/api_client.dart';
 import '../models/unit_contract_request.dart';
+import 'contract_attachment.dart';
 
 class ContractRequestRepository {
   final ApiClient _client = ApiClient.instance;
 
   Future<PaginatedResponse<UnitContractRequest>> getAll({
     int? projectId,
+    int page = 1,
+    String? term,
     int? unitTypeId,
   }) async {
     final response = await _client.get<Map<String, dynamic>>(
       ApiConstants.unitContractRequestsPath,
       queryParameters: {
-        'embed': 'createdBy,unit,attachments,unitDepositRequest,actionedBy,actionedBy.roles',
+        'embed': 'createdBy,unit.unitType.project,attachments,unitDepositRequest,actionedBy',
+        'page': page,
+        'term': ?term,
         'project_id': ?projectId,
         'unit_type_id': ?unitTypeId,
       },
     );
-    return PaginatedResponse.fromJson(response.data!, UnitContractRequest.fromJson);
+    return PaginatedResponse.fromJson(
+      response.data!,
+      UnitContractRequest.fromJson,
+    );
+  }
+
+  Future<UnitContractRequest> get(int id) async {
+    final response = await _client.get<Map<String, dynamic>>(
+      '${ApiConstants.unitContractRequestsPath}/$id',
+      queryParameters: {
+        'embed': 'createdBy,unit.unitType.project,attachments,unitDepositRequest,actionedBy',
+      },
+    );
+    return UnitContractRequest.fromJson(
+      PaginatedResponse.unwrap(response.data),
+    );
   }
 
   /// Verified against `Api/UnitContractRequestController::$validationRules`
@@ -45,14 +67,17 @@ class ContractRequestRepository {
       'start_payment_date': dateFormat.format(startPaymentDate),
       'remark': ?remark,
       'attachments[]': [
-        for (final path in attachmentPaths) await MultipartFile.fromFile(path),
+        for (var index = 0; index < attachmentPaths.length; index++)
+          await prepareContractAttachment(attachmentPaths[index], index),
       ],
     });
     final response = await _client.post<Map<String, dynamic>>(
       ApiConstants.unitContractRequestsPath,
       data: formData,
     );
-    return UnitContractRequest.fromJson(PaginatedResponse.unwrap(response.data));
+    return UnitContractRequest.fromJson(
+      PaginatedResponse.unwrap(response.data),
+    );
   }
 
   /// Verified against `Api/UnitContractRequestController@cancel`: [reason]
@@ -67,10 +92,23 @@ class ContractRequestRepository {
   /// requires a Bearer token — verified against
   /// `Api/ViewContractPdfController@get`.
   Future<List<int>> getContractPdfBytes(int contractId) async {
-    final response = await _client.dio.get<List<int>>(
-      ApiConstants.contractPdfPath(contractId),
-      options: Options(responseType: ResponseType.bytes),
-    );
-    return response.data!;
+    try {
+      final response = await _client.dio.get<List<int>>(
+        ApiConstants.contractPdfPath(contractId),
+        options: Options(
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 45),
+        ),
+      );
+      return response.data!;
+    } on DioException catch (e) {
+      final body = e.response?.data;
+      if (body is List<int>) {
+        try {
+          e.response?.data = jsonDecode(utf8.decode(body));
+        } catch (_) {}
+      }
+      throw _client.toApiException(e);
+    }
   }
 }

@@ -52,3 +52,6 @@ app.*.map.json
 
 # Release builds produced by tools/release/build-release.sh
 /release/
+
+# Generated reports (not app code)
+/outputs/

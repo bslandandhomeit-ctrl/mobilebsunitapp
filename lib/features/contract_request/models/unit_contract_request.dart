@@ -4,6 +4,7 @@
 class UnitContractRequest {
   UnitContractRequest({
     required this.id,
+    this.details = const {},
     this.unitId,
     this.unitCode,
     this.status,
@@ -11,15 +12,18 @@ class UnitContractRequest {
     this.createdAt,
   });
 
-  factory UnitContractRequest.fromJson(Map<String, dynamic> json) => UnitContractRequest(
-    id: json['id'] as int,
-    unitId: json['unit_id'] as int?,
-    unitCode: (json['unit'] as Map<String, dynamic>?)?['code']?.toString(),
-    status: json['status']?.toString(),
-    contractId: json['contract_id'] as int?,
-    createdAt: json['created_at']?.toString(),
-  );
+  factory UnitContractRequest.fromJson(Map<String, dynamic> json) =>
+      UnitContractRequest(
+        id: json['id'] as int,
+        details: json,
+        unitId: json['unit_id'] as int?,
+        unitCode: (json['unit'] as Map<String, dynamic>?)?['code']?.toString(),
+        status: json['status']?.toString(),
+        contractId: json['contract_id'] as int?,
+        createdAt: json['created_at']?.toString(),
+      );
 
+  final Map<String, dynamic> details;
   final int id;
   final int? unitId;
   final String? unitCode;

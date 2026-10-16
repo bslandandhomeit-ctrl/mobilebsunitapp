@@ -1153,6 +1153,432 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide password'**
   String get hidePassword;
+
+  /// No description provided for @unitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Code'**
+  String get unitCode;
+
+  /// No description provided for @project.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get project;
+
+  /// No description provided for @unitType.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Type'**
+  String get unitType;
+
+  /// No description provided for @unitPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Price (\$)'**
+  String get unitPriceLabel;
+
+  /// No description provided for @houseSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'House size'**
+  String get houseSizeLabel;
+
+  /// No description provided for @landSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Land size'**
+  String get landSizeLabel;
+
+  /// No description provided for @bedroomsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bedrooms'**
+  String get bedroomsLabel;
+
+  /// No description provided for @bathroomsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bathrooms'**
+  String get bathroomsLabel;
+
+  /// No description provided for @livingRoomsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Living rooms'**
+  String get livingRoomsLabel;
+
+  /// No description provided for @kitchensLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Kitchens'**
+  String get kitchensLabel;
+
+  /// No description provided for @swimmingPoolsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Swimming pools'**
+  String get swimmingPoolsLabel;
+
+  /// No description provided for @unitInformationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit\'s Information'**
+  String get unitInformationTitle;
+
+  /// No description provided for @contractPriceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the contractual price before other discounts.'**
+  String get contractPriceNote;
+
+  /// No description provided for @holdTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold Req'**
+  String get holdTabLabel;
+
+  /// No description provided for @depositTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Req'**
+  String get depositTabLabel;
+
+  /// No description provided for @contractTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract Req'**
+  String get contractTabLabel;
+
+  /// No description provided for @filterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filterTitle;
+
+  /// No description provided for @allProjectsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'All projects'**
+  String get allProjectsLabel;
+
+  /// No description provided for @availableAndUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available & unavailable'**
+  String get availableAndUnavailable;
+
+  /// No description provided for @allStatusesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'All statuses'**
+  String get allStatusesLabel;
+
+  /// No description provided for @applyFiltersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply filters'**
+  String get applyFiltersLabel;
+
+  /// No description provided for @detailLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the latest unit details. Please retry.'**
+  String get detailLoadError;
+
+  /// No description provided for @previewLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get previewLabel;
+
+  /// No description provided for @exteriorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Exterior'**
+  String get exteriorLabel;
+
+  /// No description provided for @interiorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interior'**
+  String get interiorLabel;
+
+  /// No description provided for @floorPlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor Plan'**
+  String get floorPlanLabel;
+
+  /// No description provided for @noImagesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No images available'**
+  String get noImagesLabel;
+
+  /// No description provided for @paymentOptionsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment options could not be loaded. Retry or choose Other.'**
+  String get paymentOptionsLoadError;
+
+  /// No description provided for @requiredFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required.'**
+  String get requiredFieldLabel;
+
+  /// No description provided for @invalidPhoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a phone number starting with 0 (9–10 digits).'**
+  String get invalidPhoneLabel;
+
+  /// No description provided for @invalidNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number in the allowed range.'**
+  String get invalidNumberLabel;
+
+  /// No description provided for @customerInformationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer\'s Information'**
+  String get customerInformationTitle;
+
+  /// No description provided for @customerOneNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Surname and Name (Customer 1) *'**
+  String get customerOneNameLabel;
+
+  /// No description provided for @customerTwoNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Surname and Name (Customer 2)'**
+  String get customerTwoNameLabel;
+
+  /// No description provided for @customerOneGenderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender (Customer 1) *'**
+  String get customerOneGenderLabel;
+
+  /// No description provided for @customerTwoGenderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender (Customer 2)'**
+  String get customerTwoGenderLabel;
+
+  /// No description provided for @customerPhonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Numbers (Customer)'**
+  String get customerPhonesTitle;
+
+  /// No description provided for @phoneLineOneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Line 1 *'**
+  String get phoneLineOneLabel;
+
+  /// No description provided for @phoneLineTwoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Line 2'**
+  String get phoneLineTwoLabel;
+
+  /// No description provided for @otherDiscountDepositTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Discount & Deposit'**
+  String get otherDiscountDepositTitle;
+
+  /// No description provided for @otherDiscountNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A company-approved discount stated in the contract, not an agent discount. Requires sales manager approval.'**
+  String get otherDiscountNote;
+
+  /// No description provided for @promotionalDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotional Discount (\$)'**
+  String get promotionalDiscountLabel;
+
+  /// No description provided for @promotionalDiscountNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculated automatically from the active promotion by the server.'**
+  String get promotionalDiscountNote;
+
+  /// No description provided for @noneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get noneLabel;
+
+  /// No description provided for @otherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get otherLabel;
+
+  /// No description provided for @standardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get standardLabel;
+
+  /// No description provided for @otherPaymentOptionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Other payment options require sales manager approval.'**
+  String get otherPaymentOptionNote;
+
+  /// No description provided for @installmentMonthsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Installment Duration (months)'**
+  String get installmentMonthsLabel;
+
+  /// No description provided for @downPaymentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Down Payment'**
+  String get downPaymentLabel;
+
+  /// No description provided for @downPaymentAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Down Payment Amount (\$)'**
+  String get downPaymentAmountLabel;
+
+  /// No description provided for @remarkPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your remark…'**
+  String get remarkPlaceholder;
+
+  /// No description provided for @saveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveLabel;
+
+  /// No description provided for @nextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextLabel;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @holdButtonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold'**
+  String get holdButtonLabel;
+
+  /// No description provided for @depositButtonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get depositButtonLabel;
+
+  /// No description provided for @customPaymentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Other to enter custom payment terms.'**
+  String get customPaymentHint;
+
+  /// No description provided for @holdDaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get holdDaysLabel;
+
+  /// No description provided for @expirationDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiration Date'**
+  String get expirationDateLabel;
+
+  /// No description provided for @holdDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold Date'**
+  String get holdDateLabel;
+
+  /// No description provided for @requestDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Date'**
+  String get requestDateLabel;
+
+  /// No description provided for @requestedByLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested by'**
+  String get requestedByLabel;
+
+  /// No description provided for @receivedAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Received Amount'**
+  String get receivedAmountLabel;
+
+  /// No description provided for @salesManagerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales Manager'**
+  String get salesManagerLabel;
+
+  /// No description provided for @unitControllerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Controller'**
+  String get unitControllerLabel;
+
+  /// No description provided for @floorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor'**
+  String get floorLabel;
+
+  /// No description provided for @holdRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold Request'**
+  String get holdRequestTitle;
+
+  /// No description provided for @depositRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Request'**
+  String get depositRequestTitle;
+
+  /// No description provided for @requestAttachmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments *'**
+  String get requestAttachmentsTitle;
+
+  /// No description provided for @requestAttachmentsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Include: ID card, passport, or other related documents.'**
+  String get requestAttachmentsNote;
 }
 
 class _AppLocalizationsDelegate

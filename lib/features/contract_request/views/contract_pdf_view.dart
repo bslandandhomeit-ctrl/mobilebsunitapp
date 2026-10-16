@@ -6,6 +6,7 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/widgets/app_ui.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/contract_request_repository.dart';
 
@@ -30,16 +31,25 @@ class _ContractPdfViewState extends State<ContractPdfView> {
   }
 
   Future<void> _load() async {
+    setState(() {
+      _error = null;
+      _localPath = null;
+    });
     try {
       final bytes = await _repository.getContractPdfBytes(widget.contractId);
+      if (bytes.length < 5 || String.fromCharCodes(bytes.take(5)) != '%PDF-') {
+        throw FormatException('Invalid PDF response');
+      }
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/contract_${widget.contractId}.pdf');
       await file.writeAsBytes(bytes, flush: true);
       if (mounted) setState(() => _localPath = file.path);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(
-          () => _error = AppLocalizations.of(context)!.failedToLoadContractPdf,
+          () => _error = e is ApiException
+              ? e.message
+              : AppLocalizations.of(context)!.failedToLoadContractPdf,
         );
       }
     }
@@ -50,10 +60,27 @@ class _ContractPdfViewState extends State<ContractPdfView> {
     return AppPage(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.contract)),
       body: _error != null
-          ? AppEmptyState(message: _error!)
+          ? AppEmptyState(
+              message: _error!,
+              action: TextButton(
+                onPressed: _load,
+                child: Text(AppLocalizations.of(context)!.retry),
+              ),
+            )
           : _localPath == null
           ? const Center(child: CircularProgressIndicator())
-          : PDFView(filePath: _localPath!),
+          : PDFView(
+              filePath: _localPath!,
+              onError: (_) {
+                if (mounted) {
+                  setState(
+                    () =>
+                        _error = AppLocalizations.of(context)!
+                            .failedToLoadContractPdf,
+                  );
+                }
+              },
+            ),
     );
   }
 }

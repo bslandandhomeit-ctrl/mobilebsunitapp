@@ -8,17 +8,24 @@ class DepositRepository {
 
   Future<PaginatedResponse<UnitDepositRequest>> getAll({
     int? projectId,
+    int page = 1,
+    String? term,
     int? unitTypeId,
   }) async {
     final response = await _client.get<Map<String, dynamic>>(
       ApiConstants.unitDepositRequestsPath,
       queryParameters: {
-        'embed': 'actionedBy,unit',
+        'embed': 'createdBy,unit.unitType.project,saleManager,unitController',
+        'page': page,
+        'term': ?term,
         'project_id': ?projectId,
         'unit_type_id': ?unitTypeId,
       },
     );
-    return PaginatedResponse.fromJson(response.data!, UnitDepositRequest.fromJson);
+    return PaginatedResponse.fromJson(
+      response.data!,
+      UnitDepositRequest.fromJson,
+    );
   }
 
   /// Verified against `Api/UnitDepositRequestController::$validationRules`
@@ -61,7 +68,8 @@ class DepositRepository {
     // custom terms stored loan_duration=0/interest=0 regardless of what
     // was typed, later blocking contract request creation with "Payment
     // option cannot be none when requesting contract."
-    final isSelectedPaymentOption = paymentOptionId != null || loanDuration != null;
+    final isSelectedPaymentOption =
+        paymentOptionId != null || loanDuration != null;
     final response = await _client.post<Map<String, dynamic>>(
       ApiConstants.unitDepositRequestsPath,
       data: {
@@ -80,7 +88,9 @@ class DepositRepository {
         'loan_duration': ?loanDuration,
         'interest': ?interest,
         'special_discount': ?specialDiscount,
-        'is_first_payment': ?(isFirstPayment == null ? null : (isFirstPayment ? 1 : 0)),
+        'is_first_payment': ?(isFirstPayment == null
+            ? null
+            : (isFirstPayment ? 1 : 0)),
         'first_payment_duration': ?firstPaymentDuration,
         'first_payment_percentage': ?firstPaymentPercentage,
         'first_payment_amount': ?firstPaymentAmount,
@@ -111,7 +121,8 @@ class DepositRepository {
   }) async {
     // See the identical note in [create] — this must be true whenever
     // custom terms are provided, not just when a preset option is picked.
-    final isSelectedPaymentOption = paymentOptionId != null || loanDuration != null;
+    final isSelectedPaymentOption =
+        paymentOptionId != null || loanDuration != null;
     final response = await _client.post<Map<String, dynamic>>(
       '${ApiConstants.unitDepositRequestsPath}/$id/changeUnit',
       data: {
@@ -123,7 +134,9 @@ class DepositRepository {
         'loan_duration': ?loanDuration,
         'interest': ?interest,
         'special_discount': ?specialDiscount,
-        'is_first_payment': ?(isFirstPayment == null ? null : (isFirstPayment ? 1 : 0)),
+        'is_first_payment': ?(isFirstPayment == null
+            ? null
+            : (isFirstPayment ? 1 : 0)),
         'first_payment_duration': ?firstPaymentDuration,
         'first_payment_percentage': ?firstPaymentPercentage,
         'first_payment_amount': ?firstPaymentAmount,
@@ -141,11 +154,9 @@ class DepositRepository {
     data: {'action_reason': reason},
   );
 
-  Future<void> approve(int id) => _client.post(
-    '${ApiConstants.unitDepositRequestsPath}/$id/approve',
-  );
+  Future<void> approve(int id) =>
+      _client.post('${ApiConstants.unitDepositRequestsPath}/$id/approve');
 
-  Future<void> reject(int id) => _client.post(
-    '${ApiConstants.unitDepositRequestsPath}/$id/reject',
-  );
+  Future<void> reject(int id) =>
+      _client.post('${ApiConstants.unitDepositRequestsPath}/$id/reject');
 }

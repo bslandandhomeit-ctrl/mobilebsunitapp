@@ -583,4 +583,225 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hidePassword => 'Hide password';
+
+  @override
+  String get unitCode => 'Unit Code';
+
+  @override
+  String get project => 'Project';
+
+  @override
+  String get unitType => 'Unit Type';
+
+  @override
+  String get unitPriceLabel => 'Unit Price (\$)';
+
+  @override
+  String get houseSizeLabel => 'House size';
+
+  @override
+  String get landSizeLabel => 'Land size';
+
+  @override
+  String get bedroomsLabel => 'Bedrooms';
+
+  @override
+  String get bathroomsLabel => 'Bathrooms';
+
+  @override
+  String get livingRoomsLabel => 'Living rooms';
+
+  @override
+  String get kitchensLabel => 'Kitchens';
+
+  @override
+  String get swimmingPoolsLabel => 'Swimming pools';
+
+  @override
+  String get unitInformationTitle => 'Unit\'s Information';
+
+  @override
+  String get contractPriceNote =>
+      'This is the contractual price before other discounts.';
+
+  @override
+  String get holdTabLabel => 'Hold Req';
+
+  @override
+  String get depositTabLabel => 'Deposit Req';
+
+  @override
+  String get contractTabLabel => 'Contract Req';
+
+  @override
+  String get filterTitle => 'Filters';
+
+  @override
+  String get allProjectsLabel => 'All projects';
+
+  @override
+  String get availableAndUnavailable => 'Available & unavailable';
+
+  @override
+  String get allStatusesLabel => 'All statuses';
+
+  @override
+  String get applyFiltersLabel => 'Apply filters';
+
+  @override
+  String get detailLoadError =>
+      'Could not load the latest unit details. Please retry.';
+
+  @override
+  String get previewLabel => 'Preview';
+
+  @override
+  String get exteriorLabel => 'Exterior';
+
+  @override
+  String get interiorLabel => 'Interior';
+
+  @override
+  String get floorPlanLabel => 'Floor Plan';
+
+  @override
+  String get noImagesLabel => 'No images available';
+
+  @override
+  String get paymentOptionsLoadError =>
+      'Payment options could not be loaded. Retry or choose Other.';
+
+  @override
+  String get requiredFieldLabel => 'This field is required.';
+
+  @override
+  String get invalidPhoneLabel =>
+      'Enter a phone number starting with 0 (9–10 digits).';
+
+  @override
+  String get invalidNumberLabel => 'Enter a valid number in the allowed range.';
+
+  @override
+  String get customerInformationTitle => 'Customer\'s Information';
+
+  @override
+  String get customerOneNameLabel => 'Surname and Name (Customer 1) *';
+
+  @override
+  String get customerTwoNameLabel => 'Surname and Name (Customer 2)';
+
+  @override
+  String get customerOneGenderLabel => 'Gender (Customer 1) *';
+
+  @override
+  String get customerTwoGenderLabel => 'Gender (Customer 2)';
+
+  @override
+  String get customerPhonesTitle => 'Phone Numbers (Customer)';
+
+  @override
+  String get phoneLineOneLabel => 'Line 1 *';
+
+  @override
+  String get phoneLineTwoLabel => 'Line 2';
+
+  @override
+  String get otherDiscountDepositTitle => 'Other Discount & Deposit';
+
+  @override
+  String get otherDiscountNote =>
+      'A company-approved discount stated in the contract, not an agent discount. Requires sales manager approval.';
+
+  @override
+  String get promotionalDiscountLabel => 'Promotional Discount (\$)';
+
+  @override
+  String get promotionalDiscountNote =>
+      'Calculated automatically from the active promotion by the server.';
+
+  @override
+  String get noneLabel => 'None';
+
+  @override
+  String get otherLabel => 'Other';
+
+  @override
+  String get standardLabel => 'Standard';
+
+  @override
+  String get otherPaymentOptionNote =>
+      'Other payment options require sales manager approval.';
+
+  @override
+  String get installmentMonthsLabel => 'Installment Duration (months)';
+
+  @override
+  String get downPaymentLabel => 'Down Payment';
+
+  @override
+  String get downPaymentAmountLabel => 'Down Payment Amount (\$)';
+
+  @override
+  String get remarkPlaceholder => 'Enter your remark…';
+
+  @override
+  String get saveLabel => 'Save';
+
+  @override
+  String get nextLabel => 'Next';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get holdButtonLabel => 'Hold';
+
+  @override
+  String get depositButtonLabel => 'Deposit';
+
+  @override
+  String get customPaymentHint => 'Choose Other to enter custom payment terms.';
+
+  @override
+  String get holdDaysLabel => 'Days';
+
+  @override
+  String get expirationDateLabel => 'Expiration Date';
+
+  @override
+  String get holdDateLabel => 'Hold Date';
+
+  @override
+  String get requestDateLabel => 'Request Date';
+
+  @override
+  String get requestedByLabel => 'Requested by';
+
+  @override
+  String get receivedAmountLabel => 'Received Amount';
+
+  @override
+  String get salesManagerLabel => 'Sales Manager';
+
+  @override
+  String get unitControllerLabel => 'Unit Controller';
+
+  @override
+  String get floorLabel => 'Floor';
+
+  @override
+  String get holdRequestTitle => 'Hold Request';
+
+  @override
+  String get depositRequestTitle => 'Deposit Request';
+
+  @override
+  String get requestAttachmentsTitle => 'Attachments *';
+
+  @override
+  String get requestAttachmentsNote =>
+      'Include: ID card, passport, or other related documents.';
 }

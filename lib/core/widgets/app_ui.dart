@@ -13,12 +13,19 @@ String formatUsd(num value) => _usdFormat.format(value);
 
 /// Shared safe area and comfortable reading width for phone/tablet screens.
 class AppPage extends StatelessWidget {
-  const AppPage({super.key, this.appBar, required this.body});
+  const AppPage({
+    super.key,
+    this.appBar,
+    this.bottomNavigationBar,
+    required this.body,
+  });
   final PreferredSizeWidget? appBar;
   final Widget body;
+  final Widget? bottomNavigationBar;
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: appBar,
+    bottomNavigationBar: bottomNavigationBar,
     body: SafeArea(
       top: appBar == null,
       child: Align(
@@ -132,37 +139,46 @@ class AppRequestCard extends StatelessWidget {
     required this.title,
     required this.status,
     this.actions,
+    this.summary,
+    this.onTap,
   });
   final String title;
   final String status;
   final Widget? actions;
+  final Widget? summary;
+  final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) => AppPanel(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AppIconTile(Icons.description_outlined),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  AppStatusBadge(status),
-                ],
+  Widget build(BuildContext context) => InkWell(
+    borderRadius: BorderRadius.circular(20),
+    onTap: onTap,
+    child: AppPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const AppIconTile(Icons.description_outlined),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    AppStatusBadge(status),
+                  ],
+                ),
               ),
-            ),
+            ],
+          ),
+          if (summary != null) ...[const SizedBox(height: 16), summary!],
+          if (actions != null) ...[
+            const Divider(height: 28),
+            Align(alignment: Alignment.centerRight, child: actions!),
           ],
-        ),
-        if (actions != null) ...[
-          const Divider(height: 28),
-          Align(alignment: Alignment.centerRight, child: actions!),
         ],
-      ],
+      ),
     ),
   );
 }
@@ -204,10 +220,12 @@ class AppImage extends StatelessWidget {
     this.url,
     this.height = 180,
     this.icon = Icons.apartment_rounded,
+    this.fit = BoxFit.cover,
   });
   final String? url;
   final double height;
   final IconData icon;
+  final BoxFit fit;
   Widget _placeholder() => Container(
     height: height,
     width: double.infinity,
@@ -227,7 +245,7 @@ class AppImage extends StatelessWidget {
           imageUrl: url!,
           height: height,
           width: double.infinity,
-          fit: BoxFit.cover,
+          fit: fit,
           placeholder: (_, _) => _placeholder(),
           errorWidget: (_, _, _) => _placeholder(),
         );

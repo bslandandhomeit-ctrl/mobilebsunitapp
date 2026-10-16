@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -11,6 +10,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../deposit/views/deposit_request_form_view.dart';
 import '../../hold/views/hold_request_form_view.dart';
 import '../data/unit_comment_repository.dart';
+import '../data/projects_repository.dart';
+import 'unit_information_card.dart';
 import '../models/unit.dart';
 import '../models/unit_comment.dart';
 
@@ -29,6 +30,9 @@ class UnitDetailView extends StatefulWidget {
 }
 
 class _UnitDetailViewState extends State<UnitDetailView> {
+  late Unit _unit;
+  bool _loadingUnit = true;
+  String? _unitError;
   final _commentRepository = UnitCommentRepository();
   final _commentController = TextEditingController();
   final _picker = ImagePicker();
@@ -40,7 +44,24 @@ class _UnitDetailViewState extends State<UnitDetailView> {
   @override
   void initState() {
     super.initState();
+    _unit = widget.unit;
+    _loadUnit();
     _loadComments();
+  }
+
+  Future<void> _loadUnit() async {
+    try {
+      final detail = await ProjectsRepository().getUnit(widget.unit.id);
+      if (mounted) setState(() => _unit = detail);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _unitError = AppLocalizations.of(context)!.detailLoadError,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loadingUnit = false);
+    }
   }
 
   Future<void> _loadComments() async {
@@ -93,54 +114,96 @@ class _UnitDetailViewState extends State<UnitDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context)!;
+    final available = _unit.status?.toUpperCase() == 'AVAILABLE';
+    final held = _unit.status?.toUpperCase() == 'HOLD';
     return AppPage(
-      appBar: AppBar(title: Text(widget.unit.name)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        children: [
-          AppPanel(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    const AppIconTile(Icons.home_work_outlined),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        widget.unit.name,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  l10n.unitStatus,
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: AppStatusBadge(
-                    widget.unit.status ?? l10n.unknownStatus,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ..._actionsFor(context, widget.unit.status?.toUpperCase()),
-              ],
+      appBar: AppBar(
+        title: Text(_unit.code),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: AppStatusBadge(_unit.status ?? l.unknownStatus),
             ),
           ),
-          const SizedBox(height: 28),
-          AppSectionTitle(l10n.comments),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _loadingUnit || !available
+                      ? null
+                      : () => _request(false),
+                  child: Text(l.holdButtonLabel),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: _loadingUnit || !(available || held)
+                      ? null
+                      : () => _request(true),
+                  child: Text(l.depositButtonLabel),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        children: [
+          if (_loadingUnit) const LinearProgressIndicator(),
+          if (_unitError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_unitError!),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _loadingUnit = true;
+                        _unitError = null;
+                      });
+                      _loadUnit();
+                    },
+                    child: Text(l.retry),
+                  ),
+                ],
+              ),
+            ),
+          AppSectionTitle(l.previewLabel),
+          GestureDetector(
+            onTap: _unit.previewUrl == null
+                ? null
+                : () => _openImage(_unit.previewUrl!),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: AppImage(url: _unit.previewUrl, height: 230),
+            ),
+          ),
+          const SizedBox(height: 24),
+          UnitInformationCard(unit: _unit, showFeatures: true),
+          const SizedBox(height: 24),
+          _gallery(l.exteriorLabel, _unit.exteriorUrls),
+          _gallery(l.interiorLabel, _unit.interiorUrls),
+          _gallery(l.floorPlanLabel, _unit.floorPlanUrls),
           AppPanel(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: Text(l.comments),
               children: [
                 TextField(
                   controller: _commentController,
-                  decoration: InputDecoration(hintText: l10n.addComment),
+                  decoration: InputDecoration(hintText: l.addComment),
                   minLines: 2,
                   maxLines: 5,
                 ),
@@ -148,147 +211,138 @@ class _UnitDetailViewState extends State<UnitDetailView> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.add_photo_alternate_outlined),
-                      tooltip: l10n.attachPhotos,
                       onPressed: _addPhotos,
+                      tooltip: l.attachPhotos,
+                      icon: const Icon(Icons.add_photo_alternate_outlined),
                     ),
                     IconButton(
+                      onPressed: _isPostingComment ? null : _postComment,
+                      tooltip: l.addComment,
                       icon: _isPostingComment
                           ? const SizedBox(
-                              width: 16,
-                              height: 16,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.send),
-                      tooltip: l10n.addComment,
-                      onPressed: _isPostingComment ? null : _postComment,
                     ),
                   ],
                 ),
-                if (_pendingPhotos.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (var i = 0; i < _pendingPhotos.length; i++)
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  File(_pendingPhotos[i].path),
-                                  width: 88,
-                                  height: 88,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 0,
-                                right: 0,
-                                child: IconButton(
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                  ),
-                                  tooltip: l10n.cancel,
-                                  icon: const Icon(Icons.cancel, size: 20),
-                                  onPressed: () => _removePendingPhoto(i),
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 12),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (_isLoadingComments)
-            const Center(child: CircularProgressIndicator())
-          else if (_comments.isEmpty)
-            Text(l10n.noCommentsYet)
-          else
-            ..._comments.map(
-              (c) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Wrap(
+                  spacing: 8,
                   children: [
-                    Text(c.content),
-                    if (c.mediaUrls.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: c.mediaUrls
-                              .map(
-                                (url) => ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: CachedNetworkImage(
-                                    imageUrl: url,
-                                    width: 64,
-                                    height: 64,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (_, _, _) =>
-                                        const SizedBox(width: 64, height: 64),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
+                    for (var i = 0; i < _pendingPhotos.length; i++)
+                      Stack(
+                        children: [
+                          Image.file(
+                            File(_pendingPhotos[i].path),
+                            width: 72,
+                            height: 72,
+                            fit: BoxFit.cover,
+                          ),
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: IconButton(
+                              onPressed: () => _removePendingPhoto(i),
+                              icon: const Icon(Icons.cancel),
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 ),
-              ),
+                if (_isLoadingComments)
+                  const CircularProgressIndicator()
+                else if (_comments.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(l.noCommentsYet),
+                  )
+                else
+                  for (final c in _comments)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(c.content),
+                          for (final url in c.mediaUrls)
+                            AppImage(url: url, height: 160),
+                        ],
+                      ),
+                    ),
+              ],
             ),
+          ),
         ],
       ),
     );
   }
 
-  List<Widget> _actionsFor(BuildContext context, String? status) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (status) {
-      case 'AVAILABLE':
-        // Verified against the backend (`Unit::allowDeposit()`,
-        // 2026-09-12): a deposit can be requested directly from AVAILABLE,
-        // not only after a HOLD. Both actions are shown unconditionally
-        // here (matching the original Android app's UnitDetailActivity,
-        // which shows both buttons regardless of status and lets the
-        // backend reject what doesn't apply) since the hold-creation
-        // endpoint itself is permanently disabled server-side (`Api/
-        // UnitHoldController@hold` — dead code behind an unconditional
-        // `return` since a 2020-07-21 change) and correctly surfaces
-        // "This functionality is currently disable." if tapped.
-        return [
-          ElevatedButton(
-            onPressed: () =>
-                Get.to(() => HoldRequestFormView(unit: widget.unit)),
-            child: Text(l10n.requestHold),
+  Widget _gallery(String title, List<String> images) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      AppSectionTitle(title, count: images.isEmpty ? null : images.length),
+      if (images.isEmpty)
+        AppPanel(
+          child: Text(
+            AppLocalizations.of(context)!.noImagesLabel,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: () =>
-                Get.to(() => DepositRequestFormView(unit: widget.unit)),
-            child: Text(l10n.requestDeposit),
+        )
+      else
+        for (final url in images)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: GestureDetector(
+              onTap: () => _openImage(url),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: AppImage(
+                  url: url,
+                  height: 220,
+                  fit: title == AppLocalizations.of(context)!.floorPlanLabel
+                      ? BoxFit.contain
+                      : BoxFit.cover,
+                ),
+              ),
+            ),
           ),
-        ];
-      case 'HOLD':
-        return [
-          ElevatedButton(
-            onPressed: () =>
-                Get.to(() => DepositRequestFormView(unit: widget.unit)),
-            child: Text(l10n.convertToDeposit),
+      const SizedBox(height: 24),
+    ],
+  );
+  void _openImage(String url) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: InteractiveViewer(
+            minScale: .5,
+            maxScale: 4,
+            child: AppImage(
+              url: url,
+              fit: BoxFit.contain,
+              height: MediaQuery.sizeOf(context).height * .75,
+            ),
           ),
-        ];
-      case 'DEPOSIT':
-        return [Text(l10n.depositInProgressHint)];
-      default:
-        return [Text(l10n.noActionsAvailable)];
+        ),
+      ),
+    ),
+  );
+  Future<void> _request(bool deposit) async {
+    final result = await Get.to(
+      () => deposit
+          ? DepositRequestFormView(unit: _unit)
+          : HoldRequestFormView(unit: _unit),
+    );
+    if (result == true && mounted) {
+      setState(() => _loadingUnit = true);
+      await _loadUnit();
     }
   }
 }

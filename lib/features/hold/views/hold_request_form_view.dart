@@ -1,94 +1,101 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../projects/models/unit.dart';
+import '../../projects/views/unit_information_card.dart';
 import '../data/hold_repository.dart';
 
 class HoldRequestFormView extends StatefulWidget {
   const HoldRequestFormView({super.key, required this.unit});
-
   final Unit unit;
-
   @override
   State<HoldRequestFormView> createState() => _HoldRequestFormViewState();
 }
 
 class _HoldRequestFormViewState extends State<HoldRequestFormView> {
   final _repository = HoldRepository();
-  int _holdDay = 3;
-  bool _isSubmitting = false;
+  final _remark = TextEditingController();
+  final _form = GlobalKey<FormState>();
+  bool _saving = false;
   String? _error;
+  @override
+  void dispose() {
+    _remark.dispose();
+    super.dispose();
+  }
 
-  Future<void> _submit() async {
+  Future<void> _save() async {
+    if (!_form.currentState!.validate()) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
-      _isSubmitting = true;
+      _saving = true;
       _error = null;
     });
     try {
-      await _repository.create(unitId: widget.unit.id, holdDay: _holdDay);
-      if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      Get.back(result: true);
-      Get.snackbar(
-        l10n.holdRequested,
-        l10n.holdRequestedMessage(widget.unit.name),
+      // Retain the existing default: the API requires a duration of 1–7 days.
+      await _repository.create(
+        unitId: widget.unit.id,
+        holdDay: 3,
+        remark: _remark.text.trim(),
       );
+      if (!mounted) return;
+      final l = AppLocalizations.of(context)!;
+      Get.back(result: true);
+      Get.snackbar(l.holdRequested, l.holdRequestedMessage(widget.unit.name));
     } on ApiException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) setState(() => _error = e.message);
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context)!;
     return AppPage(
-      appBar: AppBar(title: Text(l10n.requestHold)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        child: AppPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(l10n.unit, style: Theme.of(context).textTheme.labelMedium),
-              Text(
-                widget.unit.name,
-                style: Theme.of(context).textTheme.titleLarge,
+      appBar: AppBar(title: Text(l.requestHold)),
+      body: Form(
+        key: _form,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          children: [
+            UnitInformationCard(unit: widget.unit),
+            const SizedBox(height: 20),
+            AppPanel(
+              child: TextFormField(
+                controller: _remark,
+                minLines: 4,
+                maxLines: 6,
+                maxLength: 500,
+                decoration: InputDecoration(
+                  labelText: l.remark,
+                  hintText: l.remarkPlaceholder,
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(l10n.holdSubmitDescription),
-              const SizedBox(height: 16),
-              Text(l10n.holdDuration(_holdDay)),
-              Slider(
-                value: _holdDay.toDouble(),
-                min: 1,
-                max: 7,
-                divisions: 6,
-                label: '$_holdDay',
-                onChanged: (v) => setState(() => _holdDay = v.round()),
+            ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-              ],
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.submitHoldRequest),
-              ),
-            ],
-          ),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l.saveLabel),
+            ),
+          ],
         ),
       ),
     );
