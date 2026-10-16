@@ -11,6 +11,11 @@ final _usdFormat = NumberFormat.currency(
 );
 String formatUsd(num value) => _usdFormat.format(value);
 
+final _usdWholeFormat = NumberFormat.currency(symbol: r'$', decimalDigits: 0);
+
+/// Whole dollars, for short labels such as a discount ribbon: 3000 -> "$3,000".
+String formatUsdWhole(num value) => _usdWholeFormat.format(value);
+
 /// Shared safe area and comfortable reading width for phone/tablet screens.
 class AppPage extends StatelessWidget {
   const AppPage({

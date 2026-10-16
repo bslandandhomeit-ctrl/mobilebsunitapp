@@ -274,41 +274,44 @@ class _UnitsViewState extends State<UnitsView> {
                                 title: type.displayName,
                               ),
                             ),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                AppImage(
-                                  url: type.featureImageUrl,
-                                  height: 164,
-                                ),
-                                const DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.center,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Color(0xCC000000),
-                                      ],
+                            child: _discountRibbon(
+                              type.promotionAmount,
+                              Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  AppImage(
+                                    url: type.featureImageUrl,
+                                    height: 164,
+                                  ),
+                                  const DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.center,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.transparent,
+                                          Color(0xCC000000),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  left: 14,
-                                  right: 14,
-                                  bottom: 12,
-                                  child: Text(
-                                    type.displayName,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
+                                  Positioned(
+                                    left: 14,
+                                    right: 14,
+                                    bottom: 12,
+                                    child: Text(
+                                      type.displayName,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -489,4 +492,22 @@ class _UnitsViewState extends State<UnitsView> {
       ),
     );
   }
+}
+
+/// Red diagonal corner ribbon with the running discount ("-$3,000"), like the
+/// production app. Without a promotion the card is shown as it is.
+Widget _discountRibbon(double? amount, Widget child) {
+  if (amount == null) return child;
+  return Banner(
+    message: '-${formatUsdWhole(amount)}',
+    location: BannerLocation.topEnd,
+    color: const Color(0xFFE53935),
+    textStyle: const TextStyle(
+      color: Colors.white,
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+      height: 1.0,
+    ),
+    child: child,
+  );
 }
