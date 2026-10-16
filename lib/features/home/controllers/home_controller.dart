@@ -24,7 +24,7 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     loadHome();
-    _checkForForcedUpdate();
+    // _checkForForcedUpdate();
   }
 
   Future<void> loadHome() async {
