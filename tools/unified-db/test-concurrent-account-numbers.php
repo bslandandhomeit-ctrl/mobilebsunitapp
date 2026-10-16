@@ -1,0 +1,8 @@
+require '/var/www/html/public/global.php';require '/var/www/html/vendor/autoload.php';$app=require '/var/www/html/bootstrap/app.php';$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();error_reporting(0);
+$cfg=config('unified_posting.database');$cfg['host']='host.docker.internal';$cfg['port']=3309;$cfg['database']='unified_account_creation_test';$cfg['username']='unified_account_creation_test';$cfg['password']='local-only-account-creation-test';$cfg['prefix']='tb_';$cfg['strict']=false;config(array('database.connections.account_creation'=>$cfg,'database.default'=>'account_creation','static_data.auto_authorize_account'=>0,'static_data.auto_authorize_drawdown'=>0));$db=Illuminate\Support\Facades\DB::connection();
+
+$user=new App\Models\User;$user->id=3;$user->role_id=1;Illuminate\Support\Facades\Auth::setUser($user);
+$id=(int)getenv('SYNTH_SALE');$data=array('sale_id'=>$id,'client_id'=>$id,'unit_id'=>$id,'project_id'=>1,'unit_type_id'=>1,'currency'=>2,'branch'=>'100','parent_id'=>1,'account_no'=>'10026000001','account_name'=>'Synthetic Concurrent Account '.$id,'dd_parent_id'=>4,'dd_account_no'=>'1000000001','leasing_flag'=>0,'created_on'=>'2026-10-09');Illuminate\Support\Facades\Request::swap(Illuminate\Http\Request::create('/account/create','POST',$data));
+echo "READY\n";flush();if(trim(fgets(STDIN))!=='GO')exit(2);
+(new App\Http\Controllers\AccountingController)->post_add_client_loan_account($id,'/sale/list');
+$a=App\Models\ClientLoanAccounts::where('sale_id',$id)->first();$dd=App\Models\DrawdownAccounts::where('sale_id',$id)->first();if(!$a||!$dd||$db->transactionLevel()!==0)exit(3);echo json_encode(array('account'=>$a->account_no,'drawdown'=>$dd->account_no))."\n";

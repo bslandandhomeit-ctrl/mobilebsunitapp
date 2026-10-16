@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'request_writes_enabled' => env('UNIFIED_REQUEST_WRITES_ENABLED', false),
+    'request_unit_table' => 'units',
+    'deposit_conversion_enabled' => env('UNIFIED_DEPOSIT_CONVERSION_ENABLED', false),
+    'deposit_database' => [
+        'driver'=>'mysql', 'host'=>env('UNIFIED_DB_HOST', '127.0.0.1'), 'port'=>env('UNIFIED_DB_PORT','3309'),
+        'database'=>env('UNIFIED_DB_DATABASE','bsunits_beloan_final'),
+        'username'=>env('UNIFIED_DEPOSIT_DB_USERNAME','unified_deposit_writer'),
+        'password'=>env('UNIFIED_DEPOSIT_DB_PASSWORD',''),
+        'charset'=>'utf8mb4','collation'=>'utf8mb4_unicode_ci','prefix'=>'','strict'=>true,
+    ],
+    'enabled' => env('UNIFIED_CATALOG_ENABLED', false),
+    'action_sync_enabled' => env('UNIFIED_ACTION_SYNC_ENABLED', false),
+    'action_database' => [
+        'driver' => 'mysql', 'host' => env('UNIFIED_DB_HOST', '127.0.0.1'),
+        'port' => env('UNIFIED_DB_PORT', '3309'),
+        'database' => env('UNIFIED_DB_DATABASE', 'bsunits_beloan_final'),
+        'username' => env('UNIFIED_ACTION_DB_USERNAME', 'unified_unit_action_writer'),
+        'password' => env('UNIFIED_ACTION_DB_PASSWORD', ''),
+        'charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci', 'prefix' => '', 'strict' => true,
+    ],
+    'mobile_reads_enabled' => env('UNIFIED_MOBILE_READS_ENABLED', false),
+    'writes_enabled' => env('UNIFIED_CATALOG_WRITES_ENABLED', false),
+    'write_database' => [
+        'driver' => 'mysql',
+        'host' => env('UNIFIED_DB_HOST', '127.0.0.1'),
+        'port' => env('UNIFIED_DB_PORT', '3309'),
+        'database' => env('UNIFIED_DB_DATABASE', 'bsunits_beloan_final'),
+        'username' => env('UNIFIED_WRITE_DB_USERNAME', 'unified_unit_price_writer'),
+        'password' => env('UNIFIED_WRITE_DB_PASSWORD', ''),
+        'charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci', 'prefix' => '', 'strict' => true,
+    ],
+    'database' => [
+        'driver' => 'mysql',
+        'host' => env('UNIFIED_DB_HOST', '127.0.0.1'),
+        'port' => env('UNIFIED_DB_PORT', '3309'),
+        'database' => env('UNIFIED_DB_DATABASE', 'bsunits_beloan_final'),
+        'username' => env('UNIFIED_DB_USERNAME', 'unified_catalog_reader'),
+        'password' => env('UNIFIED_DB_PASSWORD', ''),
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'prefix' => '',
+        'strict' => true,
+    ],
+];

@@ -1,0 +1,31 @@
+# Isolated local overdue worker; database notifications only. App cutover is separate.
+services:
+  unified-overdue-worker:
+    profiles: [unified-overdue-prepared]
+    image: bsunits-mobile-local-app
+    build: /Users/ramonoem/Documents/project/webbsunitapp/.docker/local
+    volumes:
+      - /Users/ramonoem/Documents/project/webbsunitapp:/app
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: mysql
+      DB_HOST: host.docker.internal
+      DB_PORT: '3309'
+      DB_DATABASE: bsunits_beloan_final
+      DB_USERNAME: unified_overdue_worker
+      DB_PASSWORD: ${UNIFIED_OVERDUE_DB_PASSWORD:?Set the local worker password}
+      QUEUE_DRIVER: database
+      QUEUE_TABLE: unified_deposit_overdue_jobs
+      UNIFIED_NOTIFICATION_READS_ENABLED: 'false'
+      UNIFIED_REQUEST_WRITES_ENABLED: 'true'
+      UNIFIED_ACTION_SYNC_ENABLED: 'false'
+      UNIFIED_DEPOSIT_CONVERSION_ENABLED: 'false'
+      UNIFIED_OVERDUE_LOCAL_DATABASE_NOTIFICATIONS: 'true'
+      MAIL_DRIVER: log
+      ONESIGNAL_APP_ID: ''
+      ONESIGNAL_REST_API_KEY: ''
+      TWILIO_ACCOUNT_SID: ''
+      TWILIO_AUTH_TOKEN: ''
+      DEFAULT_SYSTEM_USER_ID: '1'
+    command: [php, artisan, 'queue:work', database, '--queue=unified-deposit-overdue', '--sleep=1', '--tries=5', '--timeout=60']
+    restart: 'no'

@@ -1,0 +1,8 @@
+<?php
+require '/app/vendor/autoload.php';$app=require '/app/bootstrap/app.php';$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+try{
+$unit=new App\Unit;$unit->setRawAttributes(['price'=>'11.00','list_price'=>'22.25','unit_action_id'=>1,'current_action_id'=>2]);$type=new App\UnitType;$type->setRawAttributes(['name'=>'Legacy name','short_code'=>'LEGACY','name_km'=>'Canonical name','code'=>'CANONICAL','attributes'=>json_encode(['contract_template_id'=>7,'feature_image_url'=>'synthetic.jpg'])]);
+config(['unified_catalog.request_property_reads_enabled'=>false]);if($unit->price!=='11.00'||$unit->unit_action_id!==1||$type->name!=='Legacy name'||$type->short_code!=='LEGACY')throw new RuntimeException('Legacy reads changed');
+config(['unified_catalog.request_property_reads_enabled'=>true]);if($unit->price!=='22.25'||$unit->unit_action_id!==2||$type->name!=='Canonical name'||$type->short_code!=='CANONICAL'||$type->contract_template_id!==7||strpos($type->feature_image_url,'synthetic.jpg')===false)throw new RuntimeException('Canonical reads incorrect: '.json_encode([$unit->price,$unit->unit_action_id,$type->name,$type->short_code,$type->contract_template_id,$type->feature_image_url]));if($unit->getAttributes()['price']!=='11.00'||array_key_exists('contract_template_id',$type->getAttributes()))throw new RuntimeException('Read mapping dirtied model attributes');
+echo json_encode(['status'=>'PASSED','legacy_flag_off_reads_preserved'=>true,'canonical_price_pointer_name_code_and_support_attributes'=>true,'raw_model_attributes_unchanged'=>true]);
+}catch(Throwable $e){echo json_encode(['status'=>'FAILED','type'=>get_class($e),'diagnostic'=>$e instanceof RuntimeException?$e->getMessage():'withheld']);exit(1);}

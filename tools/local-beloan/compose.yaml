@@ -1,0 +1,22 @@
+name: beloan-local
+services:
+  db:
+    image: mysql:5.7.44
+    platform: linux/amd64
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: local-only-beloan
+      MYSQL_DATABASE: land_home_v2
+    command:
+      - --max-allowed-packet=256M
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --event-scheduler=OFF
+      - --sql-mode=NO_ENGINE_SUBSTITUTION
+      - --innodb-buffer-pool-size=512M
+    volumes:
+      - beloan-data:/var/lib/mysql
+volumes:
+  beloan-data:

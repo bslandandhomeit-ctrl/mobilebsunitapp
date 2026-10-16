@@ -1,0 +1,5 @@
+require '/var/www/html/public/global.php';require '/var/www/html/vendor/autoload.php';$app=require '/var/www/html/bootstrap/app.php';$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();error_reporting(0);
+$cfg=config('unified_posting.database');$cfg['host']='host.docker.internal';$cfg['port']=3309;$cfg['database']='unified_account_creation_test';$cfg['username']='unified_account_creation_test';$cfg['password']='local-only-account-creation-test';$cfg['prefix']='tb_';$cfg['strict']=false;config(array('database.connections.account_creation'=>$cfg,'database.default'=>'account_creation'));
+App\Models\CoaCategory::creating(function($model){echo "READY\n";flush();if(trim(fgets(STDIN))!=='GO')throw new RuntimeException('Barrier failed');});
+$a=new App\Models\ClientLoanAccounts;$a->prefix='Stand-L-';$a->acc_key='SYNTH';$a->currency=2;$a->account_no=getenv('SYNTH_ACCOUNT');$a->account_name='Synthetic concurrent '.getenv('SYNTH_ACCOUNT');
+$r=createLoanAccountCoaNew($a,'',1);echo json_encode(array('id'=>$r['coa']->id,'new'=>$r['new_flg']))."\n";

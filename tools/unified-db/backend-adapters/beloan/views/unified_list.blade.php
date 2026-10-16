@@ -1,0 +1,21 @@
+@extends('layouts.app')
+@section('css')
+<style>.sales-card{background:#fff;border:1px solid #e4e9ef;border-radius:12px;padding:22px;margin-bottom:18px}.sales-title{margin:0 0 6px;color:#19334d;font-size:25px}.sales-subtitle{color:#748294;margin-bottom:20px}.sales-filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}.sales-filters label{font-size:12px;color:#627082;display:block}.sales-filters .form-control{min-width:145px}.sales-table{min-width:1050px}.sales-table td:first-child{min-width:175px}.sales-table td:nth-child(2){min-width:155px}.sales-table td:nth-child(3){min-width:170px}.sales-table td:nth-child(4){min-width:145px}.sales-table th{font-size:12px;color:#748294;background:#f5f8fb}.sales-table td{vertical-align:middle!important;padding:14px 10px!important}.sales-name{font-weight:600;color:#19334d}.sales-small{font-size:12px;color:#758294}.sales-pill{display:inline-block;border-radius:14px;background:#e8f4ff;color:#2371a9;padding:4px 10px;font-size:12px}.sales-link{font-weight:600}</style>
+@endsection
+@section('content')
+<div class="sales-card"><h1 class="sales-title">Sales</h1><div class="sales-subtitle">Customer orders, approved deposits and agreed sale prices</div>
+<form method="get" action="{{ route('list_sale') }}" class="sales-filters">
+<div><label>Search</label><input class="form-control" name="search" placeholder="Order, customer or unit" value="{{ isset($filters['search']) ? $filters['search'] : '' }}"></div>
+<div><label>Branch</label><select name="company" class="form-control"><option value="">All branches</option>@foreach($branches as $branch)<option value="{{ $branch->id }}" {{ isset($filters['company']) && $filters['company']==$branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>@endforeach</select></div>
+<div><label>Status</label><select name="status" class="form-control"><option value="">All statuses</option>@foreach(array('Ordered','Accepted','Canceled') as $status)<option {{ isset($filters['status']) && $filters['status']==$status ? 'selected' : '' }}>{{ $status }}</option>@endforeach</select></div>
+<div><label>From</label><input type="date" name="t_from" class="form-control" value="{{ isset($filters['t_from']) ? $filters['t_from'] : '' }}"></div>
+<div><label>To</label><input type="date" name="t_to" class="form-control" value="{{ isset($filters['t_to']) ? $filters['t_to'] : '' }}"></div>
+@if(!empty($filters['customer_id']))<input type="hidden" name="customer_id" value="{{ $filters['customer_id'] }}">@endif
+@if(!empty($filters['project_id']))<input type="hidden" name="project_id" value="{{ $filters['project_id'] }}">@endif
+<button class="btn btn-primary" type="submit">Apply</button><a class="btn btn-default" href="{{ route('list_sale') }}">Reset</a>
+</form></div>
+<div class="sales-card"><div class="sales-subtitle">{{ $sales->total() }} orders</div><div class="table-responsive"><table class="table sales-table"><thead><tr><th>Order / Date</th><th>Customer</th><th>Property</th><th>Branch</th><th>Sale price</th><th>Requested deposit</th><th>Status</th><th></th></tr></thead><tbody>
+@forelse($sales as $sale)<tr><td><span class="sales-name">{{ $sale->order_no }}</span><div class="sales-small">{{ $sale->created_on }}</div>@if($sale->deposit_request_id)<div class="sales-small">Approved deposit #{{ $sale->deposit_request_id }}</div>@endif</td><td><span class="sales-name">{{ $sale->customer_name }}</span><div class="sales-small">{{ $sale->account_number }}</div></td><td><span class="sales-name">{{ $sale->unit_code }}</span><div class="sales-small">{{ $sale->project_name ? $sale->project_name : $sale->project_name_km }} · {{ $sale->unit_type_code }}</div></td><td>{{ $sale->branch_name }}</td><td class="sales-name">{{ $sale->currency_code }} {{ App\Services\UnifiedSalesRepository::money($sale->final_price) }}</td><td>{{ App\Services\UnifiedSalesRepository::money($sale->diposit_amount) }}</td><td><span class="sales-pill">{{ $sale->status }}</span><div class="sales-small">{{ $sale->payment_status }}</div></td><td><a class="sales-link" href="{{ route('sale_detail',array($sale->id)) }}">View →</a></td></tr>
+@empty<tr><td colspan="8" class="text-center">No sales match these filters.</td></tr>@endforelse
+</tbody></table></div>{!! $sales->appends($filters)->render() !!}</div>
+@endsection

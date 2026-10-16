@@ -1,0 +1,14 @@
+<?php
+require '/var/www/html/vendor/autoload.php';$app=require '/var/www/html/bootstrap/app.php';$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+function loanCheck($ok,$label){if(!$ok)throw new RuntimeException('Loan check failed: '.$label);}
+try{
+ $repo=App\Services\UnifiedLoansRepository::configured();$page=$repo->listing(array('offset'=>3));loanCheck(count($page->items())===3,'pagination');$first=$page->items()[0];$data=$repo->detail($first->id);loanCheck($data['loan']->id==$first->id,'detail');loanCheck($repo->detail(999999999)===null,'missing');loanCheck($repo->detail($first->id,999999999)===null,'branch-scoped detail');loanCheck($repo->listing(array(),999999999)->total()===0,'branch-scoped list');loanCheck($repo->listing(array('contract_id'=>$first->legacy_contract_number,'customer_name'=>'unlikely-no-customer'))->total()===0,'combined filters');
+ loanCheck(App\Services\UnifiedLoansRepository::number('123456789012345678.1234')==='123,456,789,012,345,678.1234','exact decimal display');
+ Illuminate\Support\Facades\Auth::setUser(App\Models\User::where('username','admin')->firstOrFail());$controller=new App\Http\Controllers\LoanController;$html=$controller->getLoanlist()->render();$detail=$controller->loan_detail($first->id)->render();loanCheck(strpos($html,'Active loan accounts')!==false&&strpos($detail,'Repayment schedule')!==false,'view render');
+ $db=Illuminate\Support\Facades\DB::connection('unified_loans');
+ $sample=$db->table('loan_payments as p')->join('loans as l','l.id','=','p.loan_id')->select('p.loan_id')->groupBy('p.loan_id')->havingRaw('COUNT(*)>25')->first();loanCheck((bool)$sample,'payment pagination fixture');
+ $history=$repo->detail($sample->loan_id,null,array('payment_page'=>2));loanCheck($history['payments']->currentPage()===2&&$history['schedules']->currentPage()===1,'independent history pages');
+ loanCheck(strpos($history['payments']->url(2),'payment_page=2')!==false&&strpos($history['schedules']->url(2),'schedule_page=2')!==false,'separate pagination parameters');
+ $denied=false;try{Illuminate\Support\Facades\DB::connection('unified_loans')->statement('UPDATE loans SET loan_amount=loan_amount WHERE id=0');}catch(Exception $e){$denied=true;}loanCheck($denied,'writes denied');
+ echo json_encode(array('status'=>'PASSED','pagination'=>true,'independent_history_pagination'=>true,'branch_scoping'=>true,'combined_filters'=>true,'exact_decimal_display'=>true,'views_render'=>true,'writes_denied'=>true,'scope'=>'Read only; admin guard injected. Original loan amounts/schedules unchanged.'),JSON_PRETTY_PRINT)."\n";
+}catch(Exception $e){fwrite(fopen('php://stderr','w'),$e instanceof RuntimeException?$e->getMessage()."\n":'Loan test failed: '.get_class($e).' at '.basename($e->getFile()).':'.$e->getLine()."\n");exit(1);}
