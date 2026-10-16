@@ -8,6 +8,7 @@
 #
 # Other options:
 #   --define-file FILE   build against another server (a --dart-define-from-file JSON, e.g. UAT)
+#                        UAT: --dev --allow-debug-key --define-file tools/release/uat.json
 #   --skip-tests         do not run `flutter test` first
 #   --allow-debug-key    build even though the release keystore is missing (TEST ONLY: such an
 #                        APK cannot update the app users already have and cannot go on Play)
@@ -33,7 +34,7 @@ while [ "$#" -gt 0 ]; do
     --skip-tests) TESTS=0 ;;
     --allow-debug-key) ALLOW_DEBUG=1 ;;
     --define-file) shift; DEFINE_FILE="${1:?--define-file needs a path}" ;;
-    -h|--help) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown option: $1 (try --help)" >&2; exit 2 ;;
   esac
   shift

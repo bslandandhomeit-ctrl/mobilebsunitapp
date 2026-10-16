@@ -46,9 +46,11 @@ class BsUnitsApp extends StatelessWidget {
       builder: (context, child) => ApiConstants.isProduction
           ? child!
           : Banner(
-              message: 'LOCAL TEST',
+              message: ApiConstants.environmentLabel,
               location: BannerLocation.topEnd,
-              color: Colors.orange.shade800,
+              color: ApiConstants.environmentLabel == 'UAT'
+                  ? Colors.blue.shade700
+                  : Colors.orange.shade800,
               child: child!,
             ),
       debugShowCheckedModeBanner: false,

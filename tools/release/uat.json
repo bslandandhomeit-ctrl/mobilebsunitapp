@@ -1,0 +1,5 @@
+{
+  "API_BASE_URL": "http://10.3.0.99:8082/",
+  "API_SESSION_NAME": "uat",
+  "APP_ENV_LABEL": "UAT"
+}

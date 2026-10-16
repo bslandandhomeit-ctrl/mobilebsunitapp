@@ -33,6 +33,16 @@ class ApiConstants {
   static const bool isProduction =
       baseUrl == 'https://contract.chaktomukcity.com/';
 
+  // Corner banner on non-production builds: APP_ENV_LABEL if given, otherwise
+  // "UAT" for the UAT server and "LOCAL TEST" for anything else.
+  static const String _envLabel = String.fromEnvironment('APP_ENV_LABEL');
+  static const String uatHost = '10.3.0.99';
+
+  static String get environmentLabel {
+    if (_envLabel.isNotEmpty) return _envLabel;
+    return Uri.parse(baseUrl).host == uatHost ? 'UAT' : 'LOCAL TEST';
+  }
+
   static const String oauthClientId = String.fromEnvironment(
     'OAUTH_CLIENT_ID',
     defaultValue: '2',
