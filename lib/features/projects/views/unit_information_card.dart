@@ -9,9 +9,12 @@ class UnitInformationCard extends StatelessWidget {
     super.key,
     required this.unit,
     this.showFeatures = false,
+    this.showPrice = true,
   });
   final Unit unit;
   final bool showFeatures;
+  // false where the price is already shown above (UnitPriceCard on the unit detail)
+  final bool showPrice;
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -30,7 +33,8 @@ class UnitInformationCard extends StatelessWidget {
       (l.unitCode, unit.code),
       (l.project, unit.projectName ?? 'N/A'),
       (l.unitType, unit.unitTypeName ?? 'N/A'),
-      (l.unitPriceLabel, unit.price == null ? 'N/A' : formatUsd(unit.price!)),
+      if (showPrice)
+        (l.unitPriceLabel, unit.price == null ? 'N/A' : formatUsd(unit.price!)),
       if (showFeatures) ...[
         (
           l.houseSizeLabel,
@@ -45,12 +49,13 @@ class UnitInformationCard extends StatelessWidget {
         (l.swimmingPoolsLabel, count(unit.swimmingPools)),
       ],
     ];
+    final basicCount = showPrice ? 4 : 3;
     return AppPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppSectionTitle(l.unitInformationTitle),
-          for (final entry in values.take(4))
+          for (final entry in values.take(basicCount))
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 9),
               child: LayoutBuilder(
@@ -100,7 +105,7 @@ class UnitInformationCard extends StatelessWidget {
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    for (final entry in values.skip(4))
+                    for (final entry in values.skip(basicCount))
                       Container(
                         width: (constraints.maxWidth - 12) / 2,
                         padding: const EdgeInsets.all(14),

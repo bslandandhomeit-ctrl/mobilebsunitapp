@@ -320,5 +320,9 @@
   "holdRequestTitle": "សំណើកក់",
   "depositRequestTitle": "សំណើប្រាក់កក់",
   "requestAttachmentsTitle": "ឯកសារភ្ជាប់ *",
-  "requestAttachmentsNote": "រួមមាន៖ អត្តសញ្ញាណប័ណ្ណ លិខិតឆ្លងដែន ឬឯកសារពាក់ព័ន្ធផ្សេងទៀត។"
+  "requestAttachmentsNote": "រួមមាន៖ អត្តសញ្ញាណប័ណ្ណ លិខិតឆ្លងដែន ឬឯកសារពាក់ព័ន្ធផ្សេងទៀត។",
+  "priceTitle": "តម្លៃ",
+  "promotionPriceLabel": "តម្លៃប្រូម៉ូសិន",
+  "promotionDiscountLabel": "បញ្ចុះ {amount}",
+  "promotionValidUntil": "មានសុពលភាពរហូតដល់ {date}"
 }

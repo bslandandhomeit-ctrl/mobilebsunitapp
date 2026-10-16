@@ -804,4 +804,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get requestAttachmentsNote =>
       'Include: ID card, passport, or other related documents.';
+
+  @override
+  String get priceTitle => 'Price';
+
+  @override
+  String get promotionPriceLabel => 'Promotion price';
+
+  @override
+  String promotionDiscountLabel(String amount) {
+    return 'Discount $amount';
+  }
+
+  @override
+  String promotionValidUntil(String date) {
+    return 'Valid until $date';
+  }
 }

@@ -1579,6 +1579,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Include: ID card, passport, or other related documents.'**
   String get requestAttachmentsNote;
+
+  /// No description provided for @priceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get priceTitle;
+
+  /// No description provided for @promotionPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Promotion price'**
+  String get promotionPriceLabel;
+
+  /// No description provided for @promotionDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount {amount}'**
+  String promotionDiscountLabel(String amount);
+
+  /// No description provided for @promotionValidUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until {date}'**
+  String promotionValidUntil(String date);
 }
 
 class _AppLocalizationsDelegate

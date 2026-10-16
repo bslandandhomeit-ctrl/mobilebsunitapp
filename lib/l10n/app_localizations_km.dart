@@ -804,4 +804,20 @@ class AppLocalizationsKm extends AppLocalizations {
   @override
   String get requestAttachmentsNote =>
       'រួមមាន៖ អត្តសញ្ញាណប័ណ្ណ លិខិតឆ្លងដែន ឬឯកសារពាក់ព័ន្ធផ្សេងទៀត។';
+
+  @override
+  String get priceTitle => 'តម្លៃ';
+
+  @override
+  String get promotionPriceLabel => 'តម្លៃប្រូម៉ូសិន';
+
+  @override
+  String promotionDiscountLabel(String amount) {
+    return 'បញ្ចុះ $amount';
+  }
+
+  @override
+  String promotionValidUntil(String date) {
+    return 'មានសុពលភាពរហូតដល់ $date';
+  }
 }

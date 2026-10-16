@@ -320,5 +320,19 @@
   "holdRequestTitle": "Hold Request",
   "depositRequestTitle": "Deposit Request",
   "requestAttachmentsTitle": "Attachments *",
-  "requestAttachmentsNote": "Include: ID card, passport, or other related documents."
+  "requestAttachmentsNote": "Include: ID card, passport, or other related documents.",
+  "priceTitle": "Price",
+  "promotionPriceLabel": "Promotion price",
+  "promotionDiscountLabel": "Discount {amount}",
+  "@promotionDiscountLabel": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "promotionValidUntil": "Valid until {date}",
+  "@promotionValidUntil": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
 }

@@ -21,6 +21,7 @@ class Unit {
     this.swimmingPools,
     this.floor,
     this.promotionAmount,
+    this.promotionEndDate,
     this.exteriorUrls = const [],
     this.interiorUrls = const [],
     this.floorPlanUrls = const [],
@@ -70,6 +71,9 @@ class Unit {
       promotionAmount: promotions.isEmpty
           ? 0
           : number(promotions.first['amount']),
+      promotionEndDate: promotions.isEmpty
+          ? null
+          : DateTime.tryParse('${promotions.first['end_date'] ?? ''}'),
       exteriorUrls: images('EXTERIOR'),
       interiorUrls: images('INTERIOR'),
       floorPlanUrls: images('FLOOR_PLAN'),
@@ -89,7 +93,29 @@ class Unit {
       kitchens,
       swimmingPools,
       promotionAmount;
+  // Last day of the running discount promotion (null when there is none).
+  final DateTime? promotionEndDate;
   final List<String> exteriorUrls, interiorUrls, floorPlanUrls;
+
+  /// Price after the running promotion, or null when there is no discount.
+  double? get promotionPrice {
+    final discount = promotionAmount ?? 0;
+    if (price == null || discount <= 0) return null;
+    return price! - discount;
+  }
+
+  /// "Valid until" date shown with a promotion: the end of the current month,
+  /// or the promotion's own end date when it ends before that.
+  DateTime? promotionValidUntil([DateTime? today]) {
+    if (promotionPrice == null) return null;
+    final now = today ?? DateTime.now();
+    final monthEnd = DateTime(now.year, now.month + 1, 0);
+    final end = promotionEndDate;
+    if (end == null) return monthEnd;
+    final endDay = DateTime(end.year, end.month, end.day);
+    return endDay.isBefore(monthEnd) ? endDay : monthEnd;
+  }
+
   String get name => code;
   String? get status => availabilityStatus;
 }

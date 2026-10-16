@@ -12,6 +12,7 @@ import '../../hold/views/hold_request_form_view.dart';
 import '../data/unit_comment_repository.dart';
 import '../data/projects_repository.dart';
 import 'unit_information_card.dart';
+import 'unit_price_card.dart';
 import '../models/unit.dart';
 import '../models/unit_comment.dart';
 
@@ -180,6 +181,8 @@ class _UnitDetailViewState extends State<UnitDetailView> {
                 ],
               ),
             ),
+          UnitPriceCard(unit: _unit),
+          const SizedBox(height: 24),
           AppSectionTitle(l.previewLabel),
           GestureDetector(
             onTap: _unit.previewUrl == null
@@ -191,7 +194,11 @@ class _UnitDetailViewState extends State<UnitDetailView> {
             ),
           ),
           const SizedBox(height: 24),
-          UnitInformationCard(unit: _unit, showFeatures: true),
+          UnitInformationCard(
+            unit: _unit,
+            showFeatures: true,
+            showPrice: false,
+          ),
           const SizedBox(height: 24),
           _gallery(l.exteriorLabel, _unit.exteriorUrls),
           _gallery(l.interiorLabel, _unit.interiorUrls),
