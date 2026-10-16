@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/controllers/home_controller.dart';
+import '../../home/views/banner_carousel.dart';
 import '../data/projects_repository.dart';
 import '../models/unit.dart';
 import 'floor_plan_view.dart';
@@ -202,6 +203,12 @@ class _UnitsViewState extends State<UnitsView> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(bottom: 24),
           children: [
+            // Promotion banners on the main Units tab (not on a project's own list)
+            if (widget.projectId == null && home.banners.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: BannerCarousel(banners: home.banners.toList()),
+              ),
             if (projects.isEmpty)
               AppEmptyState(
                 message: home.errorMessage.value ?? l.noUnitsFound,

@@ -1,4 +1,4 @@
-import 'package:carousel_slider/carousel_slider.dart';
+import 'banner_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -136,7 +136,7 @@ class HomeView extends GetView<HomeController> {
               ),
               if (controller.banners.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                _BannerCarousel(controller: controller),
+                BannerCarousel(banners: controller.banners.toList()),
               ],
               const SizedBox(height: 28),
               AppSectionTitle(l10n.projects, count: controller.projects.length),
@@ -155,31 +155,6 @@ class HomeView extends GetView<HomeController> {
       }),
     );
   }
-}
-
-class _BannerCarousel extends StatelessWidget {
-  const _BannerCarousel({required this.controller});
-  final HomeController controller;
-  @override
-  Widget build(BuildContext context) => CarouselSlider(
-    options: CarouselOptions(
-      height: 170,
-      autoPlay: controller.banners.length > 1,
-      viewportFraction: 1,
-      enlargeCenterPage: false,
-    ),
-    items: controller.banners
-        .map(
-          (banner) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: AppImage(url: banner.imageUrl, height: 170),
-            ),
-          ),
-        )
-        .toList(),
-  );
 }
 
 class ProjectCard extends StatelessWidget {

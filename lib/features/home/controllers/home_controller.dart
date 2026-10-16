@@ -42,6 +42,8 @@ class HomeController extends GetxController {
     }
   }
 
+  // Kept for when the forced-update check is switched back on (see onInit).
+  // ignore: unused_element
   Future<void> _checkForForcedUpdate() async {
     final latest = await _appVersionRepository.getLatestBuild();
     if (latest == null || !latest.forcedUpdate) return;
