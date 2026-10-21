@@ -8,6 +8,8 @@ import '../../projects/data/payment_option_repository.dart';
 import '../../projects/models/payment_option.dart';
 import '../../projects/models/unit.dart';
 import '../../projects/views/unit_information_card.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../auth/models/user.dart';
 import '../data/deposit_repository.dart';
 
 class DepositRequestFormView extends StatefulWidget {
@@ -21,8 +23,8 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _repository = DepositRepository();
   final _form = GlobalKey<FormState>();
   final _scroll = ScrollController();
-  final _name = TextEditingController(), _name2 = TextEditingController();
-  final _phone = TextEditingController(), _phone2 = TextEditingController();
+  // Unlimited customers; the first is required. "Add more customer" appends.
+  final List<_Customer> _customers = [_Customer()];
   final _deposit = TextEditingController(),
       _discount = TextEditingController(text: '0');
   final _remark = TextEditingController(),
@@ -32,17 +34,36 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _interest = TextEditingController(text: '0'),
       _duration = TextEditingController(text: '0');
   int _step = 0, _paymentChoice = 0;
-  int? _gender, _gender2;
+  // Sale: internal -> Sale Person (default = me) + Sale Support; agent -> only my own name.
+  List<({int id, String name})> _saleReps = [];
+  int? _salePersonId, _saleSupportId;
   bool _downPayment = false,
       _specialOther = false,
       _saving = false,
       _loadingOptions = true;
   String? _error, _optionsError;
   List<PaymentOption> _options = [];
+  AppUser? get _me => Get.isRegistered<AuthController>()
+      ? Get.find<AuthController>().currentUser.value
+      : null;
+  bool get _isAgent => _me?.isSaleAgent ?? false;
+
   @override
   void initState() {
     super.initState();
     _loadOptions();
+    // Default the Sale Person to the logged-in internal sale person.
+    _salePersonId = _me?.saleRepresentativeId;
+    if (!_isAgent) _loadSaleReps();
+  }
+
+  Future<void> _loadSaleReps() async {
+    try {
+      final reps = await _repository.fetchInternalSaleReps();
+      if (mounted) setState(() => _saleReps = reps);
+    } catch (_) {
+      /* non-fatal: dropdown just stays with the default */
+    }
   }
 
   Future<void> _loadOptions() async {
@@ -67,11 +88,10 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
 
   @override
   void dispose() {
+    for (final c in _customers) {
+      c.dispose();
+    }
     for (final c in [
-      _name,
-      _name2,
-      _phone,
-      _phone2,
       _deposit,
       _discount,
       _remark,
@@ -113,14 +133,30 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         unitId: widget.unit.id,
         depositAmount: double.parse(_deposit.text.trim()),
         otherDiscountAllowance: double.parse(_discount.text.trim()),
-        customerName: _name.text.trim(),
-        customerGender: _gender!,
-        customerPhoneNumber: _phone.text.trim(),
-        customerName2: _name2.text.trim().isEmpty ? null : _name2.text.trim(),
-        customerGender2: _name2.text.trim().isEmpty ? null : _gender2,
-        customerPhoneNumber2: _phone2.text.trim().isEmpty
-            ? null
-            : _phone2.text.trim(),
+        customerName: _customers[0].name.text.trim(),
+        customerGender: _customers[0].gender!,
+        customerPhoneNumber: _customers[0].phone.text.trim(),
+        customerName2: _customers.length > 1 && _customers[1].name.text.trim().isNotEmpty
+            ? _customers[1].name.text.trim()
+            : null,
+        customerGender2: _customers.length > 1 && _customers[1].name.text.trim().isNotEmpty
+            ? _customers[1].gender
+            : null,
+        customerPhoneNumber2: _customers.length > 1 && _customers[1].phone.text.trim().isNotEmpty
+            ? _customers[1].phone.text.trim()
+            : null,
+        // Full list (unlimited) for the backend to store.
+        customers: [
+          for (final c in _customers)
+            if (c.name.text.trim().isNotEmpty)
+              {
+                'name': c.name.text.trim(),
+                'gender': c.gender,
+                'phone': c.phone.text.trim().isEmpty ? null : c.phone.text.trim(),
+              },
+        ],
+        salePersonId: _salePersonId ?? _me?.saleRepresentativeId,
+        saleSupportId: _isAgent ? null : _saleSupportId,
         remark: _remark.text.trim().isEmpty ? null : _remark.text.trim(),
         paymentOptionId: _paymentChoice > 0 ? _paymentChoice : null,
         loanDuration: custom ? int.parse(_duration.text.trim()) : null,
@@ -202,82 +238,132 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppSectionTitle(l.customerInformationTitle),
-        TextFormField(
-          controller: _name,
-          validator: _required,
-          maxLength: 255,
-          decoration: InputDecoration(
-            labelText: l.customerOneNameLabel,
-            counterText: '',
+        for (int i = 0; i < _customers.length; i++) ...[
+          if (i > 0) const Divider(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Customer ${i + 1}',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              if (i > 0)
+                TextButton.icon(
+                  onPressed: () =>
+                      setState(() => _customers.removeAt(i).dispose()),
+                  icon: const Icon(Icons.close, size: 18),
+                  label: const Text('Remove'),
+                ),
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-        _genderField(l, false),
-        const SizedBox(height: 24),
-        TextFormField(
-          controller: _name2,
-          maxLength: 255,
-          decoration: InputDecoration(
-            labelText: l.customerTwoNameLabel,
-            counterText: '',
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _customers[i].name,
+            validator: i == 0 ? _required : null,
+            maxLength: 255,
+            decoration: InputDecoration(
+              labelText: l.customerOneNameLabel,
+              counterText: '',
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        _genderField(l, true),
-        const SizedBox(height: 24),
-        Text(
-          l.customerPhonesTitle,
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
+          const SizedBox(height: 16),
+          _genderField(l, i),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _customers[i].phone,
+            validator: (v) => _phoneValid(v, optional: i != 0),
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              labelText: l.phoneLineOneLabel,
+              hintText: '012345678',
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
-        TextFormField(
-          controller: _phone,
-          validator: _phoneValid,
-          keyboardType: TextInputType.phone,
-          decoration: InputDecoration(
-            labelText: l.phoneLineOneLabel,
-            hintText: '012345678',
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => setState(() => _customers.add(_Customer())),
+            icon: const Icon(Icons.add),
+            label: const Text('Add more customer'),
           ),
         ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _phone2,
-          validator: (v) => _phoneValid(v, optional: true),
-          keyboardType: TextInputType.phone,
-          decoration: InputDecoration(
-            labelText: l.phoneLineTwoLabel,
-            hintText: '012345678',
-          ),
-        ),
+        const Divider(height: 32),
+        _saleSection(l),
       ],
     ),
   );
-  Widget _genderField(AppLocalizations l, bool second) =>
+
+  Widget _genderField(AppLocalizations l, int index) =>
       DropdownButtonFormField<int>(
-        key: ValueKey('gender-$second'),
-        initialValue: second ? _gender2 : _gender,
+        key: ValueKey('gender-$index'),
+        initialValue: _customers[index].gender,
         isExpanded: true,
-        decoration: InputDecoration(
-          labelText: second
-              ? l.customerTwoGenderLabel
-              : l.customerOneGenderLabel,
-        ),
+        decoration: InputDecoration(labelText: l.customerOneGenderLabel),
         items: [
           DropdownMenuItem(value: 1, child: Text(l.male)),
           DropdownMenuItem(value: 2, child: Text(l.female)),
         ],
         validator: (v) =>
-            v == null && (!second || _name2.text.trim().isNotEmpty)
+            v == null &&
+                (index == 0 || _customers[index].name.text.trim().isNotEmpty)
             ? l.requiredFieldLabel
             : null,
-        onChanged: (v) => setState(() {
-          if (second) {
-            _gender2 = v;
-          } else {
-            _gender = v;
-          }
-        }),
+        onChanged: (v) => setState(() => _customers[index].gender = v),
       );
+
+  // Internal: Sale Person (default = me) + optional Sale Support. Agent: only their own name.
+  Widget _saleSection(AppLocalizations l) {
+    if (_isAgent) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Sale', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          InputDecorator(
+            decoration: const InputDecoration(labelText: 'Sale Agent'),
+            child: Text(_me?.saleName ?? _me?.name ?? '-'),
+          ),
+        ],
+      );
+    }
+    final meId = _me?.saleRepresentativeId;
+    final personItems = <DropdownMenuItem<int?>>[
+      if (meId != null && !_saleReps.any((r) => r.id == meId))
+        DropdownMenuItem(value: meId, child: Text(_me?.saleName ?? _me?.name ?? 'Me')),
+      for (final r in _saleReps)
+        DropdownMenuItem(value: r.id, child: Text(r.name)),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Sale', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<int?>(
+          isExpanded: true,
+          initialValue: _salePersonId,
+          decoration: const InputDecoration(labelText: 'Sale Person Name'),
+          items: personItems,
+          onChanged: (v) => setState(() => _salePersonId = v),
+        ),
+        const SizedBox(height: 16),
+        DropdownButtonFormField<int?>(
+          isExpanded: true,
+          initialValue: _saleSupportId,
+          decoration: const InputDecoration(
+            labelText: 'Sale Support Name (optional)',
+          ),
+          items: [
+            const DropdownMenuItem(value: null, child: Text('- None -')),
+            for (final r in _saleReps)
+              DropdownMenuItem(value: r.id, child: Text(r.name)),
+          ],
+          onChanged: (v) => setState(() => _saleSupportId = v),
+        ),
+      ],
+    );
+  }
   Widget _discountStep(AppLocalizations l) => AppPanel(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -595,5 +681,16 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         ),
       ),
     );
+  }
+}
+
+/// One customer row on the deposit form (name, phone, gender).
+class _Customer {
+  final TextEditingController name = TextEditingController();
+  final TextEditingController phone = TextEditingController();
+  int? gender;
+  void dispose() {
+    name.dispose();
+    phone.dispose();
   }
 }

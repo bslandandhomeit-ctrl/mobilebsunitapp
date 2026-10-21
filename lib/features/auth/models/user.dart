@@ -17,6 +17,9 @@ class AppUser {
     this.gender,
     this.birthdate,
     this.roles = const [],
+    this.saleType,
+    this.saleName,
+    this.saleRepresentativeId,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) => AppUser(
@@ -29,6 +32,10 @@ class AppUser {
     gender: json['gender']?.toString(),
     birthdate: DateTime.tryParse(json['birthdate']?.toString() ?? ''),
     roles: _parseRoles(json['roles']),
+    // From whoami: the logged-in sale person's type/name/id (null for non-sale users).
+    saleType: json['sale_type']?.toString(),
+    saleName: json['sale_name']?.toString(),
+    saleRepresentativeId: json['sale_representative_id'] as int?,
   );
 
   final int id;
@@ -39,9 +46,15 @@ class AppUser {
   final String? gender;
   final DateTime? birthdate;
   final List<String> roles;
+  final String? saleType;
+  final String? saleName;
+  final int? saleRepresentativeId;
 
   String? get phone => phoneNumber;
   String? get avatar => avatarUrl;
+
+  /// A Sale Agent logs deposits under only their own name (no Sale Support).
+  bool get isSaleAgent => saleType == 'agent';
 
   bool hasRole(String role) => roles.contains(role);
   bool hasAnyRole(Iterable<String> candidates) => candidates.any(roles.contains);

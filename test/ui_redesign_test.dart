@@ -419,7 +419,7 @@ void main() {
     }
 
     await fill('Surname and Name (Customer 1) *', 'Local UI Tester');
-    final gender = find.byKey(const ValueKey('gender-false'));
+    final gender = find.byKey(const ValueKey('gender-0'));
     await tester.ensureVisible(gender);
     await tester.tap(gender);
     await tester.pumpAndSettle();
@@ -519,8 +519,8 @@ void main() {
         }
 
         await fill(l.customerOneNameLabel, 'Local UI Tester');
-        await tester.ensureVisible(find.byKey(const ValueKey('gender-false')));
-        await tester.tap(find.byKey(const ValueKey('gender-false')));
+        await tester.ensureVisible(find.byKey(const ValueKey('gender-0')));
+        await tester.tap(find.byKey(const ValueKey('gender-0')));
         await tester.pumpAndSettle();
         await tester.tap(find.text(l.male).last);
         await tester.pumpAndSettle();
@@ -724,9 +724,9 @@ void main() {
       }
 
       await fill('Surname and Name (Customer 1) *', 'Local UI Tester');
-      await tester.ensureVisible(find.byKey(const ValueKey('gender-false')));
+      await tester.ensureVisible(find.byKey(const ValueKey('gender-0')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('gender-false')));
+      await tester.tap(find.byKey(const ValueKey('gender-0')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Male').last);
       await tester.pumpAndSettle();

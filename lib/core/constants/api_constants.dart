@@ -76,6 +76,7 @@ class ApiConstants {
   static const String whoamiPath = 'api/whoami';
   static const String homePath = 'api/whoami/home';
   static const String bannersPath = 'api/banners';
+  static const String saleRepresentativesPath = 'api/sale_representatives';
   static const String projectsPath = 'api/projects';
   static const String unitTypesPath = 'api/unit_types';
   static const String unitsPath = 'api/units';

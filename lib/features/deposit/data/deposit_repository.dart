@@ -28,6 +28,21 @@ class DepositRepository {
     );
   }
 
+  /// Internal sale reps for the Sale Person / Sale Support pickers on a deposit
+  /// (Sale Agents are excluded by the `type=internal` filter).
+  Future<List<({int id, String name})>> fetchInternalSaleReps({String? term}) async {
+    final response = await _client.get<Map<String, dynamic>>(
+      ApiConstants.saleRepresentativesPath,
+      queryParameters: {'type': 'internal', 'term': ?term},
+    );
+    final data = response.data?['data'];
+    if (data is! List) return const [];
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map((m) => (id: m['id'] as int, name: (m['name'] ?? '').toString()))
+        .toList();
+  }
+
   /// Verified against `Api/UnitDepositRequestController::$validationRules`
   /// + `$payment_option_validation_rules` (2026-09-11). Customer gender:
   /// 1 = Male, 2 = Female (confirmed against the original Android app's
@@ -47,6 +62,9 @@ class DepositRepository {
     String? customerName2,
     int? customerGender2,
     String? customerPhoneNumber2,
+    List<Map<String, dynamic>>? customers,
+    int? salePersonId,
+    int? saleSupportId,
     String? remark,
     int? paymentOptionId,
     int? loanDuration,
@@ -82,6 +100,10 @@ class DepositRepository {
         'customer2_name': ?customerName2,
         'customer2_gender': ?customerGender2,
         'customer_phone_number2': ?customerPhoneNumber2,
+        // Full list (unlimited); the backend also keeps customer_name/customer2_name from the first two.
+        'customers': ?customers,
+        'sale_person_id': ?salePersonId,
+        'sale_support_id': ?saleSupportId,
         'remark': ?remark,
         'is_selected_payment_option': isSelectedPaymentOption ? 1 : 0,
         'payment_option_id': ?paymentOptionId,

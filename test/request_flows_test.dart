@@ -50,12 +50,11 @@ Future<void> tap(WidgetTester tester, String text) async {
 
 Future<void> customers(WidgetTester tester) async {
   await fill(tester, 'Surname and Name (Customer 1) *', 'Local Tester');
-  await tester.ensureVisible(find.byKey(const ValueKey('gender-false')));
-  await tester.tap(find.byKey(const ValueKey('gender-false')));
+  await tester.ensureVisible(find.byKey(const ValueKey('gender-0')));
+  await tester.tap(find.byKey(const ValueKey('gender-0')));
   await tester.pumpAndSettle();
   await tap(tester, 'Male');
   await fill(tester, 'Line 1 *', '012345678');
-  await fill(tester, 'Line 2', '098765432');
   await tap(tester, 'Next');
   await tap(tester, 'Next');
   await fill(tester, 'Deposit amount (\$) *', '500');
@@ -128,15 +127,19 @@ void main() {
     );
   });
   testWidgets(
-    'None payment option and second phone persist without a second customer',
+    'None payment option and a single customer submit the customers list',
     (tester) async {
       await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
       await tester.pumpAndSettle();
       await customers(tester);
       await tap(tester, 'Save');
       expect(sent!['is_selected_payment_option'], 0);
-      expect(sent!['customer_phone_number2'], '098765432');
+      expect(sent!['customer_name'], 'Local Tester');
+      expect(sent!['customer_phone_number'], '012345678');
       expect(sent!.containsKey('customer2_name'), isFalse);
+      final custs = sent!['customers'] as List;
+      expect(custs.length, 1);
+      expect((custs.first as Map)['name'], 'Local Tester');
       expect(sent!['deposit_amount'], 500);
       expect(
         sent!.containsKey('discount_promotion'),
@@ -144,6 +147,43 @@ void main() {
       ); // Backend calculates promotions.
     },
   );
+  testWidgets('Add more customer sends a second customer in the list', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
+    await tester.pumpAndSettle();
+    await fill(tester, 'Surname and Name (Customer 1) *', 'Local Tester');
+    await tester.tap(find.byKey(const ValueKey('gender-0')));
+    await tester.pumpAndSettle();
+    await tap(tester, 'Male');
+    await fill(tester, 'Line 1 *', '012345678');
+    await tap(tester, 'Add more customer');
+    // the 2nd customer's fields share the same labels; fill the last ones
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Surname and Name (Customer 1) *').last,
+      'Second Buyer',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gender-1')));
+    await tester.pumpAndSettle();
+    await tap(tester, 'Female');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Line 1 *').last,
+      '098765432',
+    );
+    await tester.pumpAndSettle();
+    await tap(tester, 'Next');
+    await tap(tester, 'Next');
+    await fill(tester, 'Deposit amount (\$) *', '500');
+    await tap(tester, 'Next');
+    await tap(tester, 'Save');
+    expect(sent!['customer_name'], 'Local Tester');
+    expect(sent!['customer2_name'], 'Second Buyer');
+    expect(sent!['customer_phone_number2'], '098765432');
+    final custs = sent!['customers'] as List;
+    expect(custs.length, 2);
+    expect((custs[1] as Map)['name'], 'Second Buyer');
+  });
   testWidgets(
     'Custom terms submit months and down payment amount, not percentage',
     (tester) async {
