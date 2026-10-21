@@ -1,14 +1,16 @@
 #!/bin/sh
 # Build a release APK of BS Units, ready to send to users or upload yourself.
 #
-#   sh tools/release/build-release.sh                 # production app, production server
+#   sh tools/release/build-release.sh                 # PRODUCTION app (prod flavor, live server)
 #   sh tools/release/build-release.sh --bump          # same, and raise the build number first
 #   sh tools/release/build-release.sh --aab           # also build the .aab for Google Play
-#   sh tools/release/build-release.sh --dev           # the ".dev" package (installs next to the real app)
+#   sh tools/release/build-release.sh --dev           # UAT app (uat flavor, ".dev" package, UAT server,
+#                                                        installs next to the real app)
+#   UAT test build (no release key needed):
+#     sh tools/release/build-release.sh --dev --allow-debug-key
 #
 # Other options:
-#   --define-file FILE   build against another server (a --dart-define-from-file JSON, e.g. UAT)
-#                        UAT: --dev --allow-debug-key --define-file tools/release/uat.json
+#   --define-file FILE   advanced: build against another server (a --dart-define-from-file JSON)
 #   --skip-tests         do not run `flutter test` first
 #   --allow-debug-key    build even though the release keystore is missing (TEST ONLY: such an
 #                        APK cannot update the app users already have and cannot go on Play)
@@ -42,7 +44,11 @@ done
 
 command -v flutter >/dev/null 2>&1 || { echo "flutter is not on PATH" >&2; exit 1; }
 
-if [ "$FLAVOR" = prod ]; then APP_ID=com.bslandandhome.bsunits; else APP_ID=com.bslandandhome.bsunits.dev; fi
+if [ "$FLAVOR" = prod ]; then
+  GRADLE_FLAVOR=prod; ENTRY=lib/main_prod.dart; APP_ID=com.bslandandhome.bsunits
+else
+  GRADLE_FLAVOR=uat;  ENTRY=lib/main_uat.dart;  APP_ID=com.bslandandhome.bsunits.dev
+fi
 
 # --- signing key ---------------------------------------------------------
 if [ -f android/key.properties ]; then
@@ -71,7 +77,7 @@ if [ "$BUMP" = 1 ]; then
 fi
 
 DEFINES=""
-SERVER="production (https://contract.chaktomukcity.com/)"
+if [ "$FLAVOR" = prod ]; then SERVER="production (https://contract.chaktomukcity.com/)"; else SERVER="UAT (http://10.3.0.99:8082/)"; fi
 if [ -n "$DEFINE_FILE" ]; then
   [ -f "$DEFINE_FILE" ] || { echo "No such file: $DEFINE_FILE" >&2; exit 1; }
   DEFINES="--dart-define-from-file=$DEFINE_FILE"
@@ -93,15 +99,15 @@ BASE="BSUnits-$NAME-$BUILD-$FLAVOR"
 
 echo "==> Building APK"
 # shellcheck disable=SC2086
-ORG_GRADLE_PROJECT_bsAppId="$APP_ID" flutter build apk --release $DEFINES
-cp build/app/outputs/flutter-apk/app-release.apk "$OUT/$BASE.apk"
+flutter build apk --release --flavor "$GRADLE_FLAVOR" -t "$ENTRY" $DEFINES
+cp "build/app/outputs/flutter-apk/app-$GRADLE_FLAVOR-release.apk" "$OUT/$BASE.apk"
 ( cd "$OUT" && shasum -a 256 "$BASE.apk" > "$BASE.apk.sha256" )
 
 if [ "$AAB" = 1 ]; then
   echo "==> Building App Bundle"
   # shellcheck disable=SC2086
-  ORG_GRADLE_PROJECT_bsAppId="$APP_ID" flutter build appbundle --release $DEFINES
-  cp build/app/outputs/bundle/release/app-release.aab "$OUT/$BASE.aab"
+  flutter build appbundle --release --flavor "$GRADLE_FLAVOR" -t "$ENTRY" $DEFINES
+  cp "build/app/outputs/bundle/${GRADLE_FLAVOR}Release/app-$GRADLE_FLAVOR-release.aab" "$OUT/$BASE.aab"
 fi
 
 # --- show who signed it (needs Java; Android Studio's is used if none is on PATH) ---

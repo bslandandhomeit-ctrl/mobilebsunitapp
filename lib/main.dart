@@ -17,7 +17,18 @@ import 'l10n/app_localizations.dart';
 // From build.gradle in the original bs-contract-android project.
 const _oneSignalAppId = '25dd12b1-8fda-4085-8ba7-4bea5c12dfb3';
 
+// Plain entry point (e.g. tests, or `flutter run` with no flavor): defaults to
+// production. For day-to-day work use a flavor instead — see RUN.md:
+//   UAT:        flutter run --flavor uat  -t lib/main_uat.dart
+//   Production: flutter run --flavor prod -t lib/main_prod.dart
 Future<void> main() async {
+  await startBsUnits();
+}
+
+/// Shared app bootstrap. The flavor entry points (lib/main_prod.dart /
+/// lib/main_uat.dart) pick the backend with ApiConstants.useProduction()/useUat()
+/// first, then call this.
+Future<void> startBsUnits() async {
   WidgetsFlutterBinding.ensureInitialized();
   trustServerIntermediates();
   await LocalStorage.init();

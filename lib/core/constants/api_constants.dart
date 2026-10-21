@@ -25,22 +25,42 @@ class ApiConstants {
   // `trustServerIntermediates()` in core/network/tls_intermediates.dart.
   // For the local dev server instead, use 'http://10.0.2.2:8000/' (the
   // Android emulator's alias for the host's localhost).
-  static const String baseUrl = String.fromEnvironment(
+  static const String productionBaseUrl = 'https://contract.chaktomukcity.com/';
+  static const String uatHost = '10.3.0.99';
+  static const String uatBaseUrl = 'http://$uatHost:8082/';
+
+  // Which backend the app talks to. The flavors set this at startup via
+  // useProduction() / useUat() (lib/main_prod.dart / lib/main_uat.dart).
+  // Defaults to production; a build-time --dart-define=API_BASE_URL=... still
+  // overrides it for a one-off build.
+  static String baseUrl = const String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://contract.chaktomukcity.com/',
+    defaultValue: productionBaseUrl,
   );
 
-  static const bool isProduction =
-      baseUrl == 'https://contract.chaktomukcity.com/';
+  static bool get isProduction => baseUrl == productionBaseUrl;
 
   // Corner banner on non-production builds: APP_ENV_LABEL if given, otherwise
   // "UAT" for the UAT server and "LOCAL TEST" for anything else.
-  static const String _envLabel = String.fromEnvironment('APP_ENV_LABEL');
-  static const String uatHost = '10.3.0.99';
+  static String _envLabel = const String.fromEnvironment('APP_ENV_LABEL');
 
   static String get environmentLabel {
     if (_envLabel.isNotEmpty) return _envLabel;
     return Uri.parse(baseUrl).host == uatHost ? 'UAT' : 'LOCAL TEST';
+  }
+
+  /// Point the app at the production backend (the real live server).
+  /// Called by lib/main_prod.dart (the `prod` flavor).
+  static void useProduction() {
+    baseUrl = productionBaseUrl;
+    _envLabel = '';
+  }
+
+  /// Point the app at the UAT backend (10.3.0.99 — needs the FortiClient VPN).
+  /// Called by lib/main_uat.dart (the `uat` flavor).
+  static void useUat() {
+    baseUrl = uatBaseUrl;
+    _envLabel = 'UAT';
   }
 
   static const String oauthClientId = String.fromEnvironment(

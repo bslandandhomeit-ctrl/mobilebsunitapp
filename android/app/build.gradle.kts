@@ -30,11 +30,26 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Two flavors so UAT and production never get mixed up (both registered in
+    // google-services.json, Firebase project: contract-register):
+    //   prod -> com.bslandandhome.bsunits       (lib/main_prod.dart, live server)
+    //   uat  -> com.bslandandhome.bsunits.dev   (lib/main_uat.dart, 10.3.0.99) - installs next to prod
+    flavorDimensions += "env"
+    productFlavors {
+        create("prod") {
+            dimension = "env"
+            applicationId = "com.bslandandhome.bsunits"
+        }
+        create("uat") {
+            dimension = "env"
+            applicationId = "com.bslandandhome.bsunits.dev"
+            versionNameSuffix = "-uat"
+        }
+    }
+
     defaultConfig {
-        // Matches the "dev" package registered in google-services.json (Firebase project: contract-register).
-        // Production release builds use com.bslandandhome.bsunits: tools/release/build-release.sh
-        // passes it as the Gradle property bsAppId (ORG_GRADLE_PROJECT_bsAppId).
-        applicationId = (project.findProperty("bsAppId") as String?) ?: "com.bslandandhome.bsunits.dev"
+        // applicationId is set per flavor above; this is just a fallback.
+        applicationId = "com.bslandandhome.bsunits"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

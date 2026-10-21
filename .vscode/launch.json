@@ -1,0 +1,36 @@
+{
+  "// note": "Run & Debug configs for BS Units. Pick one in the Run and Debug panel (Cmd+Shift+D), then press F5. UAT needs the FortiClient VPN on. See RUN.md.",
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "BS Units — UAT (debug)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_uat.dart",
+      "args": ["--flavor", "uat"]
+    },
+    {
+      "name": "BS Units — Production (debug)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "args": ["--flavor", "prod"]
+    },
+    {
+      "name": "BS Units — UAT (profile)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "program": "lib/main_uat.dart",
+      "args": ["--flavor", "uat"]
+    },
+    {
+      "name": "BS Units — Production (release)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main_prod.dart",
+      "args": ["--flavor", "prod"]
+    }
+  ]
+}
