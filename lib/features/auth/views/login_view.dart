@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
@@ -122,6 +123,8 @@ class LoginView extends GetView<AuthController> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 24),
+                const _AppVersionLabel(),
               ],
             ),
           ),
@@ -129,4 +132,33 @@ class LoginView extends GetView<AuthController> {
       ),
     );
   }
+}
+
+/// App version shown at the bottom of the login screen, e.g. "v1.0.0 (23)".
+class _AppVersionLabel extends StatefulWidget {
+  const _AppVersionLabel();
+  @override
+  State<_AppVersionLabel> createState() => _AppVersionLabelState();
+}
+
+class _AppVersionLabelState extends State<_AppVersionLabel> {
+  String _version = '';
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) {
+        setState(() => _version = 'v${info.version} (${info.buildNumber})');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => Text(
+    _version,
+    textAlign: TextAlign.center,
+    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).hintColor,
+    ),
+  );
 }
