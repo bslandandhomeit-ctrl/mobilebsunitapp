@@ -25,14 +25,13 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _scroll = ScrollController();
   // Unlimited customers; the first is required. "Add more customer" appends.
   final List<_Customer> _customers = [_Customer()];
-  final _deposit = TextEditingController(),
-      _discount = TextEditingController(text: '0');
-  final _remark = TextEditingController(),
-      _special = TextEditingController(text: '0');
-  final _downAmount = TextEditingController(text: '0'),
-      _downDuration = TextEditingController(text: '0');
-  final _interest = TextEditingController(text: '0'),
-      _duration = TextEditingController(text: '0');
+  // Number fields start empty (not pre-filled with "0") so the user doesn't
+  // have to clear a 0 first. A blank optional field counts as 0 on submit.
+  final _deposit = TextEditingController(), _discount = TextEditingController();
+  final _remark = TextEditingController(), _special = TextEditingController();
+  final _downAmount = TextEditingController(),
+      _downDuration = TextEditingController();
+  final _interest = TextEditingController(), _duration = TextEditingController();
   int _step = 0, _paymentChoice = 0;
   // Sale: internal -> Sale Person (default = me) + Sale Support; agent -> only my own name.
   List<({int id, String name})> _saleReps = [];
@@ -131,8 +130,8 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     try {
       await _repository.create(
         unitId: widget.unit.id,
-        depositAmount: double.parse(_deposit.text.trim()),
-        otherDiscountAllowance: double.parse(_discount.text.trim()),
+        depositAmount: double.tryParse(_deposit.text.trim()) ?? 0,
+        otherDiscountAllowance: double.tryParse(_discount.text.trim()) ?? 0,
         customerName: _customers[0].name.text.trim(),
         customerGender: _customers[0].gender!,
         customerPhoneNumber: _customers[0].phone.text.trim(),
@@ -159,17 +158,17 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         saleSupportId: _isAgent ? null : _saleSupportId,
         remark: _remark.text.trim().isEmpty ? null : _remark.text.trim(),
         paymentOptionId: _paymentChoice > 0 ? _paymentChoice : null,
-        loanDuration: custom ? int.parse(_duration.text.trim()) : null,
-        interest: custom ? double.parse(_interest.text.trim()) : null,
+        loanDuration: custom ? (int.tryParse(_duration.text.trim()) ?? 0) : null,
+        interest: custom ? (double.tryParse(_interest.text.trim()) ?? 0) : null,
         specialDiscount: custom
-            ? (_specialOther ? double.parse(_special.text.trim()) : 0)
+            ? (_specialOther ? (double.tryParse(_special.text.trim()) ?? 0) : 0)
             : null,
         isFirstPayment: custom ? _downPayment : null,
         firstPaymentDuration: custom
-            ? (_downPayment ? int.parse(_downDuration.text.trim()) : 0)
+            ? (_downPayment ? (int.tryParse(_downDuration.text.trim()) ?? 0) : 0)
             : null,
         firstPaymentAmount: custom
-            ? (_downPayment ? double.parse(_downAmount.text.trim()) : 0)
+            ? (_downPayment ? (double.tryParse(_downAmount.text.trim()) ?? 0) : 0)
             : null,
       );
       if (!mounted) return;
@@ -219,7 +218,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         ),
         validator: (v) {
           if (!enabled) return null;
-          final value = double.tryParse((v ?? '').trim());
+          final text = (v ?? '').trim();
+          // Blank is fine for an optional field and means 0; a "positive"
+          // field (e.g. the down-payment amount) still needs a real value.
+          if (text.isEmpty) return positive ? l.invalidNumberLabel : null;
+          final value = double.tryParse(text);
           if (value == null ||
               !value.isFinite ||
               value < (positive ? .01 : 0) ||

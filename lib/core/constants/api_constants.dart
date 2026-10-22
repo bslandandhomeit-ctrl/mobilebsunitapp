@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kReleaseMode;
+
 /// API configuration for the BS Land & Home / BS Units backend.
 ///
 /// [baseUrl] is the real production URL found in the original
@@ -60,7 +62,10 @@ class ApiConstants {
   /// Called by lib/main_uat.dart (the `uat` flavor).
   static void useUat() {
     baseUrl = uatBaseUrl;
-    _envLabel = 'UAT';
+    // Same UAT backend either way, but label it by build: the released APK
+    // given to testers shows "UAT"; a developer running `flutter run` (debug)
+    // shows "DEV" so a local run is never mistaken for the shared UAT build.
+    _envLabel = kReleaseMode ? 'UAT' : 'DEV';
   }
 
   static const String oauthClientId = String.fromEnvironment(
