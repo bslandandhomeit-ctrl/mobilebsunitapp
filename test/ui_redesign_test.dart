@@ -656,7 +656,8 @@ void main() {
   ) async {
     await tester.pumpWidget(_app(const MainShell()));
     await tester.pumpAndSettle();
-    expect(find.text('Units'), findsNWidgets(2));
+    expect(find.text('Units'), findsOneWidget);
+    expect(find.text('BS Units'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'BCC1');
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();

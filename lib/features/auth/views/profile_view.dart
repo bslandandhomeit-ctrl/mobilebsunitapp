@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../../../core/constants/api_constants.dart';
+
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -107,7 +109,9 @@ class _ProfileViewState extends State<ProfileView> {
                 backgroundImage: _newAvatar != null
                     ? FileImage(File(_newAvatar!.path))
                     : (user?.avatarUrl != null
-                              ? NetworkImage(user!.avatarUrl!)
+                              ? NetworkImage(
+                                  ApiConstants.imageUrl(user!.avatarUrl!),
+                                )
                               : null)
                           as ImageProvider?,
                 child: _newAvatar == null && user?.avatarUrl == null

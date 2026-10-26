@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/theme/app_theme.dart';
+import '../constants/api_constants.dart';
 
 final _usdFormat = NumberFormat.currency(
   locale: 'en_US',
@@ -247,7 +248,7 @@ class AppImage extends StatelessWidget {
   Widget build(BuildContext context) => url == null || url!.isEmpty
       ? _placeholder()
       : CachedNetworkImage(
-          imageUrl: url!,
+          imageUrl: ApiConstants.imageUrl(url!),
           height: height,
           width: double.infinity,
           fit: fit,

@@ -3,34 +3,85 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "BS Units — UAT (debug)",
+      "name": "BS Units — Android Development (local backend)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "toolArgs": ["--flavor", "dev"]
+    },
+    {
+      "name": "BS Units — iOS Development (local backend)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart"
+    },
+    {
+      "name": "BS Units — Android UAT (debug)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_uat.dart",
-      "args": ["--flavor", "uat"]
+      "toolArgs": [
+        "--flavor",
+        "uat"
+      ]
     },
     {
-      "name": "BS Units — Production (debug)",
+      "name": "BS Units — Android Production (debug)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_prod.dart",
-      "args": ["--flavor", "prod"]
+      "toolArgs": [
+        "--flavor",
+        "prod"
+      ]
     },
     {
-      "name": "BS Units — UAT (profile)",
+      "name": "BS Units — Android UAT (profile)",
       "request": "launch",
       "type": "dart",
       "flutterMode": "profile",
       "program": "lib/main_uat.dart",
-      "args": ["--flavor", "uat"]
+      "toolArgs": [
+        "--flavor",
+        "uat"
+      ]
     },
     {
-      "name": "BS Units — Production (release)",
+      "name": "BS Units — Android Production (release)",
       "request": "launch",
       "type": "dart",
       "flutterMode": "release",
       "program": "lib/main_prod.dart",
-      "args": ["--flavor", "prod"]
+      "toolArgs": [
+        "--flavor",
+        "prod"
+      ]
+    },
+    {
+      "name": "BS Units — iOS UAT (debug)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_uat.dart"
+    },
+    {
+      "name": "BS Units — iOS Production (debug)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart"
+    },
+    {
+      "name": "BS Units — iOS UAT (profile)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "program": "lib/main_uat.dart"
+    },
+    {
+      "name": "BS Units — iOS Production (release)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main_prod.dart"
     }
   ]
 }

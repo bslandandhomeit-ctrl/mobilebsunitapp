@@ -1,12 +1,7 @@
 // Verified against the local dev backend (2026-09-11): GET
 // /api/whoami?embed=identifications,roles,manager.
 //
-// Important: this app is an internal staff tool, not customer-facing —
-// every account that can log in already has a role (App\User::
-// findForPassport() rejects login for accounts without one of a fixed
-// allow-list of roles: administrator, sale_manager, unit_controller,
-// sale_team_leader, accountant, agent, report). So "has any role" is
-// NOT a useful staff/customer distinction — every logged-in user has one.
+// Customers have an explicit customer role. Unknown/missing roles fail closed.
 class AppUser {
   AppUser({
     required this.id,
@@ -57,24 +52,39 @@ class AppUser {
   bool get isSaleAgent => saleType == 'agent';
 
   bool hasRole(String role) => roles.contains(role);
-  bool hasAnyRole(Iterable<String> candidates) => candidates.any(roles.contains);
+  bool get canAccessStaffFeatures =>
+      !hasRole('customer') &&
+      hasAnyRole([
+        'administrator',
+        'sale_manager',
+        'unit_controller',
+        'sale_team_leader',
+        'accountant',
+        'agent',
+        'report',
+      ]);
+  bool hasAnyRole(Iterable<String> candidates) =>
+      candidates.any(roles.contains);
 
   /// Gates Approve/Reject on Hold requests — confirmed against
   /// `Api/UnitHoldController@approve`/`@reject`: `unit_controller` only
   /// (narrower than deposits, which also allow `sale_manager`).
-  bool get canApproveHold => hasRole('unit_controller');
+  bool get canApproveHold =>
+      canAccessStaffFeatures && hasRole('unit_controller');
 
   /// Gates Approve/Reject on Deposit requests — confirmed against
   /// `Api/UnitDepositRequestController@approve`: `unit_controller` or
   /// `sale_manager`.
-  bool get canApproveDeposit => hasAnyRole(['unit_controller', 'sale_manager']);
+  bool get canApproveDeposit =>
+      canAccessStaffFeatures && hasAnyRole(['unit_controller', 'sale_manager']);
 
   /// Gates Cancel on deposit requests specifically — confirmed against
   /// `Api/UnitDepositRequestController@cancel`: restricted to
   /// `unit_controller` only (narrower than approve/reject, which also
   /// allows `sale_manager` — and notably NOT available to the requesting
   /// agent at all for deposits, unlike hold/contract requests).
-  bool get canCancelDeposit => hasRole('unit_controller');
+  bool get canCancelDeposit =>
+      canAccessStaffFeatures && hasRole('unit_controller');
 
   static List<String> _parseRoles(dynamic raw) {
     if (raw is! List) return const [];

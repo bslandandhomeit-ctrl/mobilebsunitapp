@@ -20,6 +20,7 @@ class AuthController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = RxnString();
   final Rxn<AppUser> currentUser = Rxn<AppUser>();
+  final userLoadError = RxnString();
 
   void Function(OSPushSubscriptionChangedState)? _pushObserver;
 
@@ -27,13 +28,19 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     if (LocalStorage.isLoggedIn) {
-      _repository.getAuthenticatedUser().then(
-        (user) => currentUser.value = user,
-        onError: (_) {},
-      );
+      loadCurrentUser();
       _registerPushSubscription();
     }
     _watchPushSubscriptionChanges();
+  }
+
+  Future<void> loadCurrentUser() async {
+    userLoadError.value = null;
+    try {
+      currentUser.value = await _repository.getAuthenticatedUser();
+    } on ApiException catch (e) {
+      userLoadError.value = e.message;
+    }
   }
 
   Future<void> login() async {
@@ -54,6 +61,8 @@ class AuthController extends GetxController {
       await _registerPushSubscription();
       Get.offAllNamed(AppRoutes.home);
     } on ApiException catch (e) {
+      await LocalStorage.clearAuth();
+      currentUser.value = null;
       errorMessage.value = e.message;
     } finally {
       isLoading.value = false;

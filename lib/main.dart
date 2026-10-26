@@ -19,8 +19,9 @@ const _oneSignalAppId = '25dd12b1-8fda-4085-8ba7-4bea5c12dfb3';
 
 // Plain entry point (e.g. tests, or `flutter run` with no flavor): defaults to
 // production. For day-to-day work use a flavor instead — see RUN.md:
-//   UAT:        flutter run --flavor uat  -t lib/main_uat.dart
-//   Production: flutter run --flavor prod -t lib/main_prod.dart
+//   UAT:        flutter run -t lib/main_uat.dart
+//   Production: flutter run -t lib/main_prod.dart
+// On Android, also pass --flavor uat or --flavor prod respectively.
 Future<void> main() async {
   await startBsUnits();
 }

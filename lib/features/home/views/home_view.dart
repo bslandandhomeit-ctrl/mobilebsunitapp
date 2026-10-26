@@ -1,9 +1,11 @@
 import 'banner_carousel.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/app_ui.dart';
+import '../../../core/widgets/brand_header.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../projects/controllers/project_detail_controller.dart';
@@ -20,20 +22,7 @@ class HomeView extends GetView<HomeController> {
     final l10n = AppLocalizations.of(context)!;
     return AppPage(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/icon/splash_logo.png',
-              width: 44,
-              height: 24,
-              semanticLabel: 'BS',
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(l10n.appTitle, overflow: TextOverflow.ellipsis),
-            ),
-          ],
-        ),
+        title: const BrandHeader(),
         actions: [
           IconButton(
             onPressed: auth.logout,

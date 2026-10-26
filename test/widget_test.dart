@@ -10,6 +10,6 @@ void main() {
     expect(find.text('BS Units'), findsOneWidget);
 
     // Let the splash redirect timer finish so no timers remain pending.
-    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pump(const Duration(milliseconds: 2000));
   });
 }

@@ -10,6 +10,8 @@ import '../../features/contract_request/controllers/contract_request_controller.
 import '../../features/contract_request/views/contract_request_view.dart';
 import '../../features/more/views/more_view.dart';
 import '../../l10n/app_localizations.dart';
+import '../../features/auth/controllers/auth_controller.dart';
+import '../../features/home/views/home_view.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -55,6 +57,38 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    return Obx(() {
+      final auth = Get.find<AuthController>();
+      final user = auth.currentUser.value;
+      if (user == null) {
+        if (auth.userLoadError.value != null) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(auth.userLoadError.value!),
+                  TextButton(
+                    onPressed: auth.loadCurrentUser,
+                    child: const Text('Retry'),
+                  ),
+                  TextButton(
+                    onPressed: auth.logout,
+                    child: Text(AppLocalizations.of(context)!.logOut),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+      if (!user.canAccessStaffFeatures) return const HomeView();
+      return _staffShell(context);
+    });
+  }
+
+  Widget _staffShell(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final labels = [
       l.units,

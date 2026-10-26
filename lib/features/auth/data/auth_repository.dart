@@ -11,6 +11,20 @@ import '../models/user.dart';
 class AuthRepository {
   final ApiClient _client = ApiClient.instance;
 
+  Future<void> registerCustomer(
+    Map<String, dynamic> fields, {
+    String? avatarPath,
+  }) async {
+    await _client.post(
+      'api/customers/register',
+      data: FormData.fromMap({
+        ...fields,
+        if (avatarPath != null)
+          'avatar': await MultipartFile.fromFile(avatarPath),
+      }),
+    );
+  }
+
   Future<AuthToken> login({
     required String username,
     required String password,
@@ -57,9 +71,10 @@ class AuthRepository {
       'birthdate': birthdate == null
           ? null
           : '${birthdate.year.toString().padLeft(4, '0')}-'
-              '${birthdate.month.toString().padLeft(2, '0')}-'
-              '${birthdate.day.toString().padLeft(2, '0')}',
-      if (avatarPath != null) 'avatar': await MultipartFile.fromFile(avatarPath),
+                '${birthdate.month.toString().padLeft(2, '0')}-'
+                '${birthdate.day.toString().padLeft(2, '0')}',
+      if (avatarPath != null)
+        'avatar': await MultipartFile.fromFile(avatarPath),
     });
     final response = await _client.put<Map<String, dynamic>>(
       ApiConstants.whoamiPath,
@@ -76,10 +91,7 @@ class AuthRepository {
   }) {
     return _client.post(
       ApiConstants.changePasswordPath,
-      data: {
-        'password_current': currentPassword,
-        'password_new': newPassword,
-      },
+      data: {'password_current': currentPassword, 'password_new': newPassword},
     );
   }
 
@@ -93,7 +105,9 @@ class AuthRepository {
   );
 
   Future<PaginatedResponse<AppUser>> getMembers() async {
-    final response = await _client.get<Map<String, dynamic>>(ApiConstants.membersPath);
+    final response = await _client.get<Map<String, dynamic>>(
+      ApiConstants.membersPath,
+    );
     return PaginatedResponse.fromJson(response.data!, AppUser.fromJson);
   }
 

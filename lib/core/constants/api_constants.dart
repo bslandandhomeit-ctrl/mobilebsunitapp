@@ -30,6 +30,53 @@ class ApiConstants {
   static const String productionBaseUrl = 'https://contract.chaktomukcity.com/';
   static const String uatHost = '10.3.0.99';
   static const String uatBaseUrl = 'http://$uatHost:8082/';
+  static const String developmentBaseUrl = 'http://127.0.0.1:8000/';
+  static String? _imageBaseUrl;
+
+  /// Development reads uploaded images from UAT while keeping API calls local.
+  static String imageUrl(String value) {
+    if (_imageBaseUrl == null || value.isEmpty) return value;
+    final image = Uri.tryParse(value);
+    if (image == null) return value;
+    final source = Uri.parse(baseUrl);
+    final target = Uri.parse(_imageBaseUrl!);
+    if (!image.hasAuthority) {
+      if (image.hasScheme) return value;
+      return target.resolveUri(image).toString();
+    }
+    if (!['http', 'https', ''].contains(image.scheme)) return value;
+    if (![
+      source.host,
+      'localhost',
+      '127.0.0.1',
+      '0.0.0.0',
+      '10.0.2.2',
+      uatHost,
+    ].contains(image.host)) {
+      return value;
+    }
+    return image
+        .replace(
+          scheme: target.scheme,
+          host: target.host,
+          port: target.port,
+        )
+        .toString();
+  }
+
+  /// Local API server; the server can independently use the database on .99.
+  /// Android over USB needs `adb reverse tcp:8000 tcp:8000` for localhost.
+  static void useDevelopment() {
+    baseUrl = const String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: developmentBaseUrl,
+    );
+    _envLabel = 'DEVELOPMENT';
+    _imageBaseUrl = const String.fromEnvironment(
+      'IMAGE_BASE_URL',
+      defaultValue: uatBaseUrl,
+    );
+  }
 
   // Which backend the app talks to. The flavors set this at startup via
   // useProduction() / useUat() (lib/main_prod.dart / lib/main_uat.dart).
@@ -54,6 +101,7 @@ class ApiConstants {
   /// Point the app at the production backend (the real live server).
   /// Called by lib/main_prod.dart (the `prod` flavor).
   static void useProduction() {
+    _imageBaseUrl = null;
     baseUrl = productionBaseUrl;
     _envLabel = '';
   }
@@ -61,6 +109,7 @@ class ApiConstants {
   /// Point the app at the UAT backend (10.3.0.99 — needs the FortiClient VPN).
   /// Called by lib/main_uat.dart (the `uat` flavor).
   static void useUat() {
+    _imageBaseUrl = null;
     baseUrl = uatBaseUrl;
     // Same UAT backend either way, but label it by build: the released APK
     // given to testers shows "UAT"; a developer running `flutter run` (debug)

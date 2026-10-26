@@ -9,6 +9,7 @@ import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../deposit/views/deposit_request_form_view.dart';
 import '../../hold/views/hold_request_form_view.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../data/unit_comment_repository.dart';
 import '../data/projects_repository.dart';
 import 'unit_information_card.dart';
@@ -31,6 +32,10 @@ class UnitDetailView extends StatefulWidget {
 }
 
 class _UnitDetailViewState extends State<UnitDetailView> {
+  bool get _staff =>
+      Get.isRegistered<AuthController>() &&
+      (Get.find<AuthController>().currentUser.value?.canAccessStaffFeatures ??
+          false);
   late Unit _unit;
   bool _loadingUnit = true;
   String? _unitError;
@@ -47,7 +52,7 @@ class _UnitDetailViewState extends State<UnitDetailView> {
     super.initState();
     _unit = widget.unit;
     _loadUnit();
-    _loadComments();
+    if (_staff) _loadComments();
   }
 
   Future<void> _loadUnit() async {
@@ -130,33 +135,35 @@ class _UnitDetailViewState extends State<UnitDetailView> {
           ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _loadingUnit || !available
-                      ? null
-                      : () => _request(false),
-                  child: Text(l.holdButtonLabel),
+      bottomNavigationBar: !_staff
+          ? null
+          : SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _loadingUnit || !available
+                            ? null
+                            : () => _request(false),
+                        child: Text(l.holdButtonLabel),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: _loadingUnit || !(available || held)
+                            ? null
+                            : () => _request(true),
+                        child: Text(l.depositButtonLabel),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _loadingUnit || !(available || held)
-                      ? null
-                      : () => _request(true),
-                  child: Text(l.depositButtonLabel),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         children: [
@@ -203,85 +210,88 @@ class _UnitDetailViewState extends State<UnitDetailView> {
           _gallery(l.exteriorLabel, _unit.exteriorUrls),
           _gallery(l.interiorLabel, _unit.interiorUrls),
           _gallery(l.floorPlanLabel, _unit.floorPlanUrls),
-          AppPanel(
-            child: ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              title: Text(l.comments),
-              children: [
-                TextField(
-                  controller: _commentController,
-                  decoration: InputDecoration(hintText: l.addComment),
-                  minLines: 2,
-                  maxLines: 5,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      onPressed: _addPhotos,
-                      tooltip: l.attachPhotos,
-                      icon: const Icon(Icons.add_photo_alternate_outlined),
-                    ),
-                    IconButton(
-                      onPressed: _isPostingComment ? null : _postComment,
-                      tooltip: l.addComment,
-                      icon: _isPostingComment
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send),
-                    ),
-                  ],
-                ),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    for (var i = 0; i < _pendingPhotos.length; i++)
-                      Stack(
-                        children: [
-                          Image.file(
-                            File(_pendingPhotos[i].path),
-                            width: 72,
-                            height: 72,
-                            fit: BoxFit.cover,
-                          ),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: IconButton(
-                              onPressed: () => _removePendingPhoto(i),
-                              icon: const Icon(Icons.cancel),
+          if (_staff)
+            AppPanel(
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                title: Text(l.comments),
+                children: [
+                  TextField(
+                    controller: _commentController,
+                    decoration: InputDecoration(hintText: l.addComment),
+                    minLines: 2,
+                    maxLines: 5,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: _addPhotos,
+                        tooltip: l.attachPhotos,
+                        icon: const Icon(Icons.add_photo_alternate_outlined),
+                      ),
+                      IconButton(
+                        onPressed: _isPostingComment ? null : _postComment,
+                        tooltip: l.addComment,
+                        icon: _isPostingComment
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.send),
+                      ),
+                    ],
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (var i = 0; i < _pendingPhotos.length; i++)
+                        Stack(
+                          children: [
+                            Image.file(
+                              File(_pendingPhotos[i].path),
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
                             ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-                if (_isLoadingComments)
-                  const CircularProgressIndicator()
-                else if (_comments.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(l.noCommentsYet),
-                  )
-                else
-                  for (final c in _comments)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: IconButton(
+                                onPressed: () => _removePendingPhoto(i),
+                                icon: const Icon(Icons.cancel),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                  if (_isLoadingComments)
+                    const CircularProgressIndicator()
+                  else if (_comments.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(c.content),
-                          for (final url in c.mediaUrls)
-                            AppImage(url: url, height: 160),
-                        ],
+                      padding: const EdgeInsets.all(16),
+                      child: Text(l.noCommentsYet),
+                    )
+                  else
+                    for (final c in _comments)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(c.content),
+                            for (final url in c.mediaUrls)
+                              AppImage(url: url, height: 160),
+                          ],
+                        ),
                       ),
-                    ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

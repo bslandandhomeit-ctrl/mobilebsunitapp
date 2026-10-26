@@ -11,7 +11,7 @@ class SplashController extends GetxController {
   }
 
   Future<void> _redirect() async {
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 1900));
     Get.offAllNamed(
       LocalStorage.isLoggedIn ? AppRoutes.home : AppRoutes.login,
     );

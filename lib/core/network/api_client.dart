@@ -20,7 +20,8 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           final token = LocalStorage.accessToken;
-          if (token != null && !options.path.contains(ApiConstants.oauthTokenPath)) {
+          if (token != null &&
+              !options.path.contains(ApiConstants.oauthTokenPath)) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           handler.next(options);
@@ -33,7 +34,13 @@ class ApiClient {
 
     if (kDebugMode) {
       _dio.interceptors.add(
-        LogInterceptor(requestBody: true, responseBody: true),
+        // Authentication requests contain passwords and Firebase ID tokens.
+        LogInterceptor(
+          requestHeader: false,
+          responseHeader: false,
+          requestBody: false,
+          responseBody: false,
+        ),
       );
     }
   }
@@ -104,6 +111,13 @@ class ApiClient {
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.connectionError) {
       message = 'Cannot reach the server. Check your connection.';
+    }
+
+    if (response?.statusCode == 429) {
+      final seconds = int.tryParse(response?.headers.value('retry-after') ?? '');
+      message = seconds == null
+          ? 'Too many attempts. Please wait a minute before trying again.'
+          : 'Too many attempts. Please try again in $seconds seconds.';
     }
 
     return ApiException(

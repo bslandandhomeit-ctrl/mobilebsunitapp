@@ -36,6 +36,13 @@ android {
     //   uat  -> com.bslandandhome.bsunits.dev   (lib/main_uat.dart, 10.3.0.99) - installs next to prod
     flavorDimensions += "env"
     productFlavors {
+        create("dev") {
+            dimension = "env"
+            // Reuse the registered Firebase UAT app for local OTP testing.
+            // Dev and UAT therefore replace each other on the device.
+            applicationId = "com.bslandandhome.bsunits.dev"
+            versionNameSuffix = "-dev"
+        }
         create("prod") {
             dimension = "env"
             applicationId = "com.bslandandhome.bsunits"

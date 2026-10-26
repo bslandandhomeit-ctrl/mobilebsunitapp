@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/widgets/app_ui.dart';
+import '../../../core/widgets/brand_header.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/controllers/home_controller.dart';
 import '../../home/views/banner_carousel.dart';
@@ -335,7 +336,14 @@ class _UnitsViewState extends State<UnitsView> {
       groups.putIfAbsent(unit.projectName ?? l.project, () => []).add(unit);
     }
     return AppPage(
-      appBar: AppBar(title: Text(widget.title ?? l.units)),
+      appBar: AppBar(
+        title:
+            widget.title == null &&
+                widget.projectId == null &&
+                widget.unitTypeId == null
+            ? BrandHeader(subtitle: l.units)
+            : Text(widget.title ?? l.units),
+      ),
       body: Column(
         children: [
           Padding(

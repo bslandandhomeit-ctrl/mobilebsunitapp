@@ -20,7 +20,12 @@ class AppPages {
         Get.put(SplashController());
       }),
     ),
-    GetPage(name: AppRoutes.login, page: () => const LoginView()),
+    GetPage(
+      name: AppRoutes.login,
+      page: () => const LoginView(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 650),
+    ),
     GetPage(
       name: AppRoutes.home,
       page: () => const MainShell(),

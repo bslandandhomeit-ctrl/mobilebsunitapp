@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/api_constants.dart';
+
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
@@ -62,7 +64,7 @@ class _MembersViewState extends State<MembersView> {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundImage: m.avatarUrl != null
-                            ? NetworkImage(m.avatarUrl!)
+                            ? NetworkImage(ApiConstants.imageUrl(m.avatarUrl!))
                             : null,
                         child: m.avatarUrl == null
                             ? const Icon(Icons.person)
