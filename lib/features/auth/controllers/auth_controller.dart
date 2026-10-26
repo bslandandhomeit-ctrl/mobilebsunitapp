@@ -39,7 +39,13 @@ class AuthController extends GetxController {
     try {
       currentUser.value = await _repository.getAuthenticatedUser();
     } on ApiException catch (e) {
-      userLoadError.value = e.message;
+      if (e.statusCode == 401) {
+        await LocalStorage.clearAuth();
+        currentUser.value = null;
+        Get.offAllNamed(AppRoutes.login);
+      } else {
+        userLoadError.value = e.message;
+      }
     }
   }
 
@@ -95,9 +101,12 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    await _repository.logout();
-    currentUser.value = null;
-    Get.offAllNamed(AppRoutes.login);
+    try {
+      await _repository.logout();
+    } finally {
+      currentUser.value = null;
+      Get.offAllNamed(AppRoutes.login);
+    }
   }
 
   @override
