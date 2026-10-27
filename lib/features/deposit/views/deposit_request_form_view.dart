@@ -19,8 +19,20 @@ class DepositRequestFormView extends StatefulWidget {
   State<DepositRequestFormView> createState() => _DepositRequestFormViewState();
 }
 
+class _AdditionalCustomer {
+  final name = TextEditingController();
+  final phone = TextEditingController();
+  int? gender;
+
+  void dispose() {
+    name.dispose();
+    phone.dispose();
+  }
+}
+
 class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _repository = DepositRepository();
+  final _additionalCustomers = <_AdditionalCustomer>[];
   final _form = GlobalKey<FormState>();
   final _scroll = ScrollController();
   // Unlimited customers; the first is required. "Add more customer" appends.
@@ -33,10 +45,9 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       _downDuration = TextEditingController();
   final _interest = TextEditingController(), _duration = TextEditingController();
   int _step = 0, _paymentChoice = 0;
-  // Sale: internal -> Sale Person (default = me) + Sale Support; agent -> only my own name.
-  List<({int id, String name})> _saleReps = [];
-  int? _salePersonId, _saleSupportId;
-  bool _downPayment = false,
+  int? _gender, _gender2;
+  bool _secondCustomer = false,
+      _downPayment = false,
       _specialOther = false,
       _saving = false,
       _loadingOptions = true;
@@ -102,6 +113,9 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     ]) {
       c.dispose();
     }
+    for (final customer in _additionalCustomers) {
+      customer.dispose();
+    }
     _scroll.dispose();
     super.dispose();
   }
@@ -130,32 +144,24 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     try {
       await _repository.create(
         unitId: widget.unit.id,
-        depositAmount: double.tryParse(_deposit.text.trim()) ?? 0,
-        otherDiscountAllowance: double.tryParse(_discount.text.trim()) ?? 0,
-        customerName: _customers[0].name.text.trim(),
-        customerGender: _customers[0].gender!,
-        customerPhoneNumber: _customers[0].phone.text.trim(),
-        customerName2: _customers.length > 1 && _customers[1].name.text.trim().isNotEmpty
-            ? _customers[1].name.text.trim()
-            : null,
-        customerGender2: _customers.length > 1 && _customers[1].name.text.trim().isNotEmpty
-            ? _customers[1].gender
-            : null,
-        customerPhoneNumber2: _customers.length > 1 && _customers[1].phone.text.trim().isNotEmpty
-            ? _customers[1].phone.text.trim()
-            : null,
-        // Full list (unlimited) for the backend to store.
-        customers: [
-          for (final c in _customers)
-            if (c.name.text.trim().isNotEmpty)
-              {
-                'name': c.name.text.trim(),
-                'gender': c.gender,
-                'phone': c.phone.text.trim().isEmpty ? null : c.phone.text.trim(),
-              },
+        depositAmount: double.parse(_deposit.text.trim()),
+        otherDiscountAllowance: double.parse(_discount.text.trim()),
+        customerName: _name.text.trim(),
+        customerGender: _gender!,
+        customerPhoneNumber: _phone.text.trim(),
+        customerName2: _secondCustomer ? _name2.text.trim() : null,
+        customerGender2: _secondCustomer ? _gender2 : null,
+        customerPhoneNumber2: _phone2.text.trim().isEmpty
+            ? null
+            : _phone2.text.trim(),
+        additionalCustomers: [
+          for (final customer in _additionalCustomers)
+            {
+              'name': customer.name.text.trim(),
+              'gender': customer.gender!,
+              'phone_number': customer.phone.text.trim(),
+            },
         ],
-        salePersonId: _salePersonId ?? _me?.saleRepresentativeId,
-        saleSupportId: _isAgent ? null : _saleSupportId,
         remark: _remark.text.trim().isEmpty ? null : _remark.text.trim(),
         paymentOptionId: _paymentChoice > 0 ? _paymentChoice : null,
         loanDuration: custom ? (int.tryParse(_duration.text.trim()) ?? 0) : null,
@@ -179,7 +185,10 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         l.depositRequestedMessage(widget.unit.name),
       );
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) {
+        setState(() => _error = e.message);
+        if (_scroll.hasClients) _scroll.jumpTo(0);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -260,113 +269,147 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+        ),
+        const SizedBox(height: 16),
+        _genderField(l, false),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _phone,
+          validator: _phoneValid,
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            labelText: l.phoneLineOneLabel,
+            hintText: '012345678',
+          ),
+        ),
+        const SizedBox(height: 24),
+        SwitchListTile.adaptive(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l.addSecondCustomer),
+          value: _secondCustomer,
+          onChanged: _additionalCustomers.isNotEmpty
+              ? null
+              : (value) => setState(() => _secondCustomer = value),
+        ),
+        if (_secondCustomer) ...[
+          const SizedBox(height: 16),
           TextFormField(
-            controller: _customers[i].name,
-            validator: i == 0 ? _required : null,
+            controller: _name2,
+            validator: _required,
             maxLength: 255,
             decoration: InputDecoration(
-              labelText: l.customerOneNameLabel,
+              labelText: l.customerTwoNameLabel,
               counterText: '',
             ),
           ),
           const SizedBox(height: 16),
-          _genderField(l, i),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _customers[i].phone,
-            validator: (v) => _phoneValid(v, optional: i != 0),
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
-              labelText: l.phoneLineOneLabel,
-              hintText: '012345678',
-            ),
-          ),
+          _genderField(l, true),
         ],
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: () => setState(() => _customers.add(_Customer())),
-            icon: const Icon(Icons.add),
-            label: const Text('Add more customer'),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _phone2,
+          validator: (v) => _phoneValid(v, optional: true),
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            labelText: l.phoneLineTwoLabel,
+            hintText: '012345678',
           ),
         ),
-        const Divider(height: 32),
-        _saleSection(l),
+        for (final (index, customer) in _additionalCustomers.indexed)
+          Padding(
+            key: ObjectKey(customer),
+            padding: const EdgeInsets.only(top: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text(l.depositCustomerNumber(index + 3))),
+                    IconButton(
+                      tooltip: l.removeDepositCustomer,
+                      icon: const Icon(Icons.person_remove_outlined),
+                      onPressed: () {
+                        setState(() => _additionalCustomers.remove(customer));
+                        // Wait until the text fields have unmounted.
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          customer.dispose();
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                TextFormField(
+                  controller: customer.name,
+                  validator: _required,
+                  maxLength: 255,
+                  decoration: InputDecoration(labelText: l.customerName),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  initialValue: customer.gender,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: l.depositCustomerGender,
+                  ),
+                  items: [
+                    DropdownMenuItem(value: 1, child: Text(l.male)),
+                    DropdownMenuItem(value: 2, child: Text(l.female)),
+                  ],
+                  validator: (v) => v == null ? l.requiredFieldLabel : null,
+                  onChanged: (v) => setState(() => customer.gender = v),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: customer.phone,
+                  validator: (v) => _phoneValid(v, optional: true),
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: l.customerPhone,
+                    hintText: '012345678',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.person_add_alt_1),
+          label: Text(l.addDepositCustomer),
+          onPressed: () => setState(() {
+            if (!_secondCustomer) {
+              _secondCustomer = true;
+            } else {
+              _additionalCustomers.add(_AdditionalCustomer());
+            }
+          }),
+        ),
       ],
     ),
   );
-
-  Widget _genderField(AppLocalizations l, int index) =>
-      DropdownButtonFormField<int>(
-        key: ValueKey('gender-$index'),
-        initialValue: _customers[index].gender,
-        isExpanded: true,
-        decoration: InputDecoration(labelText: l.customerOneGenderLabel),
-        items: [
-          DropdownMenuItem(value: 1, child: Text(l.male)),
-          DropdownMenuItem(value: 2, child: Text(l.female)),
-        ],
-        validator: (v) =>
-            v == null &&
-                (index == 0 || _customers[index].name.text.trim().isNotEmpty)
-            ? l.requiredFieldLabel
-            : null,
-        onChanged: (v) => setState(() => _customers[index].gender = v),
-      );
-
-  // Internal: Sale Person (default = me) + optional Sale Support. Agent: only their own name.
-  Widget _saleSection(AppLocalizations l) {
-    if (_isAgent) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Sale', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          InputDecorator(
-            decoration: const InputDecoration(labelText: 'Sale Agent'),
-            child: Text(_me?.saleName ?? _me?.name ?? '-'),
-          ),
-        ],
-      );
-    }
-    final meId = _me?.saleRepresentativeId;
-    final personItems = <DropdownMenuItem<int?>>[
-      if (meId != null && !_saleReps.any((r) => r.id == meId))
-        DropdownMenuItem(value: meId, child: Text(_me?.saleName ?? _me?.name ?? 'Me')),
-      for (final r in _saleReps)
-        DropdownMenuItem(value: r.id, child: Text(r.name)),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text('Sale', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<int?>(
-          isExpanded: true,
-          initialValue: _salePersonId,
-          decoration: const InputDecoration(labelText: 'Sale Person Name'),
-          items: personItems,
-          onChanged: (v) => setState(() => _salePersonId = v),
-        ),
-        const SizedBox(height: 16),
-        DropdownButtonFormField<int?>(
-          isExpanded: true,
-          initialValue: _saleSupportId,
-          decoration: const InputDecoration(
-            labelText: 'Sale Support Name (optional)',
-          ),
-          items: [
-            const DropdownMenuItem(value: null, child: Text('- None -')),
-            for (final r in _saleReps)
-              DropdownMenuItem(value: r.id, child: Text(r.name)),
-          ],
-          onChanged: (v) => setState(() => _saleSupportId = v),
-        ),
-      ],
-    );
-  }
+  Widget _genderField(
+    AppLocalizations l,
+    bool second,
+  ) => DropdownButtonFormField<int>(
+    key: ValueKey('gender-$second'),
+    initialValue: second ? _gender2 : _gender,
+    isExpanded: true,
+    decoration: InputDecoration(
+      labelText: second ? l.customerTwoGenderLabel : l.customerOneGenderLabel,
+    ),
+    items: [
+      DropdownMenuItem(value: 1, child: Text(l.male)),
+      DropdownMenuItem(value: 2, child: Text(l.female)),
+    ],
+    validator: (v) =>
+        v == null && (!second || _secondCustomer) ? l.requiredFieldLabel : null,
+    onChanged: (v) => setState(() {
+      if (second) {
+        _gender2 = v;
+      } else {
+        _gender = v;
+      }
+    }),
+  );
   Widget _discountStep(AppLocalizations l) => AppPanel(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -622,15 +665,6 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                   controller: _scroll,
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                   children: [
-                    KeyedSubtree(
-                      key: ValueKey(_step),
-                      child: switch (_step) {
-                        0 => _customerStep(l),
-                        1 => UnitInformationCard(unit: widget.unit),
-                        2 => _discountStep(l),
-                        _ => _paymentStep(l),
-                      },
-                    ),
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 16),
@@ -641,6 +675,15 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                           ),
                         ),
                       ),
+                    KeyedSubtree(
+                      key: ValueKey(_step),
+                      child: switch (_step) {
+                        0 => _customerStep(l),
+                        1 => UnitInformationCard(unit: widget.unit),
+                        2 => _discountStep(l),
+                        _ => _paymentStep(l),
+                      },
+                    ),
                   ],
                 ),
               ),

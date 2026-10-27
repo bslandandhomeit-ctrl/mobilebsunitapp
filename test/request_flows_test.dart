@@ -63,15 +63,45 @@ Future<void> customers(WidgetTester tester) async {
 
 void main() {
   Map<String, dynamic>? sent;
+  bool supportsAdditionalCustomers = true;
+  bool missingCustomerCapabilities = false;
   setUp(() {
     Get.testMode = true;
     sent = null;
+    supportsAdditionalCustomers = true;
+    missingCustomerCapabilities = false;
     final dio = ApiClient.instance.dio;
     dio.interceptors.clear();
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (o, h) {
-          if (o.method == 'POST') {
+          if (o.path.endsWith('/customer-capabilities')) {
+            if (missingCustomerCapabilities) {
+              h.reject(
+                DioException(
+                  requestOptions: o,
+                  type: DioExceptionType.badResponse,
+                  response: Response(
+                    requestOptions: o,
+                    statusCode: 404,
+                    data: {
+                      'error': {'message': 'Resource not found.'},
+                    },
+                  ),
+                ),
+              );
+              return;
+            }
+            h.resolve(
+              Response(
+                requestOptions: o,
+                statusCode: 200,
+                data: {
+                  'data': {'additional_customers': supportsAdditionalCustomers},
+                },
+              ),
+            );
+          } else if (o.method == 'POST') {
             sent = Map<String, dynamic>.from(o.data as Map);
             h.resolve(
               Response(
@@ -125,6 +155,81 @@ void main() {
       find.text('Enter a phone number starting with 0 (9–10 digits).'),
       findsOneWidget,
     );
+  });
+  for (final mode in ['supported', 'unsupported', 'missing']) {
+    final supported = mode == 'supported';
+    testWidgets('Three buyers: server support = $mode', (tester) async {
+      supportsAdditionalCustomers = supported;
+      missingCustomerCapabilities = mode == 'missing';
+      await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
+      await tester.pumpAndSettle();
+      final add = find.widgetWithText(OutlinedButton, 'Add customer');
+      tester.testTextInput.hide();
+      await tester.ensureVisible(add);
+      await tester.pumpAndSettle();
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      await fill(tester, 'Surname and Name (Customer 2)', 'Second Buyer');
+      final secondGender = find.byKey(const ValueKey('gender-true'));
+      await tester.ensureVisible(secondGender);
+      await tester.tap(secondGender);
+      await tester.pumpAndSettle();
+      await tap(tester, 'Female');
+      tester.testTextInput.hide();
+      await tester.ensureVisible(add);
+      await tester.pumpAndSettle();
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      await fill(tester, 'Customer name', 'Third Buyer');
+      final thirdGender = find.widgetWithText(
+        DropdownButtonFormField<int>,
+        'Gender *',
+      );
+      await tester.ensureVisible(thirdGender);
+      await tester.tap(thirdGender);
+      await tester.pumpAndSettle();
+      await tap(tester, 'Male');
+      await fill(tester, 'Customer phone', '011234567');
+      await customers(tester);
+      await tap(tester, 'Save');
+      if (supported) {
+        expect(sent!['additional_customers'], [
+          {'name': 'Third Buyer', 'gender': 1, 'phone_number': '011234567'},
+        ]);
+        expect(sent!['customer2_name'], 'Second Buyer');
+      } else {
+        expect(sent, isNull);
+        expect(
+          find.text(
+            'This server must be updated before it can save more than two customers.',
+          ),
+          findsOneWidget,
+        );
+      }
+    });
+  }
+  testWidgets('Added customer requires a name and gender and is submitted', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
+    await tester.pumpAndSettle();
+    expect(find.text('Surname and Name (Customer 2)'), findsNothing);
+    await tester.ensureVisible(find.byType(SwitchListTile));
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    await tap(tester, 'Next');
+    expect(find.text('1 / 4'), findsOneWidget);
+    await fill(tester, 'Surname and Name (Customer 2)', 'Second Buyer');
+    final gender = find.byKey(const ValueKey('gender-true'));
+    await tester.ensureVisible(gender);
+    await tester.tap(gender);
+    await tester.pumpAndSettle();
+    await tap(tester, 'Female');
+    await customers(tester);
+    await tap(tester, 'Save');
+    expect(sent!['customer2_name'], 'Second Buyer');
+    expect(sent!['customer2_gender'], 2);
+    expect(sent!['customer_phone_number2'], '098765432');
   });
   testWidgets(
     'None payment option and a single customer submit the customers list',

@@ -1603,6 +1603,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Valid until {date}'**
   String promotionValidUntil(String date);
+
+  /// No description provided for @addDepositCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add customer'**
+  String get addDepositCustomer;
+
+  /// No description provided for @removeDepositCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove customer'**
+  String get removeDepositCustomer;
+
+  /// No description provided for @depositCustomerNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer {number}'**
+  String depositCustomerNumber(int number);
+
+  /// No description provided for @depositCustomerGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender *'**
+  String get depositCustomerGender;
 }
 
 class _AppLocalizationsDelegate

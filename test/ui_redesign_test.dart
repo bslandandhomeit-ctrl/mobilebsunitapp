@@ -146,6 +146,10 @@ Widget _app(
 Future<void> _capture(WidgetTester tester, String name) async {
   const output = String.fromEnvironment('UI_PREVIEW_DIR');
   if (output.isEmpty) return;
+  await tester.runAsync(() => precacheImage(
+    const AssetImage('assets/image/splash.jpg'), _boundaryKey.currentContext!,
+  ));
+  await tester.pumpAndSettle();
   await tester.runAsync(() async {
     final boundary =
         _boundaryKey.currentContext!.findRenderObject()!
@@ -185,6 +189,12 @@ void main() {
           Future.value(ByteData.sublistView(await File(font).readAsBytes())),
         );
       await loader.load();
+      for (final entry in {
+        'Manrope': 'assets/fonts/Manrope.ttf',
+        'CormorantGaramond': 'assets/fonts/CormorantGaramond.ttf',
+      }.entries) {
+        await (FontLoader(entry.key)..addFont(rootBundle.load(entry.value))).load();
+      }
       final icons = FontLoader('MaterialIcons')
         ..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'));
       await icons.load();

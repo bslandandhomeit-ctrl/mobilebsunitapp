@@ -21,6 +21,11 @@ class UnifiedDepositSaleRevision {
    if(!is_string($expectedTermsHash)||!hash_equals($expectedTermsHash,hash('sha256',$terms->terms_snapshot)))throw new \LogicException('Sale version changed.');
    $old=json_decode($terms->terms_snapshot,true,512,JSON_THROW_ON_ERROR);
    if(($old['id']??null)!=$request['id']||($old['unit_id']??null)!=$request['unit_id'])throw new \LogicException('Same request and unit required.');
+            $oldAdditional = $old['additional_customers'] ?? [];
+            $newAdditional = $request['additional_customers'] ?? [];
+            if (is_string($oldAdditional)) $oldAdditional = json_decode($oldAdditional, true, 512, JSON_THROW_ON_ERROR);
+            if (is_string($newAdditional)) $newAdditional = json_decode($newAdditional, true, 512, JSON_THROW_ON_ERROR);
+            if ($oldAdditional != $newAdditional) throw new \LogicException('Buyer changes require identity review.');
    foreach(['customer_name','customer_gender','customer2_name','customer2_gender','customer_phone_number','customer_phone_number2'] as $field)if((string)($old[$field]??'')!==(string)($request[$field]??''))throw new \LogicException('Buyer changes require identity review.');
    if($sale->status!=='Ordered'||$sale->authorization!=='Authorized'||$sale->payment_status!=='Unpaid'||$sale->invoice_status!=='First Created'||(float)$sale->clearance_amount!=0||(float)$sale->vat!=0||(float)($request['receiving_amount']??0)!=0||$this->db->table('loan_accounts')->where('sale_id',$sale->id)->exists())throw new \LogicException('Financed or paid sale requires finance review.');
    $items=$this->db->table('sale_items')->where('sale_id',$sale->id)->lockForUpdate()->get();if($items->count()!==1||$items->first()->unit_id!=$unit->id)throw new \LogicException('Same single-unit sale required.');

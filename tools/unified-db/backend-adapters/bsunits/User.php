@@ -469,6 +469,7 @@ class User extends Authenticatable
         $user = $this->where('phone_number', $username)->first();
 
         $allowed_role = [
+            'customer',
             UserRole::ADMINISTRATOR, 
             UserRole::SALE_MANAGER,
             UserRole::UNIT_CONTROLLER,

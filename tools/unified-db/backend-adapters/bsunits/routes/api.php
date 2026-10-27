@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 
+Route::post('/customers/register', 'Api\CustomerRegistrationController@store')->middleware(\App\Http\Middleware\ThrottleCustomerRegistration::class);
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -89,6 +91,7 @@ Route::namespace("Api")->name("api.")->middleware(['auth:api', 'apiAccountEnable
 
 	// Unit Hold Request
 	Route::get("/unit_deposit_requests", "UnitDepositRequestController@all")->name('unit_deposit_request.all');
+	Route::get("/unit_deposit_requests/customer-capabilities", "UnitDepositRequestController@customerCapabilities");
 	Route::get("/unit_deposit_requests/{id}", "UnitDepositRequestController@get")->name('unit_deposit_request.show');
 	Route::post("/unit_deposit_requests", "UnitDepositRequestController@create")->name('unit_deposit_request.create');
 	Route::put("/unit_deposit_requests/{id}", "UnitDepositRequestController@update")->name('unit_deposit_request.update');
@@ -199,7 +202,7 @@ Route::namespace("Api")->name("api.")->group( function () {
 });
 
 // Unified canonical catalog: authenticated, read-only, disabled by default.
-Route::namespace('Api')->middleware(['auth:api'])->prefix('unified/catalog')->group(function () {
+Route::namespace('Api')->middleware(['auth:api', 'apiAccountEnabled'])->prefix('unified/catalog')->group(function () {
     Route::get('/projects', 'UnifiedCatalogController@projects');
     Route::get('/unit_types', 'UnifiedCatalogController@unitTypes');
     Route::get('/units', 'UnifiedCatalogController@units');

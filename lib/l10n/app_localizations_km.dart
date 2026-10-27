@@ -820,4 +820,18 @@ class AppLocalizationsKm extends AppLocalizations {
   String promotionValidUntil(String date) {
     return 'មានសុពលភាពរហូតដល់ $date';
   }
+
+  @override
+  String get addDepositCustomer => 'បន្ថែមអតិថិជន';
+
+  @override
+  String get removeDepositCustomer => 'លុបអតិថិជន';
+
+  @override
+  String depositCustomerNumber(int number) {
+    return 'អតិថិជនទី $number';
+  }
+
+  @override
+  String get depositCustomerGender => 'ភេទ *';
 }

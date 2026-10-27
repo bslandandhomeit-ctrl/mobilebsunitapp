@@ -557,6 +557,21 @@ class _RequestDetailViewState extends State<RequestDetailView> {
                         requestValue(d['customer_phone_number2']),
                       ),
                     ]),
+                    if (d['additional_customers'] is List)
+                      for (final (index, customer)
+                          in (d['additional_customers'] as List).indexed)
+                        if (customer is Map)
+                          _panel(l.depositCustomerNumber(index + 3), [
+                            (l.customerName, requestValue(customer['name'])),
+                            (
+                              l.depositCustomerGender,
+                              gender(customer['gender']),
+                            ),
+                            (
+                              l.customerPhone,
+                              requestValue(customer['phone_number']),
+                            ),
+                          ]),
                     const SizedBox(height: 16),
                   ],
                   if (d['unit'] is Map<String, dynamic>)

@@ -40,6 +40,7 @@ class UnitDepositRequest extends Model
         'customer2_name',
         'customer2_gender',
     	'customer_phone_number',
+        'additional_customers',
         'customer_phone_number2'
     ];
 
@@ -56,6 +57,7 @@ class UnitDepositRequest extends Model
     ];
        
     protected $casts = [
+        'additional_customers' => 'array',
         'is_selected_payment_option' => 'boolean',
         'is_first_payment' => 'boolean',
     ];
@@ -72,6 +74,7 @@ class UnitDepositRequest extends Model
         'customer2_name',
         'customer2_gender',
         'customer_phone_number',
+        'additional_customers',
         'customer_phone_number2'
     ];
     

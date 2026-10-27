@@ -334,5 +334,10 @@
     "placeholders": {
       "date": {"type": "String"}
     }
-  }
+  },
+  "addDepositCustomer": "Add customer",
+  "removeDepositCustomer": "Remove customer",
+  "depositCustomerNumber": "Customer {number}",
+  "depositCustomerGender": "Gender *",
+  "@depositCustomerNumber": {"placeholders": {"number": {"type": "int"}}}
 }

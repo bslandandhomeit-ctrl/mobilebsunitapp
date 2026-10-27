@@ -324,5 +324,10 @@
   "priceTitle": "តម្លៃ",
   "promotionPriceLabel": "តម្លៃប្រូម៉ូសិន",
   "promotionDiscountLabel": "បញ្ចុះ {amount}",
-  "promotionValidUntil": "មានសុពលភាពរហូតដល់ {date}"
+  "promotionValidUntil": "មានសុពលភាពរហូតដល់ {date}",
+  "addDepositCustomer": "បន្ថែមអតិថិជន",
+  "removeDepositCustomer": "លុបអតិថិជន",
+  "depositCustomerNumber": "អតិថិជនទី {number}",
+  "depositCustomerGender": "ភេទ *",
+  "@depositCustomerNumber": {"placeholders": {"number": {"type": "int"}}}
 }

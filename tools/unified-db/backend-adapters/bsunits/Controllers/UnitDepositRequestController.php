@@ -23,6 +23,13 @@ use Carbon\Carbon;
 
 class UnitDepositRequestController extends Controller
 {
+    public function customerCapabilities()
+    {
+        $model = new UnitDepositRequest;
+        return response()->json(['data' => ['additional_customers' =>
+            $model->getConnection()->getSchemaBuilder()->hasColumn($model->getTable(), 'additional_customers')]]);
+    }
+
     protected $validationRules =  [
         'unit_id' => 'bail|required_without:unit_hold_request_id|exists:units,id',
         'unit_hold_request_id' => 'bail|required_without:unit_id|exists:unit_hold_requests,id',       
@@ -31,7 +38,11 @@ class UnitDepositRequestController extends Controller
         'is_selected_payment_option' => "bail|required|boolean",          
     	'customer_name' => 'bail|required|string|min:1|max:255', 
     	'customer_gender' => 'bail|required|integer|min:1|max:2',
-        'customer2_name' => 'nullable|string|min:1|max:255',
+        'additional_customers' => 'sometimes|array',
+        'additional_customers.*.name' => 'required|string|min:1|max:255',
+        'additional_customers.*.gender' => 'required|integer|min:1|max:2',
+        'additional_customers.*.phone_number' => 'nullable|regex:(^0\d{8,9}$)',
+        'customer2_name' => 'required_with:additional_customers|nullable|string|min:1|max:255',
         'customer2_gender' => 'required_with:customer2_name|integer|min:1|max:2',
     	'customer_phone_number' => 'bail|required|regex:(^0\d{8,9}$)',
     	'customer_phone_number2' => 'bail|nullable|regex:(^0\d{8,9}$)',

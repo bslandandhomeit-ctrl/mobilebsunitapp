@@ -61,6 +61,11 @@ class UnifiedDepositSaleAmendment
             if (!hash_equals($link->snapshot_sha256,hash('sha256',$link->request_snapshot))) throw new \LogicException('Invalid predecessor approval snapshot.');
             $old=json_decode($terms->terms_snapshot,true,512,JSON_THROW_ON_ERROR);
             if (($old['id'] ?? null)!=$parent) throw new \LogicException('Predecessor is no longer the current sale request.');
+            $oldAdditional = $old['additional_customers'] ?? [];
+            $newAdditional = $request['additional_customers'] ?? [];
+            if (is_string($oldAdditional)) $oldAdditional = json_decode($oldAdditional, true, 512, JSON_THROW_ON_ERROR);
+            if (is_string($newAdditional)) $newAdditional = json_decode($newAdditional, true, 512, JSON_THROW_ON_ERROR);
+            if ($oldAdditional != $newAdditional) throw new \LogicException('Buyer changes require identity review.');
             foreach(['customer_name','customer_gender','customer2_name','customer2_gender','customer_phone_number','customer_phone_number2'] as $field) {
                 if ((string)($old[$field] ?? '')!==(string)($request[$field] ?? '')) throw new \LogicException('Buyer changes require separate identity review.');
             }

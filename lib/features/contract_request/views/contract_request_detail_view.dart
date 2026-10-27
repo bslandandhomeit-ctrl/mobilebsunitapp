@@ -195,6 +195,18 @@ class _ContractRequestDetailViewState extends State<ContractRequestDetailView> {
                     ),
                   ]),
                   const SizedBox(height: 16),
+                  if (deposit['additional_customers'] is List)
+                    for (final (index, customer)
+                        in (deposit['additional_customers'] as List).indexed)
+                      if (customer is Map)
+                        _section(l.depositCustomerNumber(index + 3), [
+                          (l.customerName, requestValue(customer['name'])),
+                          (l.depositCustomerGender, gender(customer['gender'])),
+                          (
+                            l.customerPhone,
+                            requestValue(customer['phone_number']),
+                          ),
+                        ]),
                   if (d['unit'] is Map<String, dynamic>)
                     UnitInformationCard(
                       unit: Unit.fromJson(d['unit']),

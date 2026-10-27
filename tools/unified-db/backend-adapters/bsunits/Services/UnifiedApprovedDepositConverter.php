@@ -50,15 +50,22 @@ class UnifiedApprovedDepositConverter
             $actor=$this->db->table('bsunits_actor_aliases')->where('source_user_id',$approver)->value('actor_id');
             if (!$actor) throw new \LogicException('Approval actor mapping is missing.');
             $account=$this->allocate('customer_accounts');
-            $joint=trim($request['customer2_name'] ?? '')!=='';
+            $additional = $request['additional_customers'] ?? [];
+            if (is_string($additional)) $additional = json_decode($additional, true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($additional)) throw new \InvalidArgumentException('Invalid additional customers.');
+            $joint=trim($request['customer2_name'] ?? '')!=='' || count($additional)>0;
             $this->db->table('customer_accounts')->insert([
                 'id'=>$account,'account_number'=>'BS-DP-'.$request['id'],'display_name'=>$request['customer_name'],
                 'account_type'=>$joint?'JOINT':'SINGLE','identity_review_state'=>'PENDING','source_system'=>'bsunits_deposit','source_id'=>$request['id'],
             ]);
-            foreach ([1,2] as $number) {
-                if ($number===2 && !$joint) continue;
-                $name=$request[$number===1?'customer_name':'customer2_name'];
-                $gender=(int)($request[$number===1?'customer_gender':'customer2_gender'] ?? 0);
+            $buyers = [['name'=>$request['customer_name'], 'gender'=>$request['customer_gender']]];
+            if (trim($request['customer2_name'] ?? '')!=='') $buyers[] = ['name'=>$request['customer2_name'], 'gender'=>$request['customer2_gender']];
+            $buyers = array_merge($buyers, $additional);
+            foreach ($buyers as $index => $buyer) {
+                $number = $index + 1;
+                $name = trim($buyer['name'] ?? '');
+                if ($name === '') throw new \InvalidArgumentException('Customer name required.');
+                $gender = (int)($buyer['gender'] ?? 0);
                 if (!in_array($gender,[1,2],true)) throw new \InvalidArgumentException('Invalid approved customer gender.');
                 $person=$this->allocate('persons');
                 $khmer=preg_match('/\p{Khmer}/u',$name)===1;
@@ -66,7 +73,7 @@ class UnifiedApprovedDepositConverter
                     'gender'=>$gender===1?'Male':'Female','identity_review_state'=>'PENDING','source_system'=>'bsunits_deposit_buyer'.$number,'source_profile_id'=>$request['id']]);
                 $this->db->table('customer_account_members')->insert(['account_id'=>$account,'person_id'=>$person,'source_applicant_type'=>'CUSTOMER'.$number]);
             }
-            $contact=json_encode(['phone_number'=>$request['customer_phone_number'] ?? '', 'phone_number2'=>$request['customer_phone_number2'] ?? ''],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+            $contact=json_encode(['phone_number'=>$request['customer_phone_number'] ?? '', 'phone_number2'=>$request['customer_phone_number2'] ?? '', 'additional_customers'=>$additional],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
             $this->db->table('customer_account_evidence')->insert(['source_table'=>'bsunits_deposit_contact','source_id'=>$request['id'],'account_id'=>$account,'evidence_kind'=>'CONTACT','ownership_state'=>'ACCOUNT_ONLY','source_payload'=>$contact,'source_checksum'=>hash('sha256',$contact)]);
             (new UnifiedBeloanCustomerProfile($this->db))->create($account,$request,$joint);
             $now=now()->toDateTimeString();

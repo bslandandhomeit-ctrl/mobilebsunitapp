@@ -820,4 +820,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String promotionValidUntil(String date) {
     return 'Valid until $date';
   }
+
+  @override
+  String get addDepositCustomer => 'Add customer';
+
+  @override
+  String get removeDepositCustomer => 'Remove customer';
+
+  @override
+  String depositCustomerNumber(int number) {
+    return 'Customer $number';
+  }
+
+  @override
+  String get depositCustomerGender => 'Gender *';
 }

@@ -1,6 +1,7 @@
 import '../../../core/constants/api_constants.dart';
 import '../../../core/models/paginated_response.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_exception.dart';
 import '../models/unit_deposit_request.dart';
 
 class DepositRepository {
@@ -62,9 +63,7 @@ class DepositRepository {
     String? customerName2,
     int? customerGender2,
     String? customerPhoneNumber2,
-    List<Map<String, dynamic>>? customers,
-    int? salePersonId,
-    int? saleSupportId,
+    List<Map<String, dynamic>> additionalCustomers = const [],
     String? remark,
     int? paymentOptionId,
     int? loanDuration,
@@ -86,6 +85,27 @@ class DepositRepository {
     // custom terms stored loan_duration=0/interest=0 regardless of what
     // was typed, later blocking contract request creation with "Payment
     // option cannot be none when requesting contract."
+    if (additionalCustomers.isNotEmpty) {
+      // Older servers ignore unknown fields. Check before creating a request
+      // so additional buyers cannot be silently discarded.
+      final Map<String, dynamic>? capabilityData;
+      try {
+        final capabilities = await _client.get<Map<String, dynamic>>(
+          '${ApiConstants.unitDepositRequestsPath}/customer-capabilities',
+        );
+        capabilityData = capabilities.data;
+      } on ApiException catch (e) {
+        if (e.statusCode != 404) rethrow;
+        throw ApiException(
+          message: 'This server must be updated before it can save more than two customers.',
+        );
+      }
+      if (capabilityData?['data']?['additional_customers'] != true) {
+        throw ApiException(
+          message: 'This server must be updated before it can save more than two customers.',
+        );
+      }
+    }
     final isSelectedPaymentOption =
         paymentOptionId != null || loanDuration != null;
     final response = await _client.post<Map<String, dynamic>>(
@@ -100,10 +120,8 @@ class DepositRepository {
         'customer2_name': ?customerName2,
         'customer2_gender': ?customerGender2,
         'customer_phone_number2': ?customerPhoneNumber2,
-        // Full list (unlimited); the backend also keeps customer_name/customer2_name from the first two.
-        'customers': ?customers,
-        'sale_person_id': ?salePersonId,
-        'sale_support_id': ?saleSupportId,
+        if (additionalCustomers.isNotEmpty)
+          'additional_customers': additionalCustomers,
         'remark': ?remark,
         'is_selected_payment_option': isSelectedPaymentOption ? 1 : 0,
         'payment_option_id': ?paymentOptionId,
