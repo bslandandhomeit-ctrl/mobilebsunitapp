@@ -8,8 +8,6 @@ import '../../projects/data/payment_option_repository.dart';
 import '../../projects/models/payment_option.dart';
 import '../../projects/models/unit.dart';
 import '../../projects/views/unit_information_card.dart';
-import '../../auth/controllers/auth_controller.dart';
-import '../../auth/models/user.dart';
 import '../data/deposit_repository.dart';
 
 class DepositRequestFormView extends StatefulWidget {
@@ -35,8 +33,10 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _additionalCustomers = <_AdditionalCustomer>[];
   final _form = GlobalKey<FormState>();
   final _scroll = ScrollController();
-  // Unlimited customers; the first is required. "Add more customer" appends.
-  final List<_Customer> _customers = [_Customer()];
+  // Customer 1 (required) and optional Customer 2; "Add customer" adds more
+  // buyers into _additionalCustomers (customers 3 and up).
+  final _name = TextEditingController(), _phone = TextEditingController();
+  final _name2 = TextEditingController(), _phone2 = TextEditingController();
   // Number fields start empty (not pre-filled with "0") so the user doesn't
   // have to clear a 0 first. A blank optional field counts as 0 on submit.
   final _deposit = TextEditingController(), _discount = TextEditingController();
@@ -53,27 +53,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       _loadingOptions = true;
   String? _error, _optionsError;
   List<PaymentOption> _options = [];
-  AppUser? get _me => Get.isRegistered<AuthController>()
-      ? Get.find<AuthController>().currentUser.value
-      : null;
-  bool get _isAgent => _me?.isSaleAgent ?? false;
 
   @override
   void initState() {
     super.initState();
     _loadOptions();
-    // Default the Sale Person to the logged-in internal sale person.
-    _salePersonId = _me?.saleRepresentativeId;
-    if (!_isAgent) _loadSaleReps();
-  }
-
-  Future<void> _loadSaleReps() async {
-    try {
-      final reps = await _repository.fetchInternalSaleReps();
-      if (mounted) setState(() => _saleReps = reps);
-    } catch (_) {
-      /* non-fatal: dropdown just stays with the default */
-    }
   }
 
   Future<void> _loadOptions() async {
@@ -98,10 +82,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
 
   @override
   void dispose() {
-    for (final c in _customers) {
-      c.dispose();
-    }
     for (final c in [
+      _name,
+      _phone,
+      _name2,
+      _phone2,
       _deposit,
       _discount,
       _remark,
@@ -250,24 +235,13 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppSectionTitle(l.customerInformationTitle),
-        for (int i = 0; i < _customers.length; i++) ...[
-          if (i > 0) const Divider(height: 32),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Customer ${i + 1}',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ),
-              if (i > 0)
-                TextButton.icon(
-                  onPressed: () =>
-                      setState(() => _customers.removeAt(i).dispose()),
-                  icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Remove'),
-                ),
-            ],
+        TextFormField(
+          controller: _name,
+          validator: _required,
+          maxLength: 255,
+          decoration: InputDecoration(
+            labelText: l.customerOneNameLabel,
+            counterText: '',
           ),
         ),
         const SizedBox(height: 16),
@@ -727,16 +701,5 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         ),
       ),
     );
-  }
-}
-
-/// One customer row on the deposit form (name, phone, gender).
-class _Customer {
-  final TextEditingController name = TextEditingController();
-  final TextEditingController phone = TextEditingController();
-  int? gender;
-  void dispose() {
-    name.dispose();
-    phone.dispose();
   }
 }
