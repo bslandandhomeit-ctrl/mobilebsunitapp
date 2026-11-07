@@ -130,7 +130,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       await _repository.create(
         unitId: widget.unit.id,
         depositAmount: double.parse(_deposit.text.trim()),
-        otherDiscountAllowance: double.parse(_discount.text.trim()),
+        otherDiscountAllowance: double.tryParse(_discount.text.trim()) ?? 0, // blank optional field counts as 0
         customerName: _name.text.trim(),
         customerGender: _gender!,
         customerPhoneNumber: _phone.text.trim(),
@@ -172,6 +172,12 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     } on ApiException catch (e) {
       if (mounted) {
         setState(() => _error = e.message);
+        if (_scroll.hasClients) _scroll.jumpTo(0);
+      }
+    } catch (e) {
+      // Anything unexpected (bad number, network failure) is shown instead of failing silently.
+      if (mounted) {
+        setState(() => _error = e is FormatException ? 'Please check the amounts you entered.' : e.toString());
         if (_scroll.hasClients) _scroll.jumpTo(0);
       }
     } finally {

@@ -91,13 +91,23 @@ class DepositController extends GetxController {
     await load();
   }
 
-  Future<void> approve(int id) async {
-    await _repository.approve(id);
-    await load();
+  /// Requests whose Approve/Reject call is running; the card shows a spinner for them.
+  final processingIds = <int>{}.obs;
+
+  Future<void> _decide(int id, Future<void> Function(int) call) async {
+    if (processingIds.contains(id)) return;
+    processingIds.add(id);
+    try {
+      await call(id);
+      await load();
+    } on ApiException catch (e) {
+      Get.snackbar('Error', e.message);
+    } finally {
+      processingIds.remove(id);
+    }
   }
 
-  Future<void> reject(int id) async {
-    await _repository.reject(id);
-    await load();
-  }
+  Future<void> approve(int id) => _decide(id, _repository.approve);
+
+  Future<void> reject(int id) => _decide(id, _repository.reject);
 }

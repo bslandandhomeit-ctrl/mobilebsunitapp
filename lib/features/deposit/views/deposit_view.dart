@@ -94,7 +94,12 @@ class DepositView extends GetView<DepositController> {
                         context,
                         l10n,
                         r,
-                        canApprove,
+                        canApprove &&
+                            r.awaitsDecisionFrom(
+                              saleManager: user?.hasRole('sale_manager') ?? false,
+                              unitController:
+                                  user?.hasRole('unit_controller') ?? false,
+                            ),
                         canCancel,
                         isOwner(r),
                       ),
@@ -125,18 +130,34 @@ class DepositView extends GetView<DepositController> {
     // "change unit" only while APPROVED or OVERDUE — cancel is
     // unit_controller only, the other two are owner-only.
     if (status == 'PENDING' && canApprove) {
-      actions.addAll([
-        IconButton(
-          icon: const Icon(Icons.check, color: Colors.green),
-          tooltip: l10n.approve,
-          onPressed: () => controller.approve(r.id),
+      actions.add(
+        Obx(
+          () => controller.processingIds.contains(r.id)
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.check, color: Colors.green),
+                      tooltip: l10n.approve,
+                      onPressed: () => controller.approve(r.id),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      tooltip: l10n.reject,
+                      onPressed: () => controller.reject(r.id),
+                    ),
+                  ],
+                ),
         ),
-        IconButton(
-          icon: const Icon(Icons.close, color: Colors.red),
-          tooltip: l10n.reject,
-          onPressed: () => controller.reject(r.id),
-        ),
-      ]);
+      );
     }
     if ((status == 'APPROVED' || status == 'OVERDUE') && canCancel) {
       actions.add(

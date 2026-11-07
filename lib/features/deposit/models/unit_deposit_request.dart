@@ -44,4 +44,22 @@ class UnitDepositRequest {
   /// Both `isContractRequestable()` and `isChangeable()` on the backend
   /// restrict those actions to the deposit's own creator.
   bool isOwnedBy(int userId) => this.userId == userId;
+
+  /// The overall `status` stays PENDING until BOTH the unit controller and the sale manager
+  /// have decided, so Approve/Reject must also hide once the viewer's own decision is made.
+  /// Shows the buttons while at least one of the viewer's roles is still PENDING; if the
+  /// server does not send the per-role statuses, they stay visible as before.
+  bool awaitsDecisionFrom({
+    required bool saleManager,
+    required bool unitController,
+  }) {
+    if (!details.containsKey('unit_controller_status') &&
+        !details.containsKey('sale_manager_status')) {
+      return true;
+    }
+    bool pending(String key) =>
+        '${details[key] ?? ''}'.toUpperCase() == 'PENDING';
+    return (unitController && pending('unit_controller_status')) ||
+        (saleManager && pending('sale_manager_status'));
+  }
 }
