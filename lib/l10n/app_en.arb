@@ -339,5 +339,9 @@
   "removeDepositCustomer": "Remove customer",
   "depositCustomerNumber": "Customer {number}",
   "depositCustomerGender": "Gender *",
-  "@depositCustomerNumber": {"placeholders": {"number": {"type": "int"}}}
+  "@depositCustomerNumber": {"placeholders": {"number": {"type": "int"}}},
+  "findCustomer": "Find an existing customer",
+  "customerPickerTitle": "Choose a customer",
+  "customerPickerHint": "Search by name, phone or ID",
+  "customerPickerNone": "No customer found. You can type the details yourself."
 }

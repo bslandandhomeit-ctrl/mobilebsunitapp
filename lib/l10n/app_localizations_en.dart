@@ -834,4 +834,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get depositCustomerGender => 'Gender *';
+
+  @override
+  String get findCustomer => 'Find an existing customer';
+
+  @override
+  String get customerPickerTitle => 'Choose a customer';
+
+  @override
+  String get customerPickerHint => 'Search by name, phone or ID';
+
+  @override
+  String get customerPickerNone =>
+      'No customer found. You can type the details yourself.';
 }

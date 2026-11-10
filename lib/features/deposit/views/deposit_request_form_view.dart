@@ -9,6 +9,7 @@ import '../../projects/models/payment_option.dart';
 import '../../projects/models/unit.dart';
 import '../../projects/views/unit_information_card.dart';
 import '../data/deposit_repository.dart';
+import 'customer_picker_sheet.dart';
 
 class DepositRequestFormView extends StatefulWidget {
   const DepositRequestFormView({super.key, required this.unit});
@@ -236,11 +237,46 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     );
   }
 
+  // Pick a customer created in Be Loan and fill the fields from it. Optional: every field can still be typed.
+  Future<void> _fillCustomer({
+    required TextEditingController name,
+    TextEditingController? phone,
+    TextEditingController? phone2,
+    required void Function(int gender) setGender,
+  }) async {
+    final c = await pickCustomer(context);
+    if (c == null || !mounted) return;
+    setState(() {
+      name.text = c.name;
+      if (c.gender != null) setGender(c.gender!);
+      if (phone != null && (c.phone ?? '').isNotEmpty) phone.text = c.phone!;
+      if (phone2 != null && (c.phone2 ?? '').isNotEmpty && phone2.text.trim().isEmpty) phone2.text = c.phone2!;
+    });
+  }
+
+  Widget _findCustomerButton(AppLocalizations l, VoidCallback onPressed) => Align(
+    alignment: Alignment.centerLeft,
+    child: TextButton.icon(
+      onPressed: onPressed,
+      icon: const Icon(Icons.person_search_outlined),
+      label: Text(l.findCustomer),
+    ),
+  );
+
   Widget _customerStep(AppLocalizations l) => AppPanel(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppSectionTitle(l.customerInformationTitle),
+        _findCustomerButton(
+          l,
+          () => _fillCustomer(
+            name: _name,
+            phone: _phone,
+            phone2: _phone2,
+            setGender: (g) => _gender = g,
+          ),
+        ),
         TextFormField(
           controller: _name,
           validator: _required,
@@ -272,7 +308,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
               : (value) => setState(() => _secondCustomer = value),
         ),
         if (_secondCustomer) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          _findCustomerButton(
+            l,
+            () => _fillCustomer(name: _name2, setGender: (g) => _gender2 = g),
+          ),
           TextFormField(
             controller: _name2,
             validator: _required,
@@ -318,6 +358,14 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                     ),
                   ],
                 ),
+                _findCustomerButton(
+                  l,
+                  () => _fillCustomer(
+                    name: customer.name,
+                    phone: customer.phone,
+                    setGender: (g) => customer.gender = g,
+                  ),
+                ),
                 TextFormField(
                   controller: customer.name,
                   validator: _required,
@@ -326,6 +374,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
+                  key: ValueKey('gender-extra-${customer.gender}'),
                   initialValue: customer.gender,
                   isExpanded: true,
                   decoration: InputDecoration(
@@ -370,7 +419,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     AppLocalizations l,
     bool second,
   ) => DropdownButtonFormField<int>(
-    key: ValueKey('gender-$second'),
+    key: ValueKey('gender-$second-${second ? _gender2 : _gender}'),
     initialValue: second ? _gender2 : _gender,
     isExpanded: true,
     decoration: InputDecoration(

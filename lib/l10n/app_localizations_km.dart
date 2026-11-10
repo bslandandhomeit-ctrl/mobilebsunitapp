@@ -834,4 +834,18 @@ class AppLocalizationsKm extends AppLocalizations {
 
   @override
   String get depositCustomerGender => 'ភេទ *';
+
+  @override
+  String get findCustomer => 'ស្វែងរកអតិថិជនដែលមានស្រាប់';
+
+  @override
+  String get customerPickerTitle => 'ជ្រើសរើសអតិថិជន';
+
+  @override
+  String get customerPickerHint =>
+      'ស្វែងរកតាមឈ្មោះ លេខទូរស័ព្ទ ឬអត្តសញ្ញាណប័ណ្ណ';
+
+  @override
+  String get customerPickerNone =>
+      'រកមិនឃើញអតិថិជនទេ។ អ្នកអាចបញ្ចូលព័ត៌មានដោយខ្លួនឯង។';
 }

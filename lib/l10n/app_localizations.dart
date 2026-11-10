@@ -1627,6 +1627,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gender *'**
   String get depositCustomerGender;
+
+  /// No description provided for @findCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Find an existing customer'**
+  String get findCustomer;
+
+  /// No description provided for @customerPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a customer'**
+  String get customerPickerTitle;
+
+  /// No description provided for @customerPickerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name, phone or ID'**
+  String get customerPickerHint;
+
+  /// No description provided for @customerPickerNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No customer found. You can type the details yourself.'**
+  String get customerPickerNone;
 }
 
 class _AppLocalizationsDelegate

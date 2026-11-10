@@ -329,5 +329,9 @@
   "removeDepositCustomer": "លុបអតិថិជន",
   "depositCustomerNumber": "អតិថិជនទី {number}",
   "depositCustomerGender": "ភេទ *",
-  "@depositCustomerNumber": {"placeholders": {"number": {"type": "int"}}}
+  "@depositCustomerNumber": {"placeholders": {"number": {"type": "int"}}},
+  "findCustomer": "ស្វែងរកអតិថិជនដែលមានស្រាប់",
+  "customerPickerTitle": "ជ្រើសរើសអតិថិជន",
+  "customerPickerHint": "ស្វែងរកតាមឈ្មោះ លេខទូរស័ព្ទ ឬអត្តសញ្ញាណប័ណ្ណ",
+  "customerPickerNone": "រកមិនឃើញអតិថិជនទេ។ អ្នកអាចបញ្ចូលព័ត៌មានដោយខ្លួនឯង។"
 }
