@@ -24,11 +24,12 @@ class PreReceiptData {
     required this.promotionDiscount,
     required this.date,
     this.number,
+    this.seller,
     this.letterhead,
   });
 
   final String customer, phone, unit;
-  final String? project, number;
+  final String? project, number, seller;
   final double depositAmount, promotionDiscount;
   final DateTime date;
   final PaymentQr? letterhead;
@@ -37,10 +38,39 @@ class PreReceiptData {
 /// English words for a dollar amount, e.g. 500 -> "Five Hundred", 12.5 -> "Twelve and 50/100".
 String amountInWords(double amount) {
   const ones = [
-    '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven',
-    'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen',
+    '',
+    'One',
+    'Two',
+    'Three',
+    'Four',
+    'Five',
+    'Six',
+    'Seven',
+    'Eight',
+    'Nine',
+    'Ten',
+    'Eleven',
+    'Twelve',
+    'Thirteen',
+    'Fourteen',
+    'Fifteen',
+    'Sixteen',
+    'Seventeen',
+    'Eighteen',
+    'Nineteen',
   ];
-  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const tens = [
+    '',
+    '',
+    'Twenty',
+    'Thirty',
+    'Forty',
+    'Fifty',
+    'Sixty',
+    'Seventy',
+    'Eighty',
+    'Ninety',
+  ];
   String below1000(int n) {
     final parts = <String>[];
     if (n >= 100) {
@@ -63,12 +93,29 @@ String amountInWords(double amount) {
   var i = 0;
   while (whole > 0) {
     final chunk = whole % 1000;
-    if (chunk > 0) groups.insert(0, '${below1000(chunk)}${names[i].isEmpty ? '' : ' ${names[i]}'}');
+    if (chunk > 0) {
+      groups.insert(
+        0,
+        '${below1000(chunk)}${names[i].isEmpty ? '' : ' ${names[i]}'}',
+      );
+    }
     whole ~/= 1000;
     i++;
   }
   final text = groups.join(' ');
-  return cents > 0 ? '${text.isEmpty ? 'Zero' : text} and ${cents.toString().padLeft(2, '0')}/100' : text;
+  return cents > 0
+      ? '${text.isEmpty ? 'Zero' : text} and ${cents.toString().padLeft(2, '0')}/100'
+      : text;
+}
+
+/// The sale person who is logged in to the app (the Seller on the slip).
+String currentSellerName() {
+  if (!Get.isRegistered<AuthController>()) return '';
+  final user = Get.find<AuthController>().currentUser.value;
+  if (user == null) return '';
+  return (user.saleName ?? '').trim().isNotEmpty
+      ? user.saleName!.trim()
+      : user.name.trim();
 }
 
 class DepositPreReceiptView extends StatefulWidget {
@@ -83,21 +130,27 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
   final _slip = GlobalKey();
   bool _busy = false;
 
-  static const _blue = Color(0xFF1A1AE6);
-  static const _red = Color(0xFFE53935);
+  // Slip palette: dark ink, a calm blue for the filled-in values, red for the project, Tel and the PAID stamp.
+  static const _ink = Color(0xFF1B2430);
+  static const _muted = Color(0xFF6B7684);
+  static const _blue = Color(0xFF1B3FC9);
+  static const _red = Color(0xFFD32F2F);
+  static const _line = Color(0xFFDDE2E8);
 
   // The slip as a one-page PDF (the slip picture on A5) so it can go to Telegram or be saved as a file.
   Future<Uint8List> _pdf() async {
-    final boundary = _slip.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 3);
-    final png = (await image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+    final boundary =
+        _slip.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final image = await boundary.toImage(pixelRatio: 4);
+    final png = (await image.toByteData(format: ui.ImageByteFormat.png))!.buffer
+        .asUint8List();
     final doc = pw.Document();
     final picture = pw.MemoryImage(png);
     doc.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a5,
-        margin: const pw.EdgeInsets.all(18),
-        build: (_) => pw.Align(alignment: pw.Alignment.topCenter, child: pw.Image(picture, fit: pw.BoxFit.contain)),
+        margin: pw.EdgeInsets.zero,
+        build: (_) => pw.Image(picture, fit: pw.BoxFit.fill),
       ),
     );
     return doc.save();
@@ -122,7 +175,11 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
     setState(() => _busy = true);
     try {
       final bytes = await _pdf();
-      await Printing.layoutPdf(name: _fileName, format: PdfPageFormat.a5, onLayout: (_) async => bytes);
+      await Printing.layoutPdf(
+        name: _fileName,
+        format: PdfPageFormat.a5,
+        onLayout: (_) async => bytes,
+      );
     } catch (e) {
       Get.snackbar('PDF', '$e');
     } finally {
@@ -130,168 +187,372 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
     }
   }
 
-  // "Khmer label   value ........" like the printed receipt: the value is blue with a dotted line under it.
-  Widget _field(String khmer, String english, String value) => Padding(
-    padding: const EdgeInsets.only(top: 10),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  TextStyle _t(
+    double size, {
+    Color color = _ink,
+    FontWeight weight = FontWeight.w600,
+    double? spacing,
+    String? family,
+  }) => TextStyle(
+    fontSize: size,
+    color: color,
+    fontWeight: weight,
+    letterSpacing: spacing,
+    fontFamily: family,
+    height: 1.25,
+  );
+
+  // Small two-language caption above a value: "Khmer  ·  English".
+  Widget _caption(String khmer, String english) => Text.rich(
+    TextSpan(
       children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: '$khmer  '),
-              TextSpan(text: value, style: const TextStyle(color: _blue)),
-            ],
-          ),
-          style: const TextStyle(fontSize: 14),
+        TextSpan(
+          text: khmer,
+          style: _t(11, color: _muted),
         ),
-        const _Dotted(),
-        Text(english, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+        TextSpan(
+          text: '   ·   ',
+          style: _t(11, color: _line, weight: FontWeight.w800),
+        ),
+        TextSpan(
+          text: english,
+          style: _t(10.5, color: _muted, weight: FontWeight.w800, spacing: 0.4),
+        ),
       ],
     ),
   );
 
-  // The sale person who is logged in to the app.
-  String _sellerName() {
-    if (!Get.isRegistered<AuthController>()) return '';
-    final user = Get.find<AuthController>().currentUser.value;
-    if (user == null) return '';
-    return (user.saleName ?? '').trim().isNotEmpty ? user.saleName!.trim() : user.name;
+  // One filled-in line: caption, the value in blue, a hairline under it.
+  Widget _field(
+    String khmer,
+    String english,
+    String value, {
+    double size = 15,
+    InlineSpan? rich,
+  }) => Padding(
+    padding: const EdgeInsets.only(top: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _caption(khmer, english),
+        const SizedBox(height: 3),
+        rich == null
+            ? Text(
+                value,
+                style: _t(size, color: _blue, weight: FontWeight.w800),
+              )
+            : Text.rich(rich),
+        const SizedBox(height: 5),
+        Container(height: 1, color: _line),
+      ],
+    ),
+  );
+
+  Widget _letterhead(PaymentQr? h) {
+    Widget line(
+      String? text, {
+      double size = 10.5,
+      Color color = _muted,
+      bool bold = false,
+    }) => (text == null || text.trim().isEmpty)
+        ? const SizedBox.shrink()
+        : Padding(
+            padding: const EdgeInsets.only(top: 1.5),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: _t(
+                size,
+                color: color,
+                weight: bold ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if ((h?.logoUrl ?? '').isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Image.network(
+              h!.logoUrl!,
+              width: 84,
+              height: 84,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox(width: 84, height: 84),
+            ),
+          ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              line(h?.companyName, size: 17, color: _ink, bold: true),
+              line(h?.companyNameEn, size: 11.5, color: _muted, bold: true),
+              line(h?.projectName, size: 13.5, color: _red, bold: true),
+              line(
+                (h?.addressLine1 ?? '').isEmpty
+                    ? null
+                    : 'Head office: ${h!.addressLine1}',
+              ),
+              line(h?.addressLine2),
+              line(
+                (h?.phone ?? '').isEmpty ? null : 'Tel: ${h!.phone}',
+                color: _red,
+                bold: true,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget _head(String? text, {double size = 14, Color? color, bool bold = false}) =>
-      (text == null || text.trim().isEmpty)
-      ? const SizedBox.shrink()
-      : Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: size, color: color, fontWeight: bold ? FontWeight.w800 : FontWeight.w600),
-        );
+  // The red PAID stamp, tilted like a rubber stamp.
+  Widget _paidStamp() => Transform.rotate(
+    angle: -0.2,
+    child: Opacity(
+      opacity: 0.82,
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          border: Border.all(color: _red, width: 2.4),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+          decoration: BoxDecoration(
+            border: Border.all(color: _red, width: 1),
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Text(
+            'PAID',
+            style: _t(
+              31,
+              color: _red,
+              weight: FontWeight.w900,
+              spacing: 6,
+              family: 'Manrope',
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final d = widget.data;
+  Widget _slipSheet(AppLocalizations l, PreReceiptData d) {
     final h = d.letterhead;
     String two(int v) => v.toString().padLeft(2, '0');
     final date = '${two(d.date.day)}-${two(d.date.month)}-${d.date.year}';
     final hour12 = d.date.hour % 12 == 0 ? 12 : d.date.hour % 12;
-    final time = '$date ${two(hour12)}:${two(d.date.minute)}:${two(d.date.second)} ${d.date.hour >= 12 ? 'PM' : 'AM'}';
+    final time =
+        '${two(hour12)}:${two(d.date.minute)} ${d.date.hour >= 12 ? 'PM' : 'AM'}';
     final amount = '\$ ${d.depositAmount.toStringAsFixed(2)}';
-    final description = 'Deposit ${d.depositAmount == d.depositAmount.roundToDouble() ? d.depositAmount.round() : d.depositAmount}\$';
+    final cents = d.depositAmount == d.depositAmount.roundToDouble();
+    final deposit =
+        'Deposit ${cents ? d.depositAmount.round() : d.depositAmount}\$';
+    final seller = (d.seller ?? '').trim().isNotEmpty
+        ? d.seller!.trim()
+        : currentSellerName();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _letterhead(h),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Container(width: 64, height: 3, color: _blue),
+            Expanded(child: Container(height: 1.5, color: _line)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Pre-Receipt',
+          textAlign: TextAlign.center,
+          style: _t(
+            32,
+            weight: FontWeight.w700,
+            spacing: 0.5,
+            family: 'CormorantGaramond',
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Date  $date',
+                    style: _t(11.5, color: _blue, weight: FontWeight.w800),
+                  ),
+                  Text(
+                    'Time  $time',
+                    style: _t(11.5, color: _blue, weight: FontWeight.w800),
+                  ),
+                ],
+              ),
+            ),
+            if ((d.number ?? '').isNotEmpty)
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'លេខ / No   ',
+                      style: _t(11, color: _muted),
+                    ),
+                    TextSpan(
+                      text: d.number,
+                      style: _t(
+                        14,
+                        color: _blue,
+                        weight: FontWeight.w900,
+                        spacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: _field(
+                'បានទទួលប្រាក់ពីឈ្មោះ',
+                'Received From',
+                d.customer,
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF3FF),
+                border: Border.all(color: _blue, width: 1.5),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('ទឹកប្រាក់', style: _t(10.5, color: _muted)),
+                  Text(
+                    amount,
+                    style: _t(
+                      20,
+                      color: _blue,
+                      weight: FontWeight.w900,
+                      family: 'Manrope',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        _field(
+          'ទឹកប្រាក់សរសេរជាអក្សរ',
+          'Amount in Words',
+          amountInWords(d.depositAmount),
+        ),
+        _field(
+          'អត្ថន័យ',
+          'Description',
+          '',
+          rich: TextSpan(
+            children: [
+              TextSpan(
+                text: '$deposit      ',
+                style: _t(14, color: _blue, weight: FontWeight.w800),
+              ),
+              TextSpan(
+                text: 'Property: ',
+                style: _t(14, color: _ink, weight: FontWeight.w900),
+              ),
+              TextSpan(
+                text: d.unit,
+                style: _t(14, color: _blue, weight: FontWeight.w800),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 30),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 180,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _caption('អ្នកលក់', 'Seller'),
+                  const SizedBox(height: 30),
+                  Container(height: 1, color: _ink),
+                  const SizedBox(height: 4),
+                  Text(
+                    seller,
+                    style: _t(13.5, color: _blue, weight: FontWeight.w800),
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            _paidStamp(),
+          ],
+        ),
+        const Spacer(),
+        const SizedBox(height: 10),
+        Text(
+          l.preReceiptFooter,
+          textAlign: TextAlign.center,
+          style: _t(9.5, color: _muted, weight: FontWeight.w500),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return AppPage(
-      appBar: AppBar(title: const Text('Pre-Receipt'), automaticallyImplyLeading: false),
+      appBar: AppBar(
+        title: const Text('Pre-Receipt'),
+        automaticallyImplyLeading: false,
+      ),
       body: Column(
         children: [
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                RepaintBoundary(
-                  key: _slip,
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-                    child: DefaultTextStyle.merge(
-                      style: const TextStyle(color: Colors.black87),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if ((h?.logoUrl ?? '').isNotEmpty)
-                            Center(
-                              child: Image.network(
-                                h!.logoUrl!,
-                                height: 84,
-                                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                              ),
-                            ),
-                          _head(h?.companyName, size: 20, bold: true),
-                          _head(h?.companyNameEn, size: 13, bold: true),
-                          _head(h?.projectName, size: 16, color: _red, bold: true),
-                          _head((h?.addressLine1 ?? '').isEmpty ? null : 'Head office: ${h!.addressLine1}', size: 12),
-                          _head(h?.addressLine2, size: 12),
-                          _head((h?.phone ?? '').isEmpty ? null : 'Tel: ${h!.phone}', size: 12, color: _red),
-                          const SizedBox(height: 8),
-                          const Divider(height: 2, thickness: 2, color: Colors.black87),
-                          const SizedBox(height: 10),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Posting Date: $date', style: const TextStyle(color: _blue, fontWeight: FontWeight.w700, fontSize: 12)),
-                                    Text('Receipt Time: $time', style: const TextStyle(color: _blue, fontWeight: FontWeight.w700, fontSize: 12)),
-                                  ],
-                                ),
-                              ),
-                              if ((d.number ?? '').isNotEmpty)
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      const TextSpan(text: 'លេខ / No: '),
-                                      TextSpan(text: d.number, style: const TextStyle(color: _blue, fontWeight: FontWeight.w700)),
-                                    ],
-                                  ),
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                            ],
+                // The slip is an A5 portrait sheet (148 x 210 mm, 420 x 594 points): shown scaled to the screen width,
+                // and captured at full size for the PDF, so the PDF is a full A5 page.
+                FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: RepaintBoundary(
+                    key: _slip,
+                    child: SizedBox(
+                      width: 420,
+                      height: 594,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: _line, width: 1.5),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(
+                            width: 380,
+                            height: 560,
+                            child: _slipSheet(l, widget.data),
                           ),
-                          const SizedBox(height: 10),
-                          const Center(
-                            child: Text(
-                              'Pre-Receipt',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, decoration: TextDecoration.underline),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: _field('បានទទួលប្រាក់ពីឈ្មោះ:', 'Received From', d.customer)),
-                              const SizedBox(width: 10),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                decoration: BoxDecoration(border: Border.all(width: 1.5)),
-                                child: Column(
-                                  children: [
-                                    const Text('ទឹកប្រាក់', style: TextStyle(fontSize: 12)),
-                                    Text(amount, style: const TextStyle(color: _blue, fontWeight: FontWeight.w800, fontSize: 15)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          _field('ទឹកប្រាក់សរសេរជាអក្សរ', 'Amount in Words', amountInWords(d.depositAmount)),
-                          _field('អត្ថន័យ', 'Description', '$description     Property ${d.unit}'),
-                          const SizedBox(height: 22),
-                          Center(
-                            child: Column(
-                              children: [
-                                const Text('អ្នកលក់', style: TextStyle(fontWeight: FontWeight.w700)),
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      const TextSpan(text: 'Seller: '),
-                                      TextSpan(
-                                        text: _sellerName(),
-                                        style: const TextStyle(color: _blue, fontWeight: FontWeight.w700),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 28),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            l.preReceiptFooter,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 11, color: Colors.black54),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -303,29 +564,36 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _busy ? null : _share,
-                      icon: const Icon(Icons.share),
-                      label: Text(l.preReceiptShare),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _busy ? null : _share,
+                          icon: const Icon(Icons.share),
+                          label: Text(l.preReceiptShare),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _busy ? null : _savePdf,
+                          icon: const Icon(Icons.picture_as_pdf),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(l.preReceiptSavePdf),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _busy ? null : _savePdf,
-                      icon: const Icon(Icons.picture_as_pdf),
-                      label: Text(l.preReceiptSavePdf),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () => Get.back(),
-                      child: Text(l.preReceiptDone),
-                    ),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: () => Get.back(),
+                    child: Text(l.preReceiptDone),
                   ),
                 ],
               ),
@@ -335,18 +603,4 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
       ),
     );
   }
-}
-
-class _Dotted extends StatelessWidget {
-  const _Dotted();
-
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, c) => Text(
-      '.' * (c.maxWidth / 3.2).floor(),
-      maxLines: 1,
-      overflow: TextOverflow.clip,
-      style: const TextStyle(fontSize: 10, height: 0.6, color: Colors.black45),
-    ),
-  );
 }

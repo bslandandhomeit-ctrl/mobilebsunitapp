@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_ui.dart';
@@ -46,8 +49,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _remark = TextEditingController(), _special = TextEditingController();
   final _downAmount = TextEditingController(),
       _downDuration = TextEditingController();
-  final _interest = TextEditingController(), _duration = TextEditingController();
+  final _interest = TextEditingController(),
+      _duration = TextEditingController();
   int _step = 0, _paymentChoice = 0;
+  final _picker = ImagePicker();
+  XFile? _idFront, _idBack, _transferProof;
   PaymentQr? _qr;
   String? _qrError;
   bool _qrLoading = true, _useOption = false;
@@ -151,7 +157,8 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       final created = await _repository.create(
         unitId: widget.unit.id,
         depositAmount: double.parse(_deposit.text.trim()),
-        otherDiscountAllowance: 0, // the other-discount field was removed from the form
+        otherDiscountAllowance:
+            0, // the other-discount field was removed from the form
         customerName: _name.text.trim(),
         customerGender: _gender!,
         customerPhoneNumber: _phone.text.trim(),
@@ -169,21 +176,48 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
             },
         ],
         remark: _remark.text.trim().isEmpty ? null : _remark.text.trim(),
-        paymentOptionId: _useOption && _paymentChoice > 0 ? _paymentChoice : null,
-        loanDuration: custom ? (int.tryParse(_duration.text.trim()) ?? 0) : null,
+        paymentOptionId: _useOption && _paymentChoice > 0
+            ? _paymentChoice
+            : null,
+        loanDuration: custom
+            ? (int.tryParse(_duration.text.trim()) ?? 0)
+            : null,
         interest: custom ? (double.tryParse(_interest.text.trim()) ?? 0) : null,
         specialDiscount: custom
             ? (_specialOther ? (double.tryParse(_special.text.trim()) ?? 0) : 0)
             : null,
         isFirstPayment: custom ? _downPayment : null,
         firstPaymentDuration: custom
-            ? (_downPayment ? (int.tryParse(_downDuration.text.trim()) ?? 0) : 0)
+            ? (_downPayment
+                  ? (int.tryParse(_downDuration.text.trim()) ?? 0)
+                  : 0)
             : null,
         firstPaymentAmount: custom
-            ? (_downPayment ? (double.tryParse(_downAmount.text.trim()) ?? 0) : 0)
+            ? (_downPayment
+                  ? (double.tryParse(_downAmount.text.trim()) ?? 0)
+                  : 0)
             : null,
       );
       if (!mounted) return;
+      // Photos (ID card, transfer proof) go to the customer record; a failure does not undo the saved deposit.
+      if (_idFront != null || _idBack != null || _transferProof != null) {
+        try {
+          await _repository.uploadAttachments(
+            created.id,
+            idFrontPath: _idFront?.path,
+            idBackPath: _idBack?.path,
+            transferProofPath: _transferProof?.path,
+          );
+        } catch (e) {
+          if (mounted) {
+            Get.snackbar(
+              '',
+              AppLocalizations.of(context)!
+                  .depAttachmentsFailed(e is ApiException ? e.message : '$e'),
+            );
+          }
+        }
+      }
       // The letterhead (company name, logo) comes with the QR details; ask again if that first call had failed.
       var qr = _qr;
       if (qr == null) {
@@ -203,6 +237,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
             promotionDiscount: widget.unit.promotionAmount ?? 0,
             date: DateTime.now(),
             number: created.details['pre_receipt_no']?.toString(),
+            seller: currentSellerName(),
             letterhead: qr,
           ),
         ),
@@ -216,7 +251,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     } catch (e) {
       // Anything unexpected (bad number, network failure) is shown instead of failing silently.
       if (mounted) {
-        setState(() => _error = e is FormatException ? 'Please check the amounts you entered.' : e.toString());
+        setState(
+          () => _error = e is FormatException
+              ? 'Please check the amounts you entered.'
+              : e.toString(),
+        );
         if (_scroll.hasClients) _scroll.jumpTo(0);
       }
     } finally {
@@ -288,18 +327,23 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       name.text = c.name;
       if (c.gender != null) setGender(c.gender!);
       if (phone != null && (c.phone ?? '').isNotEmpty) phone.text = c.phone!;
-      if (phone2 != null && (c.phone2 ?? '').isNotEmpty && phone2.text.trim().isEmpty) phone2.text = c.phone2!;
+      if (phone2 != null &&
+          (c.phone2 ?? '').isNotEmpty &&
+          phone2.text.trim().isEmpty) {
+        phone2.text = c.phone2!;
+      }
     });
   }
 
-  Widget _findCustomerButton(AppLocalizations l, VoidCallback onPressed) => Align(
-    alignment: Alignment.centerLeft,
-    child: TextButton.icon(
-      onPressed: onPressed,
-      icon: const Icon(Icons.person_search_outlined),
-      label: Text(l.findCustomer),
-    ),
-  );
+  Widget _findCustomerButton(AppLocalizations l, VoidCallback onPressed) =>
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(Icons.person_search_outlined),
+          label: Text(l.findCustomer),
+        ),
+      );
 
   Widget _qrStep(AppLocalizations l) => AppPanel(
     child: Column(
@@ -531,6 +575,81 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       ],
     ),
   );
+  Future<void> _pickPhoto(void Function(XFile?) assign) async {
+    final l = AppLocalizations.of(context)!;
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: Text(l.depTakePhoto),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(l.depFromGallery),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+    final picked = await _picker.pickImage(source: source, imageQuality: 85);
+    if (picked != null && mounted) setState(() => assign(picked));
+  }
+
+  Widget _photoTile(String label, XFile? file, void Function(XFile?) assign) {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => _pickPhoto(assign),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 72,
+                height: 56,
+                child: file == null
+                    ? const Icon(Icons.add_a_photo_outlined, size: 32)
+                    : Image.file(File(file.path), fit: BoxFit.cover),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Text(label)),
+              if (file != null)
+                IconButton(
+                  tooltip: l.depRemovePhoto,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => setState(() => assign(null)),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _attachmentsSection(AppLocalizations l) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const SizedBox(height: 8),
+      AppSectionTitle(l.depAttachmentsTitle),
+      _photoTile(l.depIdFront, _idFront, (f) => _idFront = f),
+      _photoTile(l.depIdBack, _idBack, (f) => _idBack = f),
+      _photoTile(l.depTransferProof, _transferProof, (f) => _transferProof = f),
+    ],
+  );
+
   Widget _paymentStep(AppLocalizations l) {
     final selected = _options.where((o) => o.id == _paymentChoice).firstOrNull;
     return AppPanel(
@@ -570,135 +689,139 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
           ),
           const SizedBox(height: 16),
           if (_useOption) ...[
-          if (_loadingOptions) const LinearProgressIndicator(),
-          if (_optionsError != null) ...[
-            Text(_optionsError!),
-            TextButton(onPressed: _loadOptions, child: Text(l.retry)),
-          ],
-          DropdownButtonFormField<int>(
-            key: ValueKey('payment-$_paymentChoice'),
-            initialValue: _paymentChoice,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l.paymentOption),
-            items: [
-              DropdownMenuItem(value: 0, child: Text(l.noneLabel)),
-              ..._options.map(
-                (o) => DropdownMenuItem(
-                  value: o.id,
-                  child: Text(
-                    o.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+            if (_loadingOptions) const LinearProgressIndicator(),
+            if (_optionsError != null) ...[
+              Text(_optionsError!),
+              TextButton(onPressed: _loadOptions, child: Text(l.retry)),
+            ],
+            DropdownButtonFormField<int>(
+              key: ValueKey('payment-$_paymentChoice'),
+              initialValue: _paymentChoice,
+              isExpanded: true,
+              decoration: InputDecoration(labelText: l.paymentOption),
+              items: [
+                DropdownMenuItem(value: 0, child: Text(l.noneLabel)),
+                ..._options.map(
+                  (o) => DropdownMenuItem(
+                    value: o.id,
+                    child: Text(
+                      o.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
-              ),
-              DropdownMenuItem(value: -1, child: Text(l.otherLabel)),
-            ],
-            onChanged: _loadingOptions
-                ? null
-                : (v) => setState(() => _paymentChoice = v ?? 0),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            l.otherPaymentOptionNote,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 20),
-          if (selected != null) ...[
-            _summary(
-              l.specialDiscountPercent,
-              '${selected.specialDiscount ?? 0}%',
-            ),
-            _summary(l.annualInterestRate, '${selected.interest ?? 0}%'),
-            _summary(l.installmentMonthsLabel, '${selected.loanDuration ?? 0}'),
-            _summary(
-              l.downPaymentLabel,
-              selected.isFirstPayment ? l.yes : l.no,
-            ),
-            if (selected.isFirstPayment) ...[
-              _summary(
-                l.firstPaymentPercentage,
-                '${selected.firstPaymentPercentage ?? 0}%',
-              ),
-              _summary(
-                l.firstPaymentDurationMonths,
-                '${selected.firstPaymentDuration ?? 0}',
-              ),
-            ],
-          ],
-          if (_paymentChoice <= 0) ...[
-            if (_paymentChoice == 0)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  l.customPaymentHint,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-            Text(
-              l.specialDiscountPercent,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            SegmentedButton<bool>(
-              segments: [
-                ButtonSegment(value: false, label: Text(l.standardLabel)),
-                ButtonSegment(value: true, label: Text(l.otherLabel)),
+                DropdownMenuItem(value: -1, child: Text(l.otherLabel)),
               ],
-              selected: {_specialOther},
-              onSelectionChanged: _paymentChoice == 0
+              onChanged: _loadingOptions
                   ? null
-                  : (v) => setState(() => _specialOther = v.first),
+                  : (v) => setState(() => _paymentChoice = v ?? 0),
             ),
-            const SizedBox(height: 16),
-            if (_specialOther)
-              _money(
-                _special,
+            const SizedBox(height: 12),
+            Text(
+              l.otherPaymentOptionNote,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 20),
+            if (selected != null) ...[
+              _summary(
                 l.specialDiscountPercent,
-                max: 100,
+                '${selected.specialDiscount ?? 0}%',
+              ),
+              _summary(l.annualInterestRate, '${selected.interest ?? 0}%'),
+              _summary(
+                l.installmentMonthsLabel,
+                '${selected.loanDuration ?? 0}',
+              ),
+              _summary(
+                l.downPaymentLabel,
+                selected.isFirstPayment ? l.yes : l.no,
+              ),
+              if (selected.isFirstPayment) ...[
+                _summary(
+                  l.firstPaymentPercentage,
+                  '${selected.firstPaymentPercentage ?? 0}%',
+                ),
+                _summary(
+                  l.firstPaymentDurationMonths,
+                  '${selected.firstPaymentDuration ?? 0}',
+                ),
+              ],
+            ],
+            if (_paymentChoice <= 0) ...[
+              if (_paymentChoice == 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    l.customPaymentHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              Text(
+                l.specialDiscountPercent,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<bool>(
+                segments: [
+                  ButtonSegment(value: false, label: Text(l.standardLabel)),
+                  ButtonSegment(value: true, label: Text(l.otherLabel)),
+                ],
+                selected: {_specialOther},
+                onSelectionChanged: _paymentChoice == 0
+                    ? null
+                    : (v) => setState(() => _specialOther = v.first),
+              ),
+              const SizedBox(height: 16),
+              if (_specialOther)
+                _money(
+                  _special,
+                  l.specialDiscountPercent,
+                  max: 100,
+                  enabled: _paymentChoice == -1,
+                ),
+              DropdownButtonFormField<bool>(
+                initialValue: _downPayment,
+                isExpanded: true,
+                decoration: InputDecoration(labelText: l.downPaymentLabel),
+                items: [
+                  DropdownMenuItem(value: false, child: Text(l.no)),
+                  DropdownMenuItem(value: true, child: Text(l.yes)),
+                ],
+                onChanged: _paymentChoice == 0
+                    ? null
+                    : (v) => setState(() => _downPayment = v ?? false),
+              ),
+              const SizedBox(height: 16),
+              ...[
+                _money(
+                  _downAmount,
+                  l.downPaymentAmountLabel,
+                  positive: true,
+                  enabled: _paymentChoice == -1 && _downPayment,
+                ),
+                _money(
+                  _downDuration,
+                  l.firstPaymentDurationMonths,
+                  integer: true,
+                  positive: true,
+                  enabled: _paymentChoice == -1 && _downPayment,
+                ),
+              ],
+              _money(
+                _interest,
+                l.annualInterestRate,
                 enabled: _paymentChoice == -1,
               ),
-            DropdownButtonFormField<bool>(
-              initialValue: _downPayment,
-              isExpanded: true,
-              decoration: InputDecoration(labelText: l.downPaymentLabel),
-              items: [
-                DropdownMenuItem(value: false, child: Text(l.no)),
-                DropdownMenuItem(value: true, child: Text(l.yes)),
-              ],
-              onChanged: _paymentChoice == 0
-                  ? null
-                  : (v) => setState(() => _downPayment = v ?? false),
-            ),
-            const SizedBox(height: 16),
-            ...[
               _money(
-                _downAmount,
-                l.downPaymentAmountLabel,
-                positive: true,
-                enabled: _paymentChoice == -1 && _downPayment,
-              ),
-              _money(
-                _downDuration,
-                l.firstPaymentDurationMonths,
+                _duration,
+                l.installmentMonthsLabel,
                 integer: true,
-                positive: true,
-                enabled: _paymentChoice == -1 && _downPayment,
+                enabled: _paymentChoice == -1,
               ),
             ],
-            _money(
-              _interest,
-              l.annualInterestRate,
-              enabled: _paymentChoice == -1,
-            ),
-            _money(
-              _duration,
-              l.installmentMonthsLabel,
-              integer: true,
-              enabled: _paymentChoice == -1,
-            ),
           ],
-          ],
+          _attachmentsSection(l),
         ],
       ),
     );

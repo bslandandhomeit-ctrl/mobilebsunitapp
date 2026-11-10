@@ -353,5 +353,14 @@
   "preReceiptFooter": "នេះមិនមែនជាបង្កាន់ដៃផ្លូវការទេ។ អ្នកគិតលុយនឹងផ្តល់បង្កាន់ដៃផ្លូវការនៅពេលទទួលប្រាក់កក់។",
   "preReceiptShare": "ចែករំលែក",
   "preReceiptDone": "រួចរាល់",
-  "preReceiptSavePdf": "រក្សាទុក PDF"
+  "preReceiptSavePdf": "រក្សាទុក PDF",
+  "depAttachmentsTitle": "ឯកសារភ្ជាប់ (មិនតម្រូវ)",
+  "depIdFront": "អត្តសញ្ញាណប័ណ្ណ - ផ្នែកខាងមុខ",
+  "depIdBack": "អត្តសញ្ញាណប័ណ្ណ - ផ្នែកខាងក្រោយ",
+  "depTransferProof": "ភស្តុតាងនៃការផ្ទេរប្រាក់ - អតិថិជនបានផ្ទេរប្រាក់ទៅធនាគាររបស់ក្រុមហ៊ុន",
+  "depTakePhoto": "ថតរូប",
+  "depFromGallery": "ជ្រើសរើសពីវិចិត្រសាល",
+  "depRemovePhoto": "លុប",
+  "depAttachmentsFailed": "បានរក្សាទុកប្រាក់កក់ ប៉ុន្តែមិនអាចផ្ទុករូបភាពឡើងបានទេ៖ {error}",
+  "@depAttachmentsFailed": {"placeholders": {"error": {"type": "String"}}}
 }

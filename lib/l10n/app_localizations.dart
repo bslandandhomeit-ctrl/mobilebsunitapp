@@ -1771,6 +1771,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save PDF'**
   String get preReceiptSavePdf;
+
+  /// No description provided for @depAttachmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments (optional)'**
+  String get depAttachmentsTitle;
+
+  /// No description provided for @depIdFront.
+  ///
+  /// In en, this message translates to:
+  /// **'ID card - front'**
+  String get depIdFront;
+
+  /// No description provided for @depIdBack.
+  ///
+  /// In en, this message translates to:
+  /// **'ID card - back'**
+  String get depIdBack;
+
+  /// No description provided for @depTransferProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank transfer proof - the customer has transferred to the company bank'**
+  String get depTransferProof;
+
+  /// No description provided for @depTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get depTakePhoto;
+
+  /// No description provided for @depFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get depFromGallery;
+
+  /// No description provided for @depRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get depRemovePhoto;
+
+  /// No description provided for @depAttachmentsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The deposit was saved, but the photos could not be uploaded: {error}'**
+  String depAttachmentsFailed(String error);
 }
 
 class _AppLocalizationsDelegate

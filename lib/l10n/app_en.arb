@@ -363,5 +363,14 @@
   "preReceiptFooter": "This is not the official receipt. The cashier gives the official receipt when the deposit is received.",
   "preReceiptShare": "Share",
   "preReceiptDone": "Done",
-  "preReceiptSavePdf": "Save PDF"
+  "preReceiptSavePdf": "Save PDF",
+  "depAttachmentsTitle": "Attachments (optional)",
+  "depIdFront": "ID card - front",
+  "depIdBack": "ID card - back",
+  "depTransferProof": "Bank transfer proof - the customer has transferred to the company bank",
+  "depTakePhoto": "Take photo",
+  "depFromGallery": "Choose from gallery",
+  "depRemovePhoto": "Remove",
+  "depAttachmentsFailed": "The deposit was saved, but the photos could not be uploaded: {error}",
+  "@depAttachmentsFailed": {"placeholders": {"error": {"type": "String"}}}
 }

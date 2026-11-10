@@ -96,7 +96,8 @@ class DepositView extends GetView<DepositController> {
                         r,
                         canApprove &&
                             r.awaitsDecisionFrom(
-                              saleManager: user?.hasRole('sale_manager') ?? false,
+                              saleManager:
+                                  user?.hasRole('sale_manager') ?? false,
                               unitController:
                                   user?.hasRole('unit_controller') ?? false,
                             ),

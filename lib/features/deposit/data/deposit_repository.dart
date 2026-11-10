@@ -1,7 +1,10 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/constants/api_constants.dart';
 import '../../../core/models/paginated_response.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
+import '../../contract_request/data/contract_attachment.dart';
 import '../models/unit_deposit_request.dart';
 
 class DepositRepository {
@@ -31,7 +34,9 @@ class DepositRepository {
 
   /// Internal sale reps for the Sale Person / Sale Support pickers on a deposit
   /// (Sale Agents are excluded by the `type=internal` filter).
-  Future<List<({int id, String name})>> fetchInternalSaleReps({String? term}) async {
+  Future<List<({int id, String name})>> fetchInternalSaleReps({
+    String? term,
+  }) async {
     final response = await _client.get<Map<String, dynamic>>(
       ApiConstants.saleRepresentativesPath,
       queryParameters: {'type': 'internal', 'term': ?term},
@@ -137,6 +142,29 @@ class DepositRepository {
       },
     );
     return UnitDepositRequest.fromJson(PaginatedResponse.unwrap(response.data));
+  }
+
+  /// The photos of a deposit just made: customer 1's ID card (front, back) and the proof that the customer
+  /// transferred the deposit to the company bank. Kept on the customer record in BS Unit; each one is optional.
+  Future<void> uploadAttachments(
+    int depositId, {
+    String? idFrontPath,
+    String? idBackPath,
+    String? transferProofPath,
+  }) async {
+    final files = <String, dynamic>{
+      if (idFrontPath != null)
+        'id_front': await prepareContractAttachment(idFrontPath, 0),
+      if (idBackPath != null)
+        'id_back': await prepareContractAttachment(idBackPath, 1),
+      if (transferProofPath != null)
+        'transfer_proof': await prepareContractAttachment(transferProofPath, 2),
+    };
+    if (files.isEmpty) return;
+    await _client.post<Map<String, dynamic>>(
+      '${ApiConstants.unitDepositRequestsPath}/$depositId/attachments',
+      data: FormData.fromMap(files),
+    );
   }
 
   /// Verified against `Api/UnitDepositRequestController@changeUnit`

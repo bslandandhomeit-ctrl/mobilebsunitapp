@@ -77,7 +77,10 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l.customerPickerTitle, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              l.customerPickerTitle,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: _term,

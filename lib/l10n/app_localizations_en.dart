@@ -912,4 +912,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preReceiptSavePdf => 'Save PDF';
+
+  @override
+  String get depAttachmentsTitle => 'Attachments (optional)';
+
+  @override
+  String get depIdFront => 'ID card - front';
+
+  @override
+  String get depIdBack => 'ID card - back';
+
+  @override
+  String get depTransferProof =>
+      'Bank transfer proof - the customer has transferred to the company bank';
+
+  @override
+  String get depTakePhoto => 'Take photo';
+
+  @override
+  String get depFromGallery => 'Choose from gallery';
+
+  @override
+  String get depRemovePhoto => 'Remove';
+
+  @override
+  String depAttachmentsFailed(String error) {
+    return 'The deposit was saved, but the photos could not be uploaded: $error';
+  }
 }

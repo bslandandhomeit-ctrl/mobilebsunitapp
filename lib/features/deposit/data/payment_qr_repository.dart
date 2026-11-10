@@ -38,7 +38,11 @@ class PaymentQr {
 
   final String? bankName, accountName, accountNumber, qrUrl;
   // Letterhead of the pre-receipt (same lines as the Be Loan receipt).
-  final String? companyName, companyNameEn, projectName, addressLine1, addressLine2;
+  final String? companyName,
+      companyNameEn,
+      projectName,
+      addressLine1,
+      addressLine2;
   final String? phone, email, website, logoUrl;
 }
 

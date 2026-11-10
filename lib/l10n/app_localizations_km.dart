@@ -912,4 +912,31 @@ class AppLocalizationsKm extends AppLocalizations {
 
   @override
   String get preReceiptSavePdf => 'រក្សាទុក PDF';
+
+  @override
+  String get depAttachmentsTitle => 'ឯកសារភ្ជាប់ (មិនតម្រូវ)';
+
+  @override
+  String get depIdFront => 'អត្តសញ្ញាណប័ណ្ណ - ផ្នែកខាងមុខ';
+
+  @override
+  String get depIdBack => 'អត្តសញ្ញាណប័ណ្ណ - ផ្នែកខាងក្រោយ';
+
+  @override
+  String get depTransferProof =>
+      'ភស្តុតាងនៃការផ្ទេរប្រាក់ - អតិថិជនបានផ្ទេរប្រាក់ទៅធនាគាររបស់ក្រុមហ៊ុន';
+
+  @override
+  String get depTakePhoto => 'ថតរូប';
+
+  @override
+  String get depFromGallery => 'ជ្រើសរើសពីវិចិត្រសាល';
+
+  @override
+  String get depRemovePhoto => 'លុប';
+
+  @override
+  String depAttachmentsFailed(String error) {
+    return 'បានរក្សាទុកប្រាក់កក់ ប៉ុន្តែមិនអាចផ្ទុករូបភាពឡើងបានទេ៖ $error';
+  }
 }
