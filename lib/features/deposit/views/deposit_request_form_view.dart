@@ -238,6 +238,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
             date: DateTime.now(),
             number: created.details['pre_receipt_no']?.toString(),
             seller: currentSellerName(),
+            sellerPhone: currentSellerPhone(),
             letterhead: qr,
           ),
         ),

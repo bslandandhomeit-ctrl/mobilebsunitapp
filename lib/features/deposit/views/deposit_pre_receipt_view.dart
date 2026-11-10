@@ -25,11 +25,12 @@ class PreReceiptData {
     required this.date,
     this.number,
     this.seller,
+    this.sellerPhone,
     this.letterhead,
   });
 
   final String customer, phone, unit;
-  final String? project, number, seller;
+  final String? project, number, seller, sellerPhone;
   final double depositAmount, promotionDiscount;
   final DateTime date;
   final PaymentQr? letterhead;
@@ -116,6 +117,13 @@ String currentSellerName() {
   return (user.saleName ?? '').trim().isNotEmpty
       ? user.saleName!.trim()
       : user.name.trim();
+}
+
+/// Phone number of the logged-in sale person, shown under the seller's name.
+String currentSellerPhone() {
+  if (!Get.isRegistered<AuthController>()) return '';
+  return (Get.find<AuthController>().currentUser.value?.phoneNumber ?? '')
+      .trim();
 }
 
 class DepositPreReceiptView extends StatefulWidget {
@@ -350,6 +358,9 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
     final cents = d.depositAmount == d.depositAmount.roundToDouble();
     final deposit =
         'Deposit ${cents ? d.depositAmount.round() : d.depositAmount}\$';
+    final sellerPhone = (d.sellerPhone ?? '').trim().isNotEmpty
+        ? d.sellerPhone!.trim()
+        : currentSellerPhone();
     final seller = (d.seller ?? '').trim().isNotEmpty
         ? d.seller!.trim()
         : currentSellerName();
@@ -497,6 +508,14 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
                     seller,
                     style: _t(13.5, color: _blue, weight: FontWeight.w800),
                   ),
+                  if (sellerPhone.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        'Tel: $sellerPhone',
+                        style: _t(12, color: _ink, weight: FontWeight.w700),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -505,12 +524,6 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
           ],
         ),
         const Spacer(),
-        const SizedBox(height: 10),
-        Text(
-          l.preReceiptFooter,
-          textAlign: TextAlign.center,
-          style: _t(9.5, color: _muted, weight: FontWeight.w500),
-        ),
       ],
     );
   }
