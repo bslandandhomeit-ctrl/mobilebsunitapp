@@ -56,7 +56,8 @@ dependencies:
   package_info_plus: ^10.2.1
   gal: ^2.3.3
   flutter_image_compress: ^2.5.1
-
+  pdf: ^3.13.1
+  printing: ^5.15.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

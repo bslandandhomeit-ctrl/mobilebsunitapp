@@ -848,4 +848,68 @@ class AppLocalizationsKm extends AppLocalizations {
   @override
   String get customerPickerNone =>
       'រកមិនឃើញអតិថិជនទេ។ អ្នកអាចបញ្ចូលព័ត៌មានដោយខ្លួនឯង។';
+
+  @override
+  String get scanToPayTitle => 'ស្កេនដើម្បីបង់ប្រាក់កក់';
+
+  @override
+  String get scanToPayNote =>
+      'បង្ហាញ QR នេះដល់អតិថិជន។ បន្ទាប់ពីបង់ប្រាក់រួច សូមបន្តបំពេញព័ត៌មានអតិថិជន។';
+
+  @override
+  String get scanToPayNoQr =>
+      'មិនទាន់មានរូបភាព QR សម្រាប់ធនាគារនៃគម្រោងនេះទេ។ សូមផ្តល់លេខគណនីខាងក្រោមដល់អតិថិជន។';
+
+  @override
+  String get bankAccountNameLabel => 'ឈ្មោះគណនី';
+
+  @override
+  String get bankAccountNumberLabel => 'លេខគណនី';
+
+  @override
+  String get paymentOptionSkip => 'រំលង';
+
+  @override
+  String get paymentOptionAdd => 'បន្ថែមជម្រើសនៃការបង់ប្រាក់';
+
+  @override
+  String get paymentOptionSkipNote =>
+      'រំលងដើម្បីរក្សាទុកប្រាក់កក់ឥឡូវនេះ។ អាចជ្រើសរើសជម្រើសបង់ប្រាក់នៅពេលក្រោយ។';
+
+  @override
+  String get preReceiptTitle => 'បង្កាន់ដៃបឋម';
+
+  @override
+  String get preReceiptNotPaid => 'សំណើប្រាក់កក់ - អ្នកគិតលុយមិនទាន់ទទួលប្រាក់';
+
+  @override
+  String get preReceiptDate => 'កាលបរិច្ឆេទ';
+
+  @override
+  String get preReceiptCustomer => 'អតិថិជន';
+
+  @override
+  String get preReceiptPhone => 'ទូរស័ព្ទ';
+
+  @override
+  String get preReceiptProject => 'គម្រោង';
+
+  @override
+  String get preReceiptUnit => 'យូនីត';
+
+  @override
+  String get preReceiptPayTo => 'បង់ទៅ';
+
+  @override
+  String get preReceiptFooter =>
+      'នេះមិនមែនជាបង្កាន់ដៃផ្លូវការទេ។ អ្នកគិតលុយនឹងផ្តល់បង្កាន់ដៃផ្លូវការនៅពេលទទួលប្រាក់កក់។';
+
+  @override
+  String get preReceiptShare => 'ចែករំលែក';
+
+  @override
+  String get preReceiptDone => 'រួចរាល់';
+
+  @override
+  String get preReceiptSavePdf => 'រក្សាទុក PDF';
 }

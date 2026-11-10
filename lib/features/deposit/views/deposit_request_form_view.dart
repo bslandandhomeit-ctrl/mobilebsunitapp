@@ -9,7 +9,9 @@ import '../../projects/models/payment_option.dart';
 import '../../projects/models/unit.dart';
 import '../../projects/views/unit_information_card.dart';
 import '../data/deposit_repository.dart';
+import '../data/payment_qr_repository.dart';
 import 'customer_picker_sheet.dart';
+import 'deposit_pre_receipt_view.dart';
 
 class DepositRequestFormView extends StatefulWidget {
   const DepositRequestFormView({super.key, required this.unit});
@@ -46,6 +48,9 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       _downDuration = TextEditingController();
   final _interest = TextEditingController(), _duration = TextEditingController();
   int _step = 0, _paymentChoice = 0;
+  PaymentQr? _qr;
+  String? _qrError;
+  bool _qrLoading = true, _useOption = false;
   int? _gender, _gender2;
   bool _secondCustomer = false,
       _downPayment = false,
@@ -59,6 +64,21 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   void initState() {
     super.initState();
     _loadOptions();
+    _loadQr();
+  }
+
+  Future<void> _loadQr() async {
+    setState(() {
+      _qrLoading = true;
+      _qrError = null;
+    });
+    try {
+      _qr = await PaymentQrRepository().forUnit(widget.unit.id);
+    } catch (e) {
+      _qrError = e.toString();
+    } finally {
+      if (mounted) setState(() => _qrLoading = false);
+    }
   }
 
   Future<void> _loadOptions() async {
@@ -126,12 +146,12 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       _saving = true;
       _error = null;
     });
-    final custom = _paymentChoice == -1;
+    final custom = _useOption && _paymentChoice == -1;
     try {
-      await _repository.create(
+      final created = await _repository.create(
         unitId: widget.unit.id,
         depositAmount: double.parse(_deposit.text.trim()),
-        otherDiscountAllowance: double.tryParse(_discount.text.trim()) ?? 0, // blank optional field counts as 0
+        otherDiscountAllowance: 0, // the other-discount field was removed from the form
         customerName: _name.text.trim(),
         customerGender: _gender!,
         customerPhoneNumber: _phone.text.trim(),
@@ -149,7 +169,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
             },
         ],
         remark: _remark.text.trim().isEmpty ? null : _remark.text.trim(),
-        paymentOptionId: _paymentChoice > 0 ? _paymentChoice : null,
+        paymentOptionId: _useOption && _paymentChoice > 0 ? _paymentChoice : null,
         loanDuration: custom ? (int.tryParse(_duration.text.trim()) ?? 0) : null,
         interest: custom ? (double.tryParse(_interest.text.trim()) ?? 0) : null,
         specialDiscount: custom
@@ -164,12 +184,30 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
             : null,
       );
       if (!mounted) return;
-      final l = AppLocalizations.of(context)!;
-      Get.back(result: true);
-      Get.snackbar(
-        l.depositRequested,
-        l.depositRequestedMessage(widget.unit.name),
+      // The letterhead (company name, logo) comes with the QR details; ask again if that first call had failed.
+      var qr = _qr;
+      if (qr == null) {
+        try {
+          qr = await PaymentQrRepository().forUnit(widget.unit.id);
+        } catch (_) {}
+      }
+      // Show the pre-receipt, then go back to the unit list.
+      await Get.to(
+        () => DepositPreReceiptView(
+          data: PreReceiptData(
+            customer: _name.text.trim(),
+            phone: _phone.text.trim(),
+            unit: widget.unit.code,
+            project: widget.unit.projectName,
+            depositAmount: double.parse(_deposit.text.trim()),
+            promotionDiscount: widget.unit.promotionAmount ?? 0,
+            date: DateTime.now(),
+            number: created.details['pre_receipt_no']?.toString(),
+            letterhead: qr,
+          ),
+        ),
       );
+      Get.back(result: true);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() => _error = e.message);
@@ -263,6 +301,42 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     ),
   );
 
+  Widget _qrStep(AppLocalizations l) => AppPanel(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppSectionTitle(l.scanToPayTitle),
+        Text(l.scanToPayNote, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 16),
+        if (_qrLoading) const Center(child: CircularProgressIndicator()),
+        if (_qrError != null) ...[
+          Text(_qrError!),
+          TextButton(onPressed: _loadQr, child: Text(l.retry)),
+        ],
+        if (!_qrLoading && _qr != null) ...[
+          if ((_qr!.qrUrl ?? '').isNotEmpty)
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(8),
+              child: Image.network(
+                _qr!.qrUrl!,
+                height: 320,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => Text(l.scanToPayNoQr),
+              ),
+            )
+          else
+            Text(l.scanToPayNoQr),
+          const SizedBox(height: 16),
+          if ((_qr!.bankName ?? '').isNotEmpty) Text(_qr!.bankName!),
+          if ((_qr!.accountName ?? '').isNotEmpty)
+            _summary(l.bankAccountNameLabel, _qr!.accountName!),
+          if ((_qr!.accountNumber ?? '').isNotEmpty)
+            _summary(l.bankAccountNumberLabel, _qr!.accountNumber!),
+        ],
+      ],
+    ),
+  );
   Widget _customerStep(AppLocalizations l) => AppPanel(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -444,11 +518,6 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppSectionTitle(l.otherDiscountDepositTitle),
-        _money(
-          _discount,
-          '${l.otherDiscountAllowance} (\$)',
-          note: l.otherDiscountNote,
-        ),
         _money(_deposit, '${l.depositAmount} (\$) *'),
         TextFormField(
           readOnly: true,
@@ -469,6 +538,26 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppSectionTitle(l.paymentOption),
+          SegmentedButton<bool>(
+            segments: [
+              ButtonSegment(value: false, label: Text(l.paymentOptionSkip)),
+              ButtonSegment(value: true, label: Text(l.paymentOptionAdd)),
+            ],
+            selected: {_useOption},
+            onSelectionChanged: (v) => setState(() {
+              _useOption = v.first;
+              if (!_useOption) _paymentChoice = 0;
+            }),
+          ),
+          const SizedBox(height: 12),
+          if (!_useOption)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text(
+                l.paymentOptionSkipNote,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
           TextFormField(
             controller: _remark,
             minLines: 3,
@@ -480,6 +569,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
             ),
           ),
           const SizedBox(height: 16),
+          if (_useOption) ...[
           if (_loadingOptions) const LinearProgressIndicator(),
           if (_optionsError != null) ...[
             Text(_optionsError!),
@@ -608,6 +698,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
               enabled: _paymentChoice == -1,
             ),
           ],
+          ],
         ],
       ),
     );
@@ -628,6 +719,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final titles = [
+      l.scanToPayTitle,
       l.customerInformationTitle,
       l.unitInformationTitle,
       l.otherDiscountDepositTitle,
@@ -650,7 +742,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                   Row(
                     children: [
                       Text(
-                        '${_step + 1} / 4',
+                        '${_step + 1} / 5',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -667,11 +759,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      for (var i = 0; i < 4; i++)
+                      for (var i = 0; i < 5; i++)
                         Expanded(
                           child: Container(
                             height: 4,
-                            margin: EdgeInsets.only(right: i == 3 ? 0 : 6),
+                            margin: EdgeInsets.only(right: i == 4 ? 0 : 6),
                             decoration: BoxDecoration(
                               color: i <= _step
                                   ? Theme.of(context).colorScheme.primary
@@ -707,9 +799,10 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                     KeyedSubtree(
                       key: ValueKey(_step),
                       child: switch (_step) {
-                        0 => _customerStep(l),
-                        1 => UnitInformationCard(unit: widget.unit),
-                        2 => _discountStep(l),
+                        0 => _qrStep(l),
+                        1 => _customerStep(l),
+                        2 => UnitInformationCard(unit: widget.unit),
+                        3 => _discountStep(l),
                         _ => _paymentStep(l),
                       },
                     ),
@@ -736,7 +829,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                       child: FilledButton(
                         onPressed: _saving
                             ? null
-                            : (_step == 3 ? _save : _next),
+                            : (_step == 4 ? _save : _next),
                         child: _saving
                             ? const SizedBox(
                                 width: 20,
@@ -745,7 +838,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(_step == 3 ? l.saveLabel : l.nextLabel),
+                            : Text(_step == 4 ? l.saveLabel : l.nextLabel),
                       ),
                     ),
                   ],

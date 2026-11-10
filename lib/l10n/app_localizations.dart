@@ -1651,6 +1651,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No customer found. You can type the details yourself.'**
   String get customerPickerNone;
+
+  /// No description provided for @scanToPayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to pay the deposit'**
+  String get scanToPayTitle;
+
+  /// No description provided for @scanToPayNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this QR to the customer. After they pay, continue with the customer information.'**
+  String get scanToPayNote;
+
+  /// No description provided for @scanToPayNoQr.
+  ///
+  /// In en, this message translates to:
+  /// **'No QR image was set for this project\'s bank. Give the customer the account number below.'**
+  String get scanToPayNoQr;
+
+  /// No description provided for @bankAccountNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account name'**
+  String get bankAccountNameLabel;
+
+  /// No description provided for @bankAccountNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account number'**
+  String get bankAccountNumberLabel;
+
+  /// No description provided for @paymentOptionSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get paymentOptionSkip;
+
+  /// No description provided for @paymentOptionAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add payment option'**
+  String get paymentOptionAdd;
+
+  /// No description provided for @paymentOptionSkipNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip to save the deposit now. The payment option can be chosen later.'**
+  String get paymentOptionSkipNote;
+
+  /// No description provided for @preReceiptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-receipt'**
+  String get preReceiptTitle;
+
+  /// No description provided for @preReceiptNotPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit request - not yet received by the cashier'**
+  String get preReceiptNotPaid;
+
+  /// No description provided for @preReceiptDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get preReceiptDate;
+
+  /// No description provided for @preReceiptCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get preReceiptCustomer;
+
+  /// No description provided for @preReceiptPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get preReceiptPhone;
+
+  /// No description provided for @preReceiptProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get preReceiptProject;
+
+  /// No description provided for @preReceiptUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get preReceiptUnit;
+
+  /// No description provided for @preReceiptPayTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay to'**
+  String get preReceiptPayTo;
+
+  /// No description provided for @preReceiptFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not the official receipt. The cashier gives the official receipt when the deposit is received.'**
+  String get preReceiptFooter;
+
+  /// No description provided for @preReceiptShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get preReceiptShare;
+
+  /// No description provided for @preReceiptDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get preReceiptDone;
+
+  /// No description provided for @preReceiptSavePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Save PDF'**
+  String get preReceiptSavePdf;
 }
 
 class _AppLocalizationsDelegate

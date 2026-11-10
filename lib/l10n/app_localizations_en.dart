@@ -847,4 +847,69 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get customerPickerNone =>
       'No customer found. You can type the details yourself.';
+
+  @override
+  String get scanToPayTitle => 'Scan to pay the deposit';
+
+  @override
+  String get scanToPayNote =>
+      'Show this QR to the customer. After they pay, continue with the customer information.';
+
+  @override
+  String get scanToPayNoQr =>
+      'No QR image was set for this project\'s bank. Give the customer the account number below.';
+
+  @override
+  String get bankAccountNameLabel => 'Account name';
+
+  @override
+  String get bankAccountNumberLabel => 'Account number';
+
+  @override
+  String get paymentOptionSkip => 'Skip';
+
+  @override
+  String get paymentOptionAdd => 'Add payment option';
+
+  @override
+  String get paymentOptionSkipNote =>
+      'Skip to save the deposit now. The payment option can be chosen later.';
+
+  @override
+  String get preReceiptTitle => 'Pre-receipt';
+
+  @override
+  String get preReceiptNotPaid =>
+      'Deposit request - not yet received by the cashier';
+
+  @override
+  String get preReceiptDate => 'Date';
+
+  @override
+  String get preReceiptCustomer => 'Customer';
+
+  @override
+  String get preReceiptPhone => 'Phone';
+
+  @override
+  String get preReceiptProject => 'Project';
+
+  @override
+  String get preReceiptUnit => 'Unit';
+
+  @override
+  String get preReceiptPayTo => 'Pay to';
+
+  @override
+  String get preReceiptFooter =>
+      'This is not the official receipt. The cashier gives the official receipt when the deposit is received.';
+
+  @override
+  String get preReceiptShare => 'Share';
+
+  @override
+  String get preReceiptDone => 'Done';
+
+  @override
+  String get preReceiptSavePdf => 'Save PDF';
 }
