@@ -45,7 +45,7 @@ done
 command -v flutter >/dev/null 2>&1 || { echo "flutter is not on PATH" >&2; exit 1; }
 
 if [ "$FLAVOR" = prod ]; then
-  GRADLE_FLAVOR=prod; ENTRY=lib/main_prod.dart; APP_ID=com.bslandandhome.bsunits
+  GRADLE_FLAVOR=prod; ENTRY=lib/main_prod.dart; APP_ID=com.bslandandhome.bsunitsapp
 else
   GRADLE_FLAVOR=uat;  ENTRY=lib/main_uat.dart;  APP_ID=com.bslandandhome.bsunits.dev
 fi

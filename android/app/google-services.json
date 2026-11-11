@@ -62,6 +62,25 @@
           "other_platform_oauth_client": []
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348592057665:android:b5d9b6771200cb079305c0",
+        "android_client_info": {
+          "package_name": "com.bslandandhome.bsunitsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyMb7RADmKq7ybN9OhhySvhARb5til6bQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
     }
   ],
   "configuration_version": "1"

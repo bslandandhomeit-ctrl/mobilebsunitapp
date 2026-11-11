@@ -32,7 +32,7 @@ android {
 
     // Two flavors so UAT and production never get mixed up (both registered in
     // google-services.json, Firebase project: contract-register):
-    //   prod -> com.bslandandhome.bsunits       (lib/main_prod.dart, live server)
+    //   prod -> com.bslandandhome.bsunitsapp     (lib/main_prod.dart, live server)
     //   uat  -> com.bslandandhome.bsunits.dev   (lib/main_uat.dart, 10.3.0.99) - installs next to prod
     flavorDimensions += "env"
     productFlavors {
@@ -45,7 +45,7 @@ android {
         }
         create("prod") {
             dimension = "env"
-            applicationId = "com.bslandandhome.bsunits"
+            applicationId = "com.bslandandhome.bsunitsapp"
         }
         create("uat") {
             dimension = "env"
@@ -56,7 +56,7 @@ android {
 
     defaultConfig {
         // applicationId is set per flavor above; this is just a fallback.
-        applicationId = "com.bslandandhome.bsunits"
+        applicationId = "com.bslandandhome.bsunitsapp"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
