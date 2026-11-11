@@ -206,8 +206,10 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
     color: color,
     fontWeight: weight,
     letterSpacing: spacing,
-    fontFamily: family,
-    height: 1.25,
+    fontFamily: family ?? 'Manrope',
+    fontFamilyFallback: const ['Noto Sans Khmer', 'Khmer Sangam MN'],
+    fontFeatures: const [FontFeature.tabularFigures()],
+    height: 1.5,
   );
 
   // Small two-language caption above a value: "Khmer  ·  English".
@@ -216,15 +218,15 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
       children: [
         TextSpan(
           text: khmer,
-          style: _t(11, color: _muted),
+          style: _t(11.5, color: _muted, weight: FontWeight.w600),
         ),
         TextSpan(
           text: '   ·   ',
-          style: _t(11, color: _line, weight: FontWeight.w800),
+          style: _t(11, color: _line, weight: FontWeight.w600),
         ),
         TextSpan(
           text: english,
-          style: _t(10.5, color: _muted, weight: FontWeight.w800, spacing: 0.4),
+          style: _t(10, color: _muted, weight: FontWeight.w600, spacing: 0.2),
         ),
       ],
     ),
@@ -238,16 +240,16 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
     double size = 15,
     InlineSpan? rich,
   }) => Padding(
-    padding: const EdgeInsets.only(top: 16),
+    padding: const EdgeInsets.only(top: 12),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _caption(khmer, english),
-        const SizedBox(height: 3),
+        const SizedBox(height: 4),
         rich == null
             ? Text(
                 value,
-                style: _t(size, color: _blue, weight: FontWeight.w800),
+                style: _t(size, color: _blue, weight: FontWeight.w700),
               )
             : Text.rich(rich),
         const SizedBox(height: 5),
@@ -272,7 +274,7 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
               style: _t(
                 size,
                 color: color,
-                weight: bold ? FontWeight.w800 : FontWeight.w600,
+                weight: bold ? FontWeight.w700 : FontWeight.w600,
               ),
             ),
           );
@@ -281,13 +283,13 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
       children: [
         if ((h?.logoUrl ?? '').isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 8),
             child: Image.network(
               h!.logoUrl!,
-              width: 84,
-              height: 84,
+              width: 52,
+              height: 52,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox(width: 84, height: 84),
+              errorBuilder: (_, _, _) => const SizedBox(width: 52, height: 52),
             ),
           ),
         Expanded(
@@ -295,7 +297,7 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               line(h?.companyName, size: 17, color: _ink, bold: true),
-              line(h?.companyNameEn, size: 11.5, color: _muted, bold: true),
+              line(h?.companyNameEn, size: 11, color: _muted, bold: true),
               line(h?.projectName, size: 13.5, color: _red, bold: true),
               line(
                 (h?.addressLine1 ?? '').isEmpty
@@ -311,6 +313,8 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
             ],
           ),
         ),
+        // Balance the logo's width so the letterhead is centered on the paper.
+        if ((h?.logoUrl ?? '').isNotEmpty) const SizedBox(width: 60),
       ],
     );
   }
@@ -380,10 +384,9 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
           'Pre-Receipt',
           textAlign: TextAlign.center,
           style: _t(
-            32,
-            weight: FontWeight.w700,
-            spacing: 0.5,
-            family: 'CormorantGaramond',
+            26,
+            weight: FontWeight.w800,
+            family: 'Manrope',
           ),
         ),
         const SizedBox(height: 8),
@@ -396,11 +399,11 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
                 children: [
                   Text(
                     'Date  $date',
-                    style: _t(11.5, color: _blue, weight: FontWeight.w800),
+                    style: _t(11, color: _ink, weight: FontWeight.w600),
                   ),
                   Text(
                     'Time  $time',
-                    style: _t(11.5, color: _blue, weight: FontWeight.w800),
+                    style: _t(11, color: _ink, weight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -411,15 +414,15 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
                   children: [
                     TextSpan(
                       text: 'លេខ / No   ',
-                      style: _t(11, color: _muted),
+                      style: _t(11.5, color: _muted, weight: FontWeight.w600),
                     ),
                     TextSpan(
                       text: d.number,
                       style: _t(
                         14,
                         color: _blue,
-                        weight: FontWeight.w900,
-                        spacing: 0.5,
+                        weight: FontWeight.w700,
+                        spacing: 0.2,
                       ),
                     ),
                   ],
@@ -454,9 +457,9 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
                   Text(
                     amount,
                     style: _t(
-                      20,
+                      22,
                       color: _blue,
-                      weight: FontWeight.w900,
+                      weight: FontWeight.w700,
                       family: 'Manrope',
                     ),
                   ),
@@ -478,15 +481,15 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
             children: [
               TextSpan(
                 text: '$deposit      ',
-                style: _t(14, color: _blue, weight: FontWeight.w800),
+                style: _t(13, color: _blue, weight: FontWeight.w700),
               ),
               TextSpan(
                 text: 'Property: ',
-                style: _t(14, color: _ink, weight: FontWeight.w900),
+                style: _t(13, color: _ink, weight: FontWeight.w600),
               ),
               TextSpan(
                 text: d.unit,
-                style: _t(14, color: _blue, weight: FontWeight.w800),
+                style: _t(13, color: _blue, weight: FontWeight.w700),
               ),
             ],
           ),
@@ -506,7 +509,7 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
                   const SizedBox(height: 4),
                   Text(
                     seller,
-                    style: _t(13.5, color: _blue, weight: FontWeight.w800),
+                    style: _t(13.5, color: _blue, weight: FontWeight.w700),
                   ),
                   if (sellerPhone.isNotEmpty)
                     Padding(

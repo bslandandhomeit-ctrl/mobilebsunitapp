@@ -363,11 +363,20 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(8),
-              child: Image.network(
-                _qr!.qrUrl!,
-                height: 320,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => Text(l.scanToPayNoQr),
+              child: Center(
+                child: ConstrainedBox(
+                  // Match the web bank preview rather than stretching the
+                  // uploaded image to a fixed 320-pixel height.
+                  constraints: const BoxConstraints(maxWidth: 220),
+                  child: Image.network(
+                    _qr!.qrUrl!,
+                    fit: BoxFit.contain,
+                    // Keep the full-resolution source and use high-quality
+                    // resampling for QR uploads that also contain bank text.
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (_, _, _) => Text(l.scanToPayNoQr),
+                  ),
+                ),
               ),
             )
           else
@@ -602,7 +611,36 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     if (picked != null && mounted) setState(() => assign(picked));
   }
 
-  Widget _photoTile(String label, XFile? file, void Function(XFile?) assign) {
+  Widget _photoTile(String label, XFile? file, void Function(XFile?) assign) =>
+      FormField<XFile>(
+        initialValue: file,
+        validator: (photo) => photo == null
+            ? AppLocalizations.of(context)!.requiredFieldLabel
+            : null,
+        builder: (field) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _photoTileBody('$label *', file, (photo) {
+              assign(photo);
+              field.didChange(photo);
+              field.validate();
+            }),
+            if (field.hasError)
+              Padding(
+                padding: const EdgeInsets.only(left: 12, bottom: 12),
+                child: Text(
+                  field.errorText!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+
+  Widget _photoTileBody(String label, XFile? file, void Function(XFile?) assign) {
     final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
