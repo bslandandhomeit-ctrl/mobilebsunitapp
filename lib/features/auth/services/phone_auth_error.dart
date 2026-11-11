@@ -4,9 +4,11 @@ String phoneAuthError(String code, String? message) {
     'invalid-app-credential' ||
     'app-not-authorized' ||
     'invalid-api-key' ||
-    'missing-client-identifier' => 'This app could not be verified. Please contact support.',
+    'missing-client-identifier' =>
+      'This app could not be verified. Please contact support.',
     'operation-not-allowed' => 'Phone verification is not available for this region. Please contact support.',
-    'billing-not-enabled' => 'SMS verification is currently unavailable. Please contact support.',
+    'billing-not-enabled' =>
+      'SMS verification is currently unavailable. Please contact support.',
     'quota-exceeded' || 'too-many-requests' =>
       'SMS verification is temporarily limited. Wait before trying again.',
     'invalid-phone-number' =>

@@ -15,6 +15,7 @@ class AppUser {
     this.saleType,
     this.saleName,
     this.saleRepresentativeId,
+    this.needChangePassword = false,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) => AppUser(
@@ -31,6 +32,10 @@ class AppUser {
     saleType: json['sale_type']?.toString(),
     saleName: json['sale_name']?.toString(),
     saleRepresentativeId: json['sale_representative_id'] as int?,
+    // true until the user sets their own password (a login made by an admin or be-loan has a default one)
+    needChangePassword:
+        json['need_change_password'] == true ||
+        json['need_change_password'] == 1,
   );
 
   final int id;
@@ -44,6 +49,7 @@ class AppUser {
   final String? saleType;
   final String? saleName;
   final int? saleRepresentativeId;
+  final bool needChangePassword;
 
   String? get phone => phoneNumber;
   String? get avatar => avatarUrl;

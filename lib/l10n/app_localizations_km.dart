@@ -939,4 +939,8 @@ class AppLocalizationsKm extends AppLocalizations {
   String depAttachmentsFailed(String error) {
     return 'បានរក្សាទុកប្រាក់កក់ ប៉ុន្តែមិនអាចផ្ទុករូបភាពឡើងបានទេ៖ $error';
   }
+
+  @override
+  String get forcePasswordChangeNote =>
+      'ដើម្បីសុវត្ថិភាព សូមកំណត់ពាក្យសម្ងាត់ថ្មី មុនពេលបន្ត។';
 }

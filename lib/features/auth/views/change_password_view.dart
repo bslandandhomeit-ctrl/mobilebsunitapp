@@ -5,10 +5,14 @@ import 'package:get/get.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
+import '../controllers/auth_controller.dart';
 import '../data/auth_repository.dart';
 
 class ChangePasswordView extends StatefulWidget {
-  const ChangePasswordView({super.key});
+  const ChangePasswordView({super.key, this.forced = false});
+
+  /// First sign-in with a default password: the screen cannot be left until a new password is set.
+  final bool forced;
 
   @override
   State<ChangePasswordView> createState() => _ChangePasswordViewState();
@@ -33,7 +37,12 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
       );
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      Get.back();
+      if (widget.forced) {
+        // the flag is now off on the server: reloading the user lets the app continue
+        await Get.find<AuthController>().loadCurrentUser();
+      } else {
+        Get.back();
+      }
       Get.snackbar(l10n.passwordChanged, l10n.passwordChangedMessage);
     } on ApiException catch (e) {
       setState(() => _error = e.message);
@@ -52,43 +61,63 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return AppPage(
-      appBar: AppBar(title: Text(l10n.changePassword)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        child: AppPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: _currentController,
-                obscureText: true,
-                decoration: InputDecoration(labelText: l10n.currentPassword),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _newController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: l10n.newPasswordMinChars,
+    return PopScope(
+      canPop: !widget.forced,
+      child: AppPage(
+        appBar: AppBar(
+          title: Text(l10n.changePassword),
+          automaticallyImplyLeading: !widget.forced,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          child: AppPanel(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (widget.forced) ...[
+                  Text(
+                    l10n.forcePasswordChangeNote,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                TextField(
+                  controller: _currentController,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: l10n.currentPassword),
                 ),
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _newController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: l10n.newPasswordMinChars,
+                  ),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 12),
+                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                ],
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.changePassword),
+                ),
+                if (widget.forced)
+                  TextButton(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () => Get.find<AuthController>().logout(),
+                    child: Text(l10n.logOut),
+                  ),
               ],
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.changePassword),
-              ),
-            ],
+            ),
           ),
         ),
       ),

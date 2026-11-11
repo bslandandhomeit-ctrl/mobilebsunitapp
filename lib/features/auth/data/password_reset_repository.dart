@@ -19,14 +19,21 @@ class PasswordResetRepository {
   }) async {
     final response = await _client.post<Map<String, dynamic>>(
       ApiConstants.generateResetTokenPath,
-      data: {'phone_number': phoneNumber, 'verification_code': verificationCode},
+      data: {
+        'phone_number': phoneNumber,
+        'verification_code': verificationCode,
+      },
     );
     final data = response.data!;
-    final token = (data['data'] is Map ? data['data']['token'] : data['token'])?.toString();
+    final token = (data['data'] is Map ? data['data']['token'] : data['token'])
+        ?.toString();
     return token ?? '';
   }
 
-  Future<void> resetPassword({required String token, required String password}) => _client.post(
+  Future<void> resetPassword({
+    required String token,
+    required String password,
+  }) => _client.post(
     ApiConstants.resetPasswordPath,
     data: {'token': token, 'password': password},
   );

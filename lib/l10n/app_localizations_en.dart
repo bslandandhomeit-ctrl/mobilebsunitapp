@@ -939,4 +939,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String depAttachmentsFailed(String error) {
     return 'The deposit was saved, but the photos could not be uploaded: $error';
   }
+
+  @override
+  String get forcePasswordChangeNote =>
+      'For your security, please set a new password before you continue.';
 }

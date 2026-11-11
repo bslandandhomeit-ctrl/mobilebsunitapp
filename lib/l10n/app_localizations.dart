@@ -1819,6 +1819,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The deposit was saved, but the photos could not be uploaded: {error}'**
   String depAttachmentsFailed(String error);
+
+  /// No description provided for @forcePasswordChangeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'For your security, please set a new password before you continue.'**
+  String get forcePasswordChangeNote;
 }
 
 class _AppLocalizationsDelegate

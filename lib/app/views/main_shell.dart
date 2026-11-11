@@ -12,6 +12,7 @@ import '../../features/more/views/more_view.dart';
 import '../../l10n/app_localizations.dart';
 import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/home/views/home_view.dart';
+import '../../features/auth/views/change_password_view.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -82,6 +83,10 @@ class _MainShellState extends State<MainShell> {
           );
         }
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+      // a login with a default password must set its own first
+      if (user.needChangePassword) {
+        return const ChangePasswordView(forced: true);
       }
       if (!user.canAccessStaffFeatures) return const HomeView();
       return _staffShell(context);

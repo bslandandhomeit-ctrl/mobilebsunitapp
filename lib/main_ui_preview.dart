@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 
 import 'app/theme/app_theme.dart';
+import 'features/auth/views/change_password_view.dart';
 import 'features/deposit/data/payment_qr_repository.dart';
 import 'features/deposit/views/deposit_pre_receipt_view.dart';
 import 'l10n/app_localizations.dart';
@@ -69,6 +70,7 @@ class _Sandbox extends StatefulWidget {
 }
 
 class _SandboxState extends State<_Sandbox> {
+  String _screen = 'Pre-receipt';
   String _company = 'BS Land and Home';
   String _customer = 'Short name';
   double _amount = 500;
@@ -115,6 +117,14 @@ class _SandboxState extends State<_Sandbox> {
               child: Row(
                 children: [
                   _pick(
+                    'Screen',
+                    const ['Pre-receipt', 'Forced password'],
+                    _screen,
+                    (c) => c,
+                    (c) => _screen = c,
+                  ),
+                  const SizedBox(width: 10),
+                  _pick(
                     'Company',
                     _companies.keys.toList(),
                     _company,
@@ -142,21 +152,23 @@ class _SandboxState extends State<_Sandbox> {
             ),
             Expanded(
               child: ClipRect(
-                child: DepositPreReceiptView(
-                  data: PreReceiptData(
-                    customer: _customers[_customer]!,
-                    phone: '099856687',
-                    unit: 'L1 R4-115',
-                    project: _companies[_company]!.projectName,
-                    depositAmount: _amount,
-                    promotionDiscount: 3000,
-                    date: DateTime(2026, 11, 11, 16, 5, 16),
-                    number: '2026110005',
-                    seller: 'Sopheak Emilly',
-                    sellerPhone: '0234567863',
-                    letterhead: _companies[_company],
-                  ),
-                ),
+                child: _screen == 'Forced password'
+                    ? const ChangePasswordView(forced: true)
+                    : DepositPreReceiptView(
+                        data: PreReceiptData(
+                          customer: _customers[_customer]!,
+                          phone: '099856687',
+                          unit: 'L1 R4-115',
+                          project: _companies[_company]!.projectName,
+                          depositAmount: _amount,
+                          promotionDiscount: 3000,
+                          date: DateTime(2026, 11, 11, 16, 5, 16),
+                          number: '2026110005',
+                          seller: 'Sopheak Emilly',
+                          sellerPhone: '0234567863',
+                          letterhead: _companies[_company],
+                        ),
+                      ),
               ),
             ),
           ],
