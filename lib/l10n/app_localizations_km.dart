@@ -943,4 +943,24 @@ class AppLocalizationsKm extends AppLocalizations {
   @override
   String get forcePasswordChangeNote =>
       'ដើម្បីសុវត្ថិភាព សូមកំណត់ពាក្យសម្ងាត់ថ្មី មុនពេលបន្ត។';
+
+  @override
+  String get deleteAccount => 'លុបគណនី';
+
+  @override
+  String get deleteAccountIntro =>
+      'សកម្មភាពនេះនឹងបិទគណនីរបស់អ្នក ហើយអ្នកនឹងចាកចេញពីឧបករណ៍ទាំងអស់។ មិនអាចត្រឡប់វិញបានទេ។';
+
+  @override
+  String get deleteAccountDetails =>
+      'គណនីអតិថិជន៖ ឈ្មោះ លេខទូរស័ព្ទ អ៊ីមែល និងរូបថតរបស់អ្នកត្រូវបានលុប។\n\nគណនីបុគ្គលិក និងភ្នាក់ងារលក់៖ គណនីត្រូវបានបិទ ហើយអ៊ីមែល រូបថត និងហត្ថលេខារបស់អ្នកត្រូវបានលុប។ ឈ្មោះ និងលេខទូរស័ព្ទនៅតែស្ថិតក្នុងកំណត់ត្រាប្រាក់កក់ កិច្ចសន្យា និងកម្រៃជើងសាររបស់ក្រុមហ៊ុន ដែលក្រុមហ៊ុនត្រូវរក្សាទុក។';
+
+  @override
+  String get deleteAccountConfirm => 'ខ្ញុំយល់ថាមិនអាចត្រឡប់វិញបានទេ';
+
+  @override
+  String get deleteAccountButton => 'លុបគណនីរបស់ខ្ញុំ';
+
+  @override
+  String get deleteAccountDone => 'គណនីរបស់អ្នកត្រូវបានលុបរួចរាល់។';
 }

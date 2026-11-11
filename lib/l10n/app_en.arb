@@ -373,5 +373,11 @@
   "depRemovePhoto": "Remove",
   "depAttachmentsFailed": "The deposit was saved, but the photos could not be uploaded: {error}",
   "@depAttachmentsFailed": {"placeholders": {"error": {"type": "String"}}},
-  "forcePasswordChangeNote": "For your security, please set a new password before you continue."
+  "forcePasswordChangeNote": "For your security, please set a new password before you continue.",
+  "deleteAccount": "Delete account",
+  "deleteAccountIntro": "This closes your account and signs you out on every device. It cannot be undone.",
+  "deleteAccountDetails": "Customer accounts: your name, phone number, e-mail and photo are removed.\n\nStaff and sale agent accounts: the login is switched off and your e-mail, photo and signature are removed. Your name and phone number stay in the company's deposit, contract and commission records, which the company must keep.",
+  "deleteAccountConfirm": "I understand this cannot be undone",
+  "deleteAccountButton": "Delete my account",
+  "deleteAccountDone": "Your account has been deleted."
 }

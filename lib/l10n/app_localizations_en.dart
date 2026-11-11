@@ -943,4 +943,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get forcePasswordChangeNote =>
       'For your security, please set a new password before you continue.';
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountIntro =>
+      'This closes your account and signs you out on every device. It cannot be undone.';
+
+  @override
+  String get deleteAccountDetails =>
+      'Customer accounts: your name, phone number, e-mail and photo are removed.\n\nStaff and sale agent accounts: the login is switched off and your e-mail, photo and signature are removed. Your name and phone number stay in the company\'s deposit, contract and commission records, which the company must keep.';
+
+  @override
+  String get deleteAccountConfirm => 'I understand this cannot be undone';
+
+  @override
+  String get deleteAccountButton => 'Delete my account';
+
+  @override
+  String get deleteAccountDone => 'Your account has been deleted.';
 }

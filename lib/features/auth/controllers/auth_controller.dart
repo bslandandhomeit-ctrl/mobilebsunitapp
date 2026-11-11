@@ -100,6 +100,13 @@ class AuthController extends GetxController {
     OneSignal.User.pushSubscription.addObserver(_pushObserver!);
   }
 
+  /// The account was just deleted on the server (all its sign-ins are revoked): clear what the phone holds and go to login.
+  Future<void> signOutLocally() async {
+    await LocalStorage.clearAuth();
+    currentUser.value = null;
+    Get.offAllNamed(AppRoutes.login);
+  }
+
   Future<void> logout() async {
     try {
       await _repository.logout();

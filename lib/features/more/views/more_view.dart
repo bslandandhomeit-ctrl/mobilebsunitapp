@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/views/change_password_view.dart';
+import '../../auth/views/delete_account_view.dart';
 import '../../auth/views/members_view.dart';
 import '../../auth/views/profile_view.dart';
 import '../../notification/controllers/notification_controller.dart';
@@ -60,6 +61,11 @@ class MoreView extends StatelessWidget {
                   leading: const Icon(Icons.people_outline),
                   title: Text(l10n.members),
                   onTap: () => Get.to(() => const MembersView()),
+                ),
+                _MenuTile(
+                  leading: const Icon(Icons.delete_outline, color: Colors.red),
+                  title: Text(l10n.deleteAccount, style: const TextStyle(color: Colors.red)),
+                  onTap: () => Get.to(() => const DeleteAccountView()),
                 ),
               ],
             ),

@@ -1825,6 +1825,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'For your security, please set a new password before you continue.'**
   String get forcePasswordChangeNote;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'This closes your account and signs you out on every device. It cannot be undone.'**
+  String get deleteAccountIntro;
+
+  /// No description provided for @deleteAccountDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer accounts: your name, phone number, e-mail and photo are removed.\n\nStaff and sale agent accounts: the login is switched off and your e-mail, photo and signature are removed. Your name and phone number stay in the company\'s deposit, contract and commission records, which the company must keep.'**
+  String get deleteAccountDetails;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand this cannot be undone'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get deleteAccountButton;
+
+  /// No description provided for @deleteAccountDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted.'**
+  String get deleteAccountDone;
 }
 
 class _AppLocalizationsDelegate

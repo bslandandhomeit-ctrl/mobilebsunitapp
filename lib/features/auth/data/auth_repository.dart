@@ -95,6 +95,10 @@ class AuthRepository {
     );
   }
 
+  /// `Api/UserController@deleteAccount`: closes the signed-in account (Google Play account deletion). Needs the password.
+  Future<void> deleteAccount(String password) =>
+      _client.post(ApiConstants.deleteAccountPath, data: {'password': password});
+
   /// Verified against `Api/OnesignalController@updateAuthUserPlayerId`:
   /// registers this device's OneSignal subscription id against the
   /// current Passport *token* (not the user) — required for push

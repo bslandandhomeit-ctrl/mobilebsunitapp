@@ -143,6 +143,7 @@ class ApiConstants {
   static const String notificationsPath = 'api/notifications';
   static const String postsPath = 'api/posts';
   static const String changePasswordPath = 'api/whoami/change_password';
+  static const String deleteAccountPath = 'api/whoami/delete_account';
   static const String membersPath = 'api/whoami/members';
   static const String forgetPasswordPath = 'api/users/forgetPassword';
   static const String generateResetTokenPath =
