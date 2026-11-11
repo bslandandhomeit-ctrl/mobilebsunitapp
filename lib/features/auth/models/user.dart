@@ -61,6 +61,7 @@ class AppUser {
         'sale_team_leader',
         'accountant',
         'agent',
+        'sale_internal',
         'report',
       ]);
   bool hasAnyRole(Iterable<String> candidates) =>
