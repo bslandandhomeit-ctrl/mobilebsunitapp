@@ -138,12 +138,14 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
   final _slip = GlobalKey();
   bool _busy = false;
 
-  // Slip palette: dark ink, a calm blue for the filled-in values, red for the project, Tel and the PAID stamp.
+  // Slip palette: labels in muted grey, values in bold dark ink, ONE blue accent for the figures that matter
+  // (amount, number, unit), red for the project, Tel and the PAID stamp.
   static const _ink = Color(0xFF1B2430);
   static const _muted = Color(0xFF6B7684);
   static const _blue = Color(0xFF1B3FC9);
   static const _red = Color(0xFFD32F2F);
   static const _line = Color(0xFFDDE2E8);
+  static const _panel = Color(0xFFF5F7FA);
 
   // The slip as a one-page PDF (the slip picture on A5) so it can go to Telegram or be saved as a file.
   Future<Uint8List> _pdf() async {
@@ -239,6 +241,7 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
     String value, {
     double size = 15,
     InlineSpan? rich,
+    Color color = _ink,
   }) => Padding(
     padding: const EdgeInsets.only(top: 12),
     child: Column(
@@ -249,7 +252,7 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
         rich == null
             ? Text(
                 value,
-                style: _t(size, color: _blue, weight: FontWeight.w700),
+                style: _t(size, color: color, weight: FontWeight.w800),
               )
             : Text.rich(rich),
         const SizedBox(height: 5),
@@ -257,6 +260,57 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
       ],
     ),
   );
+
+  // Key/value cells side by side: a muted label above a bold value, on a soft panel with a divider between the cells.
+  Widget _pairs(List<({String key, String value, Color color})> items) =>
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: _panel,
+          border: Border.all(color: _line),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                if (i > 0)
+                  Container(
+                    width: 1,
+                    margin: const EdgeInsets.symmetric(horizontal: 14),
+                    color: _line,
+                  ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        items[i].key,
+                        style: _t(
+                          10.5,
+                          color: _muted,
+                          weight: FontWeight.w600,
+                          spacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        items[i].value,
+                        style: _t(
+                          15,
+                          color: items[i].color,
+                          weight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
 
   Widget _letterhead(PaymentQr? h) {
     Widget line(
@@ -283,13 +337,14 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
       children: [
         if ((h?.logoUrl ?? '').isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 4),
             child: Image.network(
               h!.logoUrl!,
-              width: 52,
-              height: 52,
+              width: 108,
+              height: 108,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox(width: 52, height: 52),
+              errorBuilder: (_, _, _) =>
+                  const SizedBox(width: 108, height: 108),
             ),
           ),
         Expanded(
@@ -313,8 +368,8 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
             ],
           ),
         ),
-        // Balance the logo's width so the letterhead is centered on the paper.
-        if ((h?.logoUrl ?? '').isNotEmpty) const SizedBox(width: 60),
+        // room on the right: moves the centred company text a little to the left, nearer the logo
+        if ((h?.logoUrl ?? '').isNotEmpty) const SizedBox(width: 56),
       ],
     );
   }
@@ -358,10 +413,7 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
     final hour12 = d.date.hour % 12 == 0 ? 12 : d.date.hour % 12;
     final time =
         '${two(hour12)}:${two(d.date.minute)} ${d.date.hour >= 12 ? 'PM' : 'AM'}';
-    final amount = '\$ ${d.depositAmount.toStringAsFixed(2)}';
-    final cents = d.depositAmount == d.depositAmount.roundToDouble();
-    final deposit =
-        'Deposit ${cents ? d.depositAmount.round() : d.depositAmount}\$';
+    final amount = formatUsd(d.depositAmount);
     final sellerPhone = (d.sellerPhone ?? '').trim().isNotEmpty
         ? d.sellerPhone!.trim()
         : currentSellerPhone();
@@ -383,11 +435,7 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
         Text(
           'Pre-Receipt',
           textAlign: TextAlign.center,
-          style: _t(
-            26,
-            weight: FontWeight.w800,
-            family: 'Manrope',
-          ),
+          style: _t(26, weight: FontWeight.w800, family: 'Manrope'),
         ),
         const SizedBox(height: 8),
         Row(
@@ -473,28 +521,18 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
           'Amount in Words',
           amountInWords(d.depositAmount),
         ),
-        _field(
-          'អត្ថន័យ',
-          'Description',
-          '',
-          rich: TextSpan(
-            children: [
-              TextSpan(
-                text: '$deposit      ',
-                style: _t(13, color: _blue, weight: FontWeight.w700),
-              ),
-              TextSpan(
-                text: 'Property: ',
-                style: _t(13, color: _ink, weight: FontWeight.w600),
-              ),
-              TextSpan(
-                text: d.unit,
-                style: _t(13, color: _blue, weight: FontWeight.w700),
-              ),
-            ],
+        const SizedBox(height: 14),
+        _caption('អត្ថន័យ', 'Description'),
+        const SizedBox(height: 6),
+        _pairs([
+          (
+            key: 'ប្រាក់កក់  ·  Deposit',
+            value: formatUsd(d.depositAmount),
+            color: _ink,
           ),
-        ),
-        const SizedBox(height: 30),
+          (key: 'អចលនទ្រព្យ  ·  Property', value: d.unit, color: _blue),
+        ]),
+        const SizedBox(height: 20),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -565,8 +603,12 @@ class _DepositPreReceiptViewState extends State<DepositPreReceiptView> {
                           alignment: Alignment.topCenter,
                           child: SizedBox(
                             width: 380,
-                            height: 560,
-                            child: _slipSheet(l, widget.data),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 560),
+                              child: IntrinsicHeight(
+                                child: _slipSheet(l, widget.data),
+                              ),
+                            ),
                           ),
                         ),
                       ),
