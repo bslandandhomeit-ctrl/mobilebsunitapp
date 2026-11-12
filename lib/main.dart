@@ -55,7 +55,8 @@ class BsUnitsApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'BS Units',
-      builder: (context, child) => ApiConstants.isProduction
+      builder: (context, child) => (ApiConstants.isProduction ||
+              const bool.fromEnvironment('HIDE_ENV_BANNER'))
           ? child!
           : Banner(
               message: ApiConstants.environmentLabel,

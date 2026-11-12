@@ -23,6 +23,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
   final _currentController = TextEditingController();
   final _newController = TextEditingController();
   bool _isSubmitting = false;
+  bool _showCurrent = false, _showNew = false;
   String? _error;
 
   Future<void> _submit() async {
@@ -83,15 +84,30 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
                 ],
                 TextField(
                   controller: _currentController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: l10n.currentPassword),
+                  obscureText: !_showCurrent,
+                  decoration: InputDecoration(
+                    labelText: l10n.currentPassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(_showCurrent
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined),
+                      onPressed: () =>
+                          setState(() => _showCurrent = !_showCurrent),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _newController,
-                  obscureText: true,
+                  obscureText: !_showNew,
                   decoration: InputDecoration(
                     labelText: l10n.newPasswordMinChars,
+                    suffixIcon: IconButton(
+                      icon: Icon(_showNew
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined),
+                      onPressed: () => setState(() => _showNew = !_showNew),
+                    ),
                   ),
                 ),
                 if (_error != null) ...[

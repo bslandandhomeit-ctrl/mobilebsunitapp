@@ -18,7 +18,7 @@ class DeleteAccountView extends StatefulWidget {
 class _DeleteAccountViewState extends State<DeleteAccountView> {
   final _repository = AuthRepository();
   final _password = TextEditingController();
-  bool _confirmed = false, _submitting = false;
+  bool _confirmed = false, _submitting = false, _show = false;
   String? _error;
 
   Future<void> _delete() async {
@@ -69,9 +69,17 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
               const SizedBox(height: 20),
               TextField(
                 controller: _password,
-                obscureText: true,
+                obscureText: !_show,
                 onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(labelText: l.currentPassword),
+                decoration: InputDecoration(
+                  labelText: l.currentPassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(_show
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined),
+                    onPressed: () => setState(() => _show = !_show),
+                  ),
+                ),
               ),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,

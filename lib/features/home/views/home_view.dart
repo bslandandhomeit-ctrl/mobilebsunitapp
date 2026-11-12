@@ -8,6 +8,8 @@ import '../../../core/widgets/app_ui.dart';
 import '../../../core/widgets/brand_header.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../auth/views/change_password_view.dart';
+import '../../auth/views/delete_account_view.dart';
 import '../../projects/controllers/project_detail_controller.dart';
 import '../../projects/models/project.dart';
 import '../../projects/views/project_detail_view.dart';
@@ -24,10 +26,22 @@ class HomeView extends GetView<HomeController> {
       appBar: AppBar(
         title: const BrandHeader(),
         actions: [
-          IconButton(
-            onPressed: auth.logout,
-            tooltip: l10n.logOut,
-            icon: const Icon(Icons.logout_rounded),
+          // Customers have no More tab: their account actions live in this menu.
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle_outlined),
+            onSelected: (v) {
+              if (v == 'password') Get.to(() => const ChangePasswordView());
+              if (v == 'delete') Get.to(() => const DeleteAccountView());
+              if (v == 'logout') auth.logout();
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'password', child: Text(l10n.changePassword)),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(l10n.deleteAccount, style: const TextStyle(color: Colors.red)),
+              ),
+              PopupMenuItem(value: 'logout', child: Text(l10n.logOut)),
+            ],
           ),
           const SizedBox(width: 8),
         ],
