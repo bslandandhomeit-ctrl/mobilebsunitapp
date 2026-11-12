@@ -1,8 +1,6 @@
-import '../../../core/constants/api_constants.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../app/routes/app_routes.dart';
 import '../../../core/network/api_exception.dart';
@@ -22,16 +20,12 @@ class AuthController extends GetxController {
   final Rxn<AppUser> currentUser = Rxn<AppUser>();
   final userLoadError = RxnString();
 
-  void Function(OSPushSubscriptionChangedState)? _pushObserver;
-
   @override
   void onInit() {
     super.onInit();
     if (LocalStorage.isLoggedIn) {
       loadCurrentUser();
-      _registerPushSubscription();
     }
-    _watchPushSubscriptionChanges();
   }
 
   Future<void> loadCurrentUser() async {
@@ -64,7 +58,6 @@ class AuthController extends GetxController {
         password: passwordController.text,
       );
       currentUser.value = await _repository.getAuthenticatedUser();
-      await _registerPushSubscription();
       Get.offAllNamed(AppRoutes.home);
     } on ApiException catch (e) {
       await LocalStorage.clearAuth();
@@ -73,31 +66,6 @@ class AuthController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }
-
-  /// Registers this device's OneSignal subscription id against the
-  /// current Passport token — without this, push notifications never
-  /// reach the device even though OneSignal itself is initialized. The
-  /// id may not be available yet right after login (async subscription
-  /// setup), so [_watchPushSubscriptionChanges] also retries via an
-  /// observer whenever it changes.
-  Future<void> _registerPushSubscription() async {
-    if (!ApiConstants.isProduction) return;
-    final playerId = OneSignal.User.pushSubscription.id;
-    if (playerId == null || playerId.length != 36) return;
-    try {
-      await _repository.updateOnesignalPlayerId(playerId);
-    } catch (_) {
-      // Non-fatal — the observer will retry on the next subscription change.
-    }
-  }
-
-  void _watchPushSubscriptionChanges() {
-    if (!ApiConstants.isProduction) return;
-    _pushObserver = (_) {
-      if (LocalStorage.isLoggedIn) _registerPushSubscription();
-    };
-    OneSignal.User.pushSubscription.addObserver(_pushObserver!);
   }
 
   /// The account was just deleted on the server (all its sign-ins are revoked): clear what the phone holds and go to login.
@@ -118,9 +86,6 @@ class AuthController extends GetxController {
 
   @override
   void onClose() {
-    if (_pushObserver != null) {
-      OneSignal.User.pushSubscription.removeObserver(_pushObserver!);
-    }
     usernameController.dispose();
     passwordController.dispose();
     super.onClose();

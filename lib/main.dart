@@ -3,7 +3,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import 'app/bindings/initial_binding.dart';
 import 'app/routes/app_pages.dart';
@@ -15,7 +14,6 @@ import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
 // From build.gradle in the original bs-contract-android project.
-const _oneSignalAppId = '25dd12b1-8fda-4085-8ba7-4bea5c12dfb3';
 
 // Plain entry point (e.g. tests, or `flutter run` with no flavor): defaults to
 // production. For day-to-day work use a flavor instead — see RUN.md:
@@ -41,8 +39,6 @@ Future<void> startBsUnits() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-    OneSignal.initialize(_oneSignalAppId);
-    OneSignal.Notifications.requestPermission(true);
   }
 
   runApp(const BsUnitsApp());

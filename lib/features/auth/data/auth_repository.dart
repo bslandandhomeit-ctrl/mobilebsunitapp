@@ -99,15 +99,6 @@ class AuthRepository {
   Future<void> deleteAccount(String password) =>
       _client.post(ApiConstants.deleteAccountPath, data: {'password': password});
 
-  /// Verified against `Api/OnesignalController@updateAuthUserPlayerId`:
-  /// registers this device's OneSignal subscription id against the
-  /// current Passport *token* (not the user) — required for push
-  /// notifications to actually reach this device/session.
-  Future<void> updateOnesignalPlayerId(String playerId) => _client.put(
-    ApiConstants.onesignalPlayerIdPath,
-    data: {'player_id': playerId},
-  );
-
   Future<PaginatedResponse<AppUser>> getMembers() async {
     final response = await _client.get<Map<String, dynamic>>(
       ApiConstants.membersPath,

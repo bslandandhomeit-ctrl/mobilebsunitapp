@@ -150,7 +150,6 @@ class ApiConstants {
       'api/users/generateResetPasswordToken';
   static const String resetPasswordPath = 'api/users/resetPassword';
   static const String appVersionPath = 'api/app_version';
-  static const String onesignalPlayerIdPath = 'api/whoami/onesignal_player_id';
   static String contractPdfPath(int contractId) =>
       'api/contract/$contractId/pdf';
 }
