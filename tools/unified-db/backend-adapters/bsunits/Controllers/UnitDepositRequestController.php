@@ -398,16 +398,11 @@ class UnitDepositRequestController extends Controller
         try {
             DB::beginTransaction();           
             
-            // Set Sale Manager Status to PENDING if pyament_option_id is null or other_discount_allowance is greater than 0
-            if ( is_null($validated_data['payment_option_id']) OR $validated_data['other_discount_allowance'] > 0 ) {
-                $unit_deposit_request = $this->setSaleManagerStatus($unit_deposit_request, UnitDepositStatus::PENDING, null, null);                   
-            }
-            // Set Sale Manager Status to NOT_REQUIRED if is_selected_payment_option is false
-            if ( $validated_data['is_selected_payment_option'] == 0 
-                 OR $validated_data['is_selected_payment_option'] == false) {
-
-                $unit_deposit_request = $this->setSaleManagerStatus($unit_deposit_request, "NOT_REQUIRED", null, null);
-            }
+            $unit_deposit_request = $this->setSaleManagerStatus(
+                $unit_deposit_request,
+                $unit_deposit_request->requiresSaleManagerApproval() ? UnitDepositStatus::PENDING : 'NOT_REQUIRED',
+                null, null
+            );
 
             // before saving data, check if request's unit_id is not the same as the exisiting one
             // if not the same, make the old unit_id to AVAILABLE
@@ -714,21 +709,13 @@ class UnitDepositRequestController extends Controller
                 DB::beginTransaction();
                 $unit_deposit_request->fill($validated_data);
                 
-                // Set Sale Manager Status to PENDING if pyament_option_id is null or other_discount_allowance is greater than 0
-                if ( is_null($validated_data['payment_option_id']) 
-                     OR $validated_data['other_discount_allowance'] > 0 ) {
-
-                    $unit_deposit_request->status = UnitDepositStatus::PENDING;                  
-                    $unit_deposit_request = $this->setSaleManagerStatus($unit_deposit_request, UnitDepositStatus::PENDING, null, null);
-                }
-               
-                // Set Sale Manager Status to NOT_REQUIRED if is_selected_payment_option is false
-                if ( $validated_data['is_selected_payment_option'] == 0 
-                     OR $validated_data['is_selected_payment_option'] == false) {
-
-                    $unit_deposit_request->status = UnitDepositStatus::APPROVED;
-                    $unit_deposit_request = $this->setSaleManagerStatus($unit_deposit_request, "NOT_REQUIRED", null, null);
-                }
+                $requires_manager = $unit_deposit_request->requiresSaleManagerApproval();
+                $unit_deposit_request->status = $requires_manager ? UnitDepositStatus::PENDING : UnitDepositStatus::APPROVED;
+                $unit_deposit_request = $this->setSaleManagerStatus(
+                    $unit_deposit_request,
+                    $requires_manager ? UnitDepositStatus::PENDING : 'NOT_REQUIRED',
+                    null, null
+                );
                 // Save data to database
                 $unit_deposit_request->save();
                 // action should be taken after saving successfully

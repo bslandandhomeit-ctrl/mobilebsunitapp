@@ -105,6 +105,16 @@ class UnitDepositRequest extends Model
     protected static function boot()
     {
         parent::boot();
+        static::saving(function ($model) {
+            // Persist the same status exposed to clients before an approval can
+            // enqueue conversion, which reads the stored approval columns.
+            if (($model->status === UnitDepositStatus::PENDING
+                    || $model->getOriginal('status') === UnitDepositStatus::PENDING)
+                && !in_array($model->getAttributes()['sale_manager_status'] ?? null, ['APPROVED', 'REJECTED'], true)) {
+                $model->sale_manager_status = $model->requiresSaleManagerApproval()
+                    ? UnitDepositStatus::PENDING : 'NOT_REQUIRED';
+            }
+        });
         static::saved(function ($model) {
             if (config('unified_catalog.deposit_conversion_enabled') && $model->status !== 'APPROVED') {
                 $model->getConnection()->table('unified_approved_deposit_outbox')->where('deposit_request_id', $model->id)->delete();
@@ -119,9 +129,8 @@ class UnitDepositRequest extends Model
             if (is_null( $model->customer_phone_number2 )) {
                 $model->customer_phone_number2 = "";
             }     
-            if ( ($model->other_discount_allowance == 0) AND (is_null($model->payment_option_id) == false) ) {
-                $model->sale_manager_status = 'NOT_REQUIRED';
-            }
+            $model->sale_manager_status = $model->requiresSaleManagerApproval()
+                ? UnitDepositStatus::PENDING : 'NOT_REQUIRED';
             if ( is_null($model->customer2_name) )
             {
                 $model->customer2_name = "";
@@ -276,16 +285,25 @@ class UnitDepositRequest extends Model
     // End Model Scope
 
     // Model Mutator
+    public function requiresSaleManagerApproval()
+    {
+        $submitter = $this->createdBy;
+        // Agents always require approval, including users with both sales roles.
+        // Unknown submitters must not silently bypass approval.
+        return !$submitter || $submitter->hasRole(UserRole::AGENT)
+            || !$submitter->hasRole(UserRole::SALE_TEAM_LEADER);
+    }
+
     public function getSaleManagerStatusAttribute($value)
     {
-        if ( !$this->is_selected_payment_option ) {
-            $value = "NOT_REQUIRED";
+        // Preserve recorded decisions. Correct the old payment-based bypass only
+        // while the request is still pending; completed history stays unchanged.
+        if ($this->status !== UnitDepositStatus::PENDING
+            || in_array($value, ['APPROVED', 'REJECTED'], true)) {
+            return $value;
         }
-        
-        if ( ($this->other_discount_allowance == 0) AND (is_null($this->payment_option_id) == false) ) {
-           $value = "NOT_REQUIRED";
-        }
-        return $value;
+        return $this->requiresSaleManagerApproval()
+            ? UnitDepositStatus::PENDING : 'NOT_REQUIRED';
     }
 
     public function getRemarkAttribute($value)
