@@ -574,6 +574,9 @@ class AppLocalizationsKm extends AppLocalizations {
   String get failedToSaveImage => 'បរាជ័យក្នុងការរក្សាទុករូបភាព។';
 
   @override
+  String get saveImage => 'រក្សាទុកក្នុងវិចិត្រសាល';
+
+  @override
   String get cropImage => 'កាត់រូបភាព';
 
   @override

@@ -1136,6 +1136,12 @@ abstract class AppLocalizations {
   /// **'Failed to save the image.'**
   String get failedToSaveImage;
 
+  /// No description provided for @saveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to gallery'**
+  String get saveImage;
+
   /// No description provided for @cropImage.
   ///
   /// In en, this message translates to:

@@ -576,6 +576,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToSaveImage => 'Failed to save the image.';
 
   @override
+  String get saveImage => 'Save to gallery';
+
+  @override
   String get cropImage => 'Crop Image';
 
   @override

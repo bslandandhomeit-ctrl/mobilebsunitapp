@@ -1,10 +1,14 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
+import '../../../core/constants/api_constants.dart';
 import '../../../core/widgets/app_ui.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../deposit/views/deposit_request_form_view.dart';
@@ -329,6 +333,34 @@ class _UnitDetailViewState extends State<UnitDetailView> {
       const SizedBox(height: 24),
     ],
   );
+
+  /// Download the picture and put it in the phone's gallery (album "BSUnits").
+  Future<void> _saveImage(String url) async {
+    final l = AppLocalizations.of(context)!;
+    File? file;
+    try {
+      final full = ApiConstants.imageUrl(url);
+      final path = Uri.tryParse(full)?.path ?? full;
+      final dot = path.lastIndexOf('.');
+      final ext = dot > 0 && path.length - dot <= 5
+          ? path.substring(dot)
+          : '.jpg';
+      final dir = await getTemporaryDirectory();
+      file = File(
+        '${dir.path}/bsunits_${DateTime.now().millisecondsSinceEpoch}$ext',
+      );
+      await Dio().download(full, file.path);
+      await Gal.putImage(file.path, album: 'BSUnits');
+      Get.snackbar(l.imageSaved, l.imageSavedToGallery);
+    } catch (_) {
+      Get.snackbar(l.error, l.failedToSaveImage);
+    } finally {
+      try {
+        await file?.delete();
+      } catch (_) {}
+    }
+  }
+
   void _openImage(String url) => Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => Scaffold(
@@ -336,6 +368,13 @@ class _UnitDetailViewState extends State<UnitDetailView> {
         appBar: AppBar(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              tooltip: AppLocalizations.of(context)!.saveImage,
+              icon: const Icon(Icons.download_rounded),
+              onPressed: () => _saveImage(url),
+            ),
+          ],
         ),
         body: Center(
           child: InteractiveViewer(
