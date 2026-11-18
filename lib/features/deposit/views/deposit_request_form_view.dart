@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -47,6 +48,10 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   // and phone are still the picked ones, so editing them turns it back into a typed customer.
   String? _pickedCusAcc;
   String _pickedName = '', _pickedPhone = '';
+  // Existing Be Loan customers shown under customer 1's name or phone while typing.
+  Timer? _suggestTimer;
+  List<CustomerSuggestion> _suggestions = [];
+  String _suggestField = '';
   final _name2 = TextEditingController(), _phone2 = TextEditingController();
   // Number fields start empty (not pre-filled with "0") so the user doesn't
   // have to clear a 0 first. A blank optional field counts as 0 on submit.
@@ -133,6 +138,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     for (final customer in _additionalCustomers) {
       customer.dispose();
     }
+    _suggestTimer?.cancel();
     _scroll.dispose();
     super.dispose();
   }
@@ -162,6 +168,75 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     var d = (v ?? '').replaceAll(RegExp(r'\D'), '');
     if (d.startsWith('855')) d = '0${d.substring(3)}';
     return d;
+  }
+
+  /// Fill customer 1 from an existing Be Loan customer and remember the link.
+  void _useCustomer(CustomerSuggestion c) {
+    setState(() {
+      _name.text = c.name;
+      if (c.gender != null) _gender = c.gender;
+      if ((c.phone ?? '').isNotEmpty) _phone.text = c.phone!;
+      if ((c.phone2 ?? '').isNotEmpty && _phone2.text.trim().isEmpty) {
+        _phone2.text = c.phone2!;
+      }
+      _pickedCusAcc = c.cusAcc;
+      _pickedName = _name.text.trim();
+      _pickedPhone = _phone.text.trim();
+      _suggestions = [];
+    });
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  /// Search Be Loan customers while the agent types customer 1's name or phone.
+  void _onCustomerTyping(String field, String value) {
+    _suggestTimer?.cancel();
+    final term = field == 'phone' ? _digits(value) : value.trim();
+    if (term.length < (field == 'phone' ? 4 : 2)) {
+      if (_suggestions.isNotEmpty) setState(() => _suggestions = []);
+      return;
+    }
+    _suggestTimer = Timer(const Duration(milliseconds: 350), () async {
+      try {
+        final found = await CustomerRepository().search(term);
+        if (!mounted) return;
+        final now = field == 'phone' ? _digits(_phone.text) : _name.text.trim();
+        if (now != term) return; // the agent kept typing
+        setState(() {
+          _suggestions = found.take(6).toList();
+          _suggestField = field;
+        });
+      } catch (_) {
+        // the list is only a help: typing a customer by hand still works
+      }
+    });
+  }
+
+  Widget _suggestionList(String field) {
+    if (_suggestField != field || _suggestions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Card(
+      margin: const EdgeInsets.only(top: 4),
+      elevation: 3,
+      child: Column(
+        children: [
+          for (final c in _suggestions)
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.person_outline),
+              title: Text(c.name),
+              subtitle: Text(
+                [
+                  if ((c.phone ?? '').isNotEmpty) c.phone!,
+                  if ((c.cusAcc ?? '').isNotEmpty) c.cusAcc!,
+                  if ((c.nationalId ?? '').isNotEmpty) 'ID ${c.nationalId}',
+                ].join('  ·  '),
+              ),
+              onTap: () => _useCustomer(c),
+            ),
+        ],
+      ),
+    );
   }
 
   /// A typed phone that already belongs to a Be Loan customer: ask before creating a second customer.
@@ -200,14 +275,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       ),
     );
     if (useExisting != true || !mounted) return true;
-    setState(() {
-      _name.text = c.name;
-      if (c.gender != null) _gender = c.gender;
-      if ((c.phone ?? '').isNotEmpty) _phone.text = c.phone!;
-      _pickedCusAcc = c.cusAcc;
-      _pickedName = _name.text.trim();
-      _pickedPhone = _phone.text.trim();
-    });
+    _useCustomer(c);
     return false;
   }
 
@@ -482,11 +550,13 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
           controller: _name,
           validator: _required,
           maxLength: 255,
+          onChanged: (v) => _onCustomerTyping('name', v),
           decoration: InputDecoration(
             labelText: l.customerOneNameLabel,
             counterText: '',
           ),
         ),
+        _suggestionList('name'),
         const SizedBox(height: 16),
         _genderField(l, false),
         const SizedBox(height: 16),
@@ -494,11 +564,13 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
           controller: _phone,
           validator: _phoneValid,
           keyboardType: TextInputType.phone,
+          onChanged: (v) => _onCustomerTyping('phone', v),
           decoration: InputDecoration(
             labelText: l.phoneLineOneLabel,
             hintText: '012345678',
           ),
         ),
+        _suggestionList('phone'),
         const SizedBox(height: 24),
         SwitchListTile.adaptive(
           contentPadding: EdgeInsets.zero,
