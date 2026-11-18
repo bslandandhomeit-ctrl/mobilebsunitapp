@@ -68,6 +68,7 @@ class DepositRepository {
     String? customerName2,
     int? customerGender2,
     String? customerPhoneNumber2,
+    String? customerCusAcc,
     List<Map<String, dynamic>> additionalCustomers = const [],
     String? remark,
     int? paymentOptionId,
@@ -125,6 +126,7 @@ class DepositRepository {
         'customer2_name': ?customerName2,
         'customer2_gender': ?customerGender2,
         'customer_phone_number2': ?customerPhoneNumber2,
+        'customer_cus_acc': ?customerCusAcc,
         if (additionalCustomers.isNotEmpty)
           'additional_customers': additionalCustomers,
         'remark': ?remark,

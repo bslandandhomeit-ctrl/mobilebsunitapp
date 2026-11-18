@@ -839,6 +839,20 @@ class AppLocalizationsKm extends AppLocalizations {
   String get findCustomer => 'ស្វែងរកអតិថិជនដែលមានស្រាប់';
 
   @override
+  String get customerExistsTitle => 'លេខទូរស័ព្ទនេះជាអតិថិជនរួចហើយ';
+
+  @override
+  String customerExistsBody(String name, String account) {
+    return '$name ($account) មានលេខទូរស័ព្ទនេះរួចហើយក្នុង Be Loan។ ប្រើអតិថិជននេះជំនួសឱ្យការបង្កើតថ្មីឬទេ?';
+  }
+
+  @override
+  String get customerExistsUse => 'ប្រើអតិថិជននេះ';
+
+  @override
+  String get customerExistsCreateNew => 'បង្កើតអតិថិជនថ្មី';
+
+  @override
   String get customerPickerTitle => 'ជ្រើសរើសអតិថិជន';
 
   @override

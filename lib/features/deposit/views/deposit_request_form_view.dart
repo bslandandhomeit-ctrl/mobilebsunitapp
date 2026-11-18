@@ -11,6 +11,7 @@ import '../../projects/data/payment_option_repository.dart';
 import '../../projects/models/payment_option.dart';
 import '../../projects/models/unit.dart';
 import '../../projects/views/unit_information_card.dart';
+import '../data/customer_repository.dart';
 import '../data/deposit_repository.dart';
 import '../data/payment_qr_repository.dart';
 import 'customer_picker_sheet.dart';
@@ -42,6 +43,10 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   // Customer 1 (required) and optional Customer 2; "Add customer" adds more
   // buyers into _additionalCustomers (customers 3 and up).
   final _name = TextEditingController(), _phone = TextEditingController();
+  // The Be Loan customer the agent picked for customer 1 (Find customer). The link is only sent while the name
+  // and phone are still the picked ones, so editing them turns it back into a typed customer.
+  String? _pickedCusAcc;
+  String _pickedName = '', _pickedPhone = '';
   final _name2 = TextEditingController(), _phone2 = TextEditingController();
   // Number fields start empty (not pre-filled with "0") so the user doesn't
   // have to clear a 0 first. A blank optional field counts as 0 on submit.
@@ -145,9 +150,71 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     if (_form.currentState!.validate()) _go(_step + 1);
   }
 
+  /// The picked Be Loan customer number, only while customer 1's name and phone are still the picked ones.
+  String? get _linkedCusAcc =>
+      (_pickedCusAcc ?? '').isNotEmpty &&
+          _name.text.trim() == _pickedName &&
+          _phone.text.trim() == _pickedPhone
+      ? _pickedCusAcc
+      : null;
+
+  static String _digits(String? v) {
+    var d = (v ?? '').replaceAll(RegExp(r'\D'), '');
+    if (d.startsWith('855')) d = '0${d.substring(3)}';
+    return d;
+  }
+
+  /// A typed phone that already belongs to a Be Loan customer: ask before creating a second customer.
+  /// Returns false when the agent chose the existing customer (the form is filled; check it and save again).
+  Future<bool> _confirmExistingCustomer() async {
+    if (_linkedCusAcc != null) return true;
+    final phone = _digits(_phone.text);
+    if (phone.length < 8) return true;
+    List<CustomerSuggestion> found;
+    try {
+      found = await CustomerRepository().search(phone);
+    } catch (_) {
+      return true; // never block a deposit because the lookup failed
+    }
+    final same = found
+        .where((c) => _digits(c.phone) == phone || _digits(c.phone2) == phone)
+        .toList();
+    if (same.isEmpty || !mounted) return true;
+    final c = same.first;
+    final l = AppLocalizations.of(context)!;
+    final useExisting = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.customerExistsTitle),
+        content: Text(l.customerExistsBody(c.name, c.cusAcc ?? '')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.customerExistsCreateNew),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.customerExistsUse),
+          ),
+        ],
+      ),
+    );
+    if (useExisting != true || !mounted) return true;
+    setState(() {
+      _name.text = c.name;
+      if (c.gender != null) _gender = c.gender;
+      if ((c.phone ?? '').isNotEmpty) _phone.text = c.phone!;
+      _pickedCusAcc = c.cusAcc;
+      _pickedName = _name.text.trim();
+      _pickedPhone = _phone.text.trim();
+    });
+    return false;
+  }
+
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
     FocusManager.instance.primaryFocus?.unfocus();
+    if (!await _confirmExistingCustomer()) return;
     setState(() {
       _saving = true;
       _error = null;
@@ -167,6 +234,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         customerPhoneNumber2: _phone2.text.trim().isEmpty
             ? null
             : _phone2.text.trim(),
+        customerCusAcc: _linkedCusAcc,
         additionalCustomers: [
           for (final customer in _additionalCustomers)
             {
@@ -328,6 +396,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       name.text = c.name;
       if (c.gender != null) setGender(c.gender!);
       if (phone != null && (c.phone ?? '').isNotEmpty) phone.text = c.phone!;
+      if (phone != null) {
+        _pickedCusAcc = c.cusAcc;
+        _pickedName = name.text.trim();
+        _pickedPhone = phone.text.trim();
+      }
       if (phone2 != null &&
           (c.phone2 ?? '').isNotEmpty &&
           phone2.text.trim().isEmpty) {

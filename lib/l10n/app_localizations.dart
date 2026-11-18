@@ -1634,6 +1634,30 @@ abstract class AppLocalizations {
   /// **'Find an existing customer'**
   String get findCustomer;
 
+  /// No description provided for @customerExistsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone number is already a customer'**
+  String get customerExistsTitle;
+
+  /// No description provided for @customerExistsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} ({account}) already has this phone number in Be Loan. Use this customer instead of creating a new one?'**
+  String customerExistsBody(String name, String account);
+
+  /// No description provided for @customerExistsUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this customer'**
+  String get customerExistsUse;
+
+  /// No description provided for @customerExistsCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new customer'**
+  String get customerExistsCreateNew;
+
   /// No description provided for @customerPickerTitle.
   ///
   /// In en, this message translates to:

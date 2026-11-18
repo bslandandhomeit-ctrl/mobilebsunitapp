@@ -839,6 +839,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get findCustomer => 'Find an existing customer';
 
   @override
+  String get customerExistsTitle => 'This phone number is already a customer';
+
+  @override
+  String customerExistsBody(String name, String account) {
+    return '$name ($account) already has this phone number in Be Loan. Use this customer instead of creating a new one?';
+  }
+
+  @override
+  String get customerExistsUse => 'Use this customer';
+
+  @override
+  String get customerExistsCreateNew => 'Create new customer';
+
+  @override
   String get customerPickerTitle => 'Choose a customer';
 
   @override

@@ -11,6 +11,7 @@ class CustomerSuggestion {
     this.phone,
     this.phone2,
     this.nationalId,
+    this.cusAcc,
   });
 
   factory CustomerSuggestion.fromJson(Map<String, dynamic> json) {
@@ -22,6 +23,7 @@ class CustomerSuggestion {
       phone: json['phone_number']?.toString(),
       phone2: json['phone_number2']?.toString(),
       nationalId: json['national_id']?.toString(),
+      cusAcc: json['cus_acc']?.toString(),
     );
   }
 
@@ -31,6 +33,9 @@ class CustomerSuggestion {
   final String? phone;
   final String? phone2;
   final String? nationalId;
+
+  /// Be Loan customer number (CU0000123). Sent with the deposit so Be Loan uses this customer.
+  final String? cusAcc;
 }
 
 class CustomerRepository {
