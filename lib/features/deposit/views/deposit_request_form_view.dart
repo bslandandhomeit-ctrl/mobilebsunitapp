@@ -336,13 +336,15 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       );
       if (!mounted) return;
       // Photos (ID card, transfer proof) go to the customer record; a failure does not undo the saved deposit.
-      if (_idFront != null || _idBack != null || _transferProof != null) {
+      if (_idFront != null ||
+          _idBack != null ||
+          (!_depositIsZero && _transferProof != null)) {
         try {
           await _repository.uploadAttachments(
             created.id,
             idFrontPath: _idFront?.path,
             idBackPath: _idBack?.path,
-            transferProofPath: _transferProof?.path,
+            transferProofPath: _depositIsZero ? null : _transferProof?.path,
           );
         } catch (e) {
           if (mounted) {
@@ -785,7 +787,11 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         ),
       );
 
-  Widget _photoTileBody(String label, XFile? file, void Function(XFile?) assign) {
+  Widget _photoTileBody(
+    String label,
+    XFile? file,
+    void Function(XFile?) assign,
+  ) {
     final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -823,6 +829,9 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     );
   }
 
+  /// A deposit of 0 means no money is transferred, so there is no bank transfer proof to attach.
+  bool get _depositIsZero => (double.tryParse(_deposit.text.trim()) ?? 0) <= 0;
+
   Widget _attachmentsSection(AppLocalizations l) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
@@ -830,7 +839,12 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       AppSectionTitle(l.depAttachmentsTitle),
       _photoTile(l.depIdFront, _idFront, (f) => _idFront = f),
       _photoTile(l.depIdBack, _idBack, (f) => _idBack = f),
-      _photoTile(l.depTransferProof, _transferProof, (f) => _transferProof = f),
+      if (!_depositIsZero)
+        _photoTile(
+          l.depTransferProof,
+          _transferProof,
+          (f) => _transferProof = f,
+        ),
     ],
   );
 
