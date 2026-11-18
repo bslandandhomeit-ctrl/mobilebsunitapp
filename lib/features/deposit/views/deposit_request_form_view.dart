@@ -46,7 +46,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   final _name = TextEditingController(), _phone = TextEditingController();
   // The Be Loan customer the agent picked for customer 1 (Find customer). The link is only sent while the name
   // and phone are still the picked ones, so editing them turns it back into a typed customer.
-  String? _pickedCusAcc;
+  String? _pickedCusAcc, _pickedIdFront, _pickedIdBack;
   String _pickedName = '', _pickedPhone = '';
   // Existing Be Loan customers shown under customer 1's name or phone while typing.
   Timer? _suggestTimer;
@@ -164,6 +164,9 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       ? _pickedCusAcc
       : null;
 
+  /// An existing customer's ID card photos need no new upload: the ID tiles are optional for them.
+  bool get _existingCustomer => _linkedCusAcc != null;
+
   static String _digits(String? v) {
     var d = (v ?? '').replaceAll(RegExp(r'\D'), '');
     if (d.startsWith('855')) d = '0${d.substring(3)}';
@@ -180,6 +183,8 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         _phone2.text = c.phone2!;
       }
       _pickedCusAcc = c.cusAcc;
+      _pickedIdFront = c.idFrontUrl;
+      _pickedIdBack = c.idBackUrl;
       _pickedName = _name.text.trim();
       _pickedPhone = _phone.text.trim();
       _suggestions = [];
@@ -468,6 +473,8 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       if (phone != null && (c.phone ?? '').isNotEmpty) phone.text = c.phone!;
       if (phone != null) {
         _pickedCusAcc = c.cusAcc;
+        _pickedIdFront = c.idFrontUrl;
+        _pickedIdBack = c.idBackUrl;
         _pickedName = name.text.trim();
         _pickedPhone = phone.text.trim();
       }
@@ -758,20 +765,26 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     if (picked != null && mounted) setState(() => assign(picked));
   }
 
-  Widget _photoTile(String label, XFile? file, void Function(XFile?) assign) =>
+  Widget _photoTile(
+    String label,
+    XFile? file,
+    void Function(XFile?) assign, {
+    String? existingUrl,
+    bool required = true,
+  }) =>
       FormField<XFile>(
         initialValue: file,
-        validator: (photo) => photo == null
+        validator: (photo) => photo == null && required
             ? AppLocalizations.of(context)!.requiredFieldLabel
             : null,
         builder: (field) => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _photoTileBody('$label *', file, (photo) {
+            _photoTileBody(required ? '$label *' : label, file, (photo) {
               assign(photo);
               field.didChange(photo);
               field.validate();
-            }),
+            }, existingUrl: existingUrl),
             if (field.hasError)
               Padding(
                 padding: const EdgeInsets.only(left: 12, bottom: 12),
@@ -790,8 +803,9 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   Widget _photoTileBody(
     String label,
     XFile? file,
-    void Function(XFile?) assign,
-  ) {
+    void Function(XFile?) assign, {
+    String? existingUrl,
+  }) {
     final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -810,12 +824,25 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
               SizedBox(
                 width: 72,
                 height: 56,
-                child: file == null
-                    ? const Icon(Icons.add_a_photo_outlined, size: 32)
-                    : Image.file(File(file.path), fit: BoxFit.cover),
+                child: file != null
+                    ? Image.file(File(file.path), fit: BoxFit.cover)
+                    : (existingUrl != null
+                          ? Image.network(
+                              existingUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  const Icon(Icons.badge_outlined, size: 32),
+                            )
+                          : const Icon(Icons.add_a_photo_outlined, size: 32)),
               ),
               const SizedBox(width: 12),
-              Expanded(child: Text(label)),
+              Expanded(
+                child: Text(
+                  file == null && existingUrl != null
+                      ? '$label\n${l.depOnFile}'
+                      : label,
+                ),
+              ),
               if (file != null)
                 IconButton(
                   tooltip: l.depRemovePhoto,
@@ -837,8 +864,20 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     children: [
       const SizedBox(height: 8),
       AppSectionTitle(l.depAttachmentsTitle),
-      _photoTile(l.depIdFront, _idFront, (f) => _idFront = f),
-      _photoTile(l.depIdBack, _idBack, (f) => _idBack = f),
+      _photoTile(
+        l.depIdFront,
+        _idFront,
+        (f) => _idFront = f,
+        existingUrl: _existingCustomer ? _pickedIdFront : null,
+        required: !_existingCustomer,
+      ),
+      _photoTile(
+        l.depIdBack,
+        _idBack,
+        (f) => _idBack = f,
+        existingUrl: _existingCustomer ? _pickedIdBack : null,
+        required: !_existingCustomer,
+      ),
       if (!_depositIsZero)
         _photoTile(
           l.depTransferProof,

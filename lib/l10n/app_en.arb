@@ -376,6 +376,7 @@
   "depTakePhoto": "Take photo",
   "depFromGallery": "Choose from gallery",
   "depRemovePhoto": "Remove",
+  "depOnFile": "Already on file - tap to replace",
   "depAttachmentsFailed": "The deposit was saved, but the photos could not be uploaded: {error}",
   "@depAttachmentsFailed": {"placeholders": {"error": {"type": "String"}}},
   "forcePasswordChangeNote": "For your security, please set a new password before you continue.",

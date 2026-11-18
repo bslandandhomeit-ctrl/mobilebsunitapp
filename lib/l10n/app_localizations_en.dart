@@ -950,6 +950,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get depRemovePhoto => 'Remove';
 
   @override
+  String get depOnFile => 'Already on file - tap to replace';
+
+  @override
   String depAttachmentsFailed(String error) {
     return 'The deposit was saved, but the photos could not be uploaded: $error';
   }

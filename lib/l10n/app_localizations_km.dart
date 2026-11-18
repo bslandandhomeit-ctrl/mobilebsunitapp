@@ -950,6 +950,9 @@ class AppLocalizationsKm extends AppLocalizations {
   String get depRemovePhoto => 'លុប';
 
   @override
+  String get depOnFile => 'មានរួចហើយ - ចុចដើម្បីប្ដូរ';
+
+  @override
   String depAttachmentsFailed(String error) {
     return 'បានរក្សាទុកប្រាក់កក់ ប៉ុន្តែមិនអាចផ្ទុករូបភាពឡើងបានទេ៖ $error';
   }

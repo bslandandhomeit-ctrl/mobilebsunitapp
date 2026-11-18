@@ -12,6 +12,8 @@ class CustomerSuggestion {
     this.phone2,
     this.nationalId,
     this.cusAcc,
+    this.idFrontUrl,
+    this.idBackUrl,
   });
 
   factory CustomerSuggestion.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,8 @@ class CustomerSuggestion {
       phone2: json['phone_number2']?.toString(),
       nationalId: json['national_id']?.toString(),
       cusAcc: json['cus_acc']?.toString(),
+      idFrontUrl: json['id_card_front_url']?.toString(),
+      idBackUrl: json['id_card_back_url']?.toString(),
     );
   }
 
@@ -36,6 +40,10 @@ class CustomerSuggestion {
 
   /// Be Loan customer number (CU0000123). Sent with the deposit so Be Loan uses this customer.
   final String? cusAcc;
+
+  /// ID card photos already saved for this customer (null = none on file).
+  final String? idFrontUrl;
+  final String? idBackUrl;
 }
 
 class CustomerRepository {

@@ -1838,6 +1838,12 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get depRemovePhoto;
 
+  /// No description provided for @depOnFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Already on file - tap to replace'**
+  String get depOnFile;
+
   /// No description provided for @depAttachmentsFailed.
   ///
   /// In en, this message translates to:

@@ -365,6 +365,7 @@
   "depTakePhoto": "ថតរូប",
   "depFromGallery": "ជ្រើសរើសពីវិចិត្រសាល",
   "depRemovePhoto": "លុប",
+  "depOnFile": "មានរួចហើយ - ចុចដើម្បីប្ដូរ",
   "depAttachmentsFailed": "បានរក្សាទុកប្រាក់កក់ ប៉ុន្តែមិនអាចផ្ទុករូបភាពឡើងបានទេ៖ {error}",
   "@depAttachmentsFailed": {"placeholders": {"error": {"type": "String"}}},
   "forcePasswordChangeNote": "ដើម្បីសុវត្ថិភាព សូមកំណត់ពាក្យសម្ងាត់ថ្មី មុនពេលបន្ត។",
