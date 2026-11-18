@@ -118,6 +118,17 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                       },
                     ),
             ),
+            if (_term.text.trim().length >= 2)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: FilledButton.tonalIcon(
+                  icon: const Icon(Icons.person_add_alt_1_outlined),
+                  label: Text(l.customerPickerCreateNew(_term.text.trim())),
+                  onPressed: () =>
+                      Navigator.of(context)
+                          .pop(CustomerSuggestion.typed(_term.text)),
+                ),
+              ),
           ],
         ),
       ),

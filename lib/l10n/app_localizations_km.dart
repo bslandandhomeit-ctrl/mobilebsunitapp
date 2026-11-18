@@ -860,8 +860,12 @@ class AppLocalizationsKm extends AppLocalizations {
       'ស្វែងរកតាមឈ្មោះ លេខទូរស័ព្ទ ឬអត្តសញ្ញាណប័ណ្ណ';
 
   @override
-  String get customerPickerNone =>
-      'រកមិនឃើញអតិថិជនទេ។ អ្នកអាចបញ្ចូលព័ត៌មានដោយខ្លួនឯង។';
+  String get customerPickerNone => 'រកមិនឃើញអតិថិជនទេ។';
+
+  @override
+  String customerPickerCreateNew(String term) {
+    return 'បង្កើតអតិថិជនថ្មី \"$term\"';
+  }
 
   @override
   String get scanToPayTitle => 'ស្កេនដើម្បីបង់ប្រាក់កក់';

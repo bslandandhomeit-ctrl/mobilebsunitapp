@@ -859,8 +859,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customerPickerHint => 'Search by name, phone or ID';
 
   @override
-  String get customerPickerNone =>
-      'No customer found. You can type the details yourself.';
+  String get customerPickerNone => 'No customer found.';
+
+  @override
+  String customerPickerCreateNew(String term) {
+    return 'Create new customer \"$term\"';
+  }
 
   @override
   String get scanToPayTitle => 'Scan to pay the deposit';

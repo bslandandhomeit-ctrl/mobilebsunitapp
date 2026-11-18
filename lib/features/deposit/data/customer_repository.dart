@@ -14,7 +14,12 @@ class CustomerSuggestion {
     this.cusAcc,
     this.idFrontUrl,
     this.idBackUrl,
+    this.isNew = false,
   });
+
+  /// What the agent typed in the search box when nobody matched: used as a new customer.
+  factory CustomerSuggestion.typed(String text) =>
+      CustomerSuggestion(id: 0, name: text.trim(), isNew: true);
 
   factory CustomerSuggestion.fromJson(Map<String, dynamic> json) {
     final gender = int.tryParse('${json['gender']}');
@@ -44,6 +49,9 @@ class CustomerSuggestion {
   /// ID card photos already saved for this customer (null = none on file).
   final String? idFrontUrl;
   final String? idBackUrl;
+
+  /// True for "create a new customer" (the typed text), false for a Be Loan customer.
+  final bool isNew;
 }
 
 class CustomerRepository {

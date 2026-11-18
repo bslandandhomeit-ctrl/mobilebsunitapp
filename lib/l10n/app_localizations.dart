@@ -1673,8 +1673,14 @@ abstract class AppLocalizations {
   /// No description provided for @customerPickerNone.
   ///
   /// In en, this message translates to:
-  /// **'No customer found. You can type the details yourself.'**
+  /// **'No customer found.'**
   String get customerPickerNone;
+
+  /// No description provided for @customerPickerCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new customer \"{term}\"'**
+  String customerPickerCreateNew(String term);
 
   /// No description provided for @scanToPayTitle.
   ///

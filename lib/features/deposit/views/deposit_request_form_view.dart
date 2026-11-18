@@ -467,6 +467,28 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   }) async {
     final c = await pickCustomer(context);
     if (c == null || !mounted) return;
+    if (c.isNew) {
+      // Nobody matched: keep what was typed as a new customer (a phone number goes to the phone field).
+      final typed = c.name.trim();
+      final digits = _digits(typed);
+      final isPhone =
+          phone != null &&
+          digits.length >= 8 &&
+          RegExp(r'^[0-9+\s\-]+$').hasMatch(typed);
+      setState(() {
+        if (isPhone) {
+          phone.text = digits;
+        } else {
+          name.text = typed;
+        }
+        if (phone != null) {
+          _pickedCusAcc = _pickedIdFront = _pickedIdBack = null;
+          _pickedName = _pickedPhone = '';
+        }
+        _suggestions = [];
+      });
+      return;
+    }
     setState(() {
       name.text = c.name;
       if (c.gender != null) setGender(c.gender!);
@@ -771,34 +793,33 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     void Function(XFile?) assign, {
     String? existingUrl,
     bool required = true,
-  }) =>
-      FormField<XFile>(
-        initialValue: file,
-        validator: (photo) => photo == null && required
-            ? AppLocalizations.of(context)!.requiredFieldLabel
-            : null,
-        builder: (field) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _photoTileBody(required ? '$label *' : label, file, (photo) {
-              assign(photo);
-              field.didChange(photo);
-              field.validate();
-            }, existingUrl: existingUrl),
-            if (field.hasError)
-              Padding(
-                padding: const EdgeInsets.only(left: 12, bottom: 12),
-                child: Text(
-                  field.errorText!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                    fontSize: 12,
-                  ),
-                ),
+  }) => FormField<XFile>(
+    initialValue: file,
+    validator: (photo) => photo == null && required
+        ? AppLocalizations.of(context)!.requiredFieldLabel
+        : null,
+    builder: (field) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _photoTileBody(required ? '$label *' : label, file, (photo) {
+          assign(photo);
+          field.didChange(photo);
+          field.validate();
+        }, existingUrl: existingUrl),
+        if (field.hasError)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, bottom: 12),
+            child: Text(
+              field.errorText!,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12,
               ),
-          ],
-        ),
-      );
+            ),
+          ),
+      ],
+    ),
+  );
 
   Widget _photoTileBody(
     String label,
