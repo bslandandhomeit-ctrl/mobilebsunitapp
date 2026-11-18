@@ -839,6 +839,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get findCustomer => 'Find an existing customer';
 
   @override
+  String get customerNoMatchHint =>
+      'No existing customer found. Carry on to create a new customer.';
+
+  @override
+  String get customerSearchFailed =>
+      'Could not search customers now. You can type the details yourself.';
+
+  @override
   String get customerExistsTitle => 'This phone number is already a customer';
 
   @override

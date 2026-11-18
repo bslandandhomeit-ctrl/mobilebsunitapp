@@ -839,6 +839,14 @@ class AppLocalizationsKm extends AppLocalizations {
   String get findCustomer => 'ស្វែងរកអតិថិជនដែលមានស្រាប់';
 
   @override
+  String get customerNoMatchHint =>
+      'រកមិនឃើញអតិថិជនដែលមានស្រាប់ទេ។ បន្តដើម្បីបង្កើតអតិថិជនថ្មី។';
+
+  @override
+  String get customerSearchFailed =>
+      'មិនអាចស្វែងរកអតិថិជនបានឥឡូវនេះទេ។ អ្នកអាចបញ្ចូលព័ត៌មានដោយខ្លួនឯង។';
+
+  @override
   String get customerExistsTitle => 'លេខទូរស័ព្ទនេះជាអតិថិជនរួចហើយ';
 
   @override

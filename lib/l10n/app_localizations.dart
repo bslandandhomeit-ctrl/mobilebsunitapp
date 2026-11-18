@@ -1634,6 +1634,18 @@ abstract class AppLocalizations {
   /// **'Find an existing customer'**
   String get findCustomer;
 
+  /// No description provided for @customerNoMatchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No existing customer found. Carry on to create a new customer.'**
+  String get customerNoMatchHint;
+
+  /// No description provided for @customerSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not search customers now. You can type the details yourself.'**
+  String get customerSearchFailed;
+
   /// No description provided for @customerExistsTitle.
   ///
   /// In en, this message translates to:

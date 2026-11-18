@@ -52,6 +52,8 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
   Timer? _suggestTimer;
   List<CustomerSuggestion> _suggestions = [];
   String _suggestField = '';
+  // '' = nothing to say, 'none' = searched and nobody matched, 'error' = the search failed
+  String _suggestNote = '';
   final _name2 = TextEditingController(), _phone2 = TextEditingController();
   // Number fields start empty (not pre-filled with "0") so the user doesn't
   // have to clear a 0 first. A blank optional field counts as 0 on submit.
@@ -188,6 +190,7 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
       _pickedName = _name.text.trim();
       _pickedPhone = _phone.text.trim();
       _suggestions = [];
+      _suggestNote = '';
     });
     FocusManager.instance.primaryFocus?.unfocus();
   }
@@ -197,7 +200,12 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
     _suggestTimer?.cancel();
     final term = field == 'phone' ? _digits(value) : value.trim();
     if (term.length < (field == 'phone' ? 4 : 2)) {
-      if (_suggestions.isNotEmpty) setState(() => _suggestions = []);
+      if (_suggestions.isNotEmpty || _suggestNote.isNotEmpty) {
+        setState(() {
+          _suggestions = [];
+          _suggestNote = '';
+        });
+      }
       return;
     }
     _suggestTimer = Timer(const Duration(milliseconds: 350), () async {
@@ -209,14 +217,35 @@ class _DepositRequestFormViewState extends State<DepositRequestFormView> {
         setState(() {
           _suggestions = found.take(6).toList();
           _suggestField = field;
+          _suggestNote = found.isEmpty ? 'none' : '';
         });
       } catch (_) {
-        // the list is only a help: typing a customer by hand still works
+        // the list is only a help: typing a customer by hand still works, but say the search did not work
+        if (!mounted) return;
+        setState(() {
+          _suggestions = [];
+          _suggestField = field;
+          _suggestNote = 'error';
+        });
       }
     });
   }
 
   Widget _suggestionList(String field) {
+    if (_suggestField == field &&
+        _suggestions.isEmpty &&
+        _suggestNote.isNotEmpty) {
+      final l = AppLocalizations.of(context)!;
+      return Padding(
+        padding: const EdgeInsets.only(top: 6, left: 4),
+        child: Text(
+          _suggestNote == 'error'
+              ? l.customerSearchFailed
+              : l.customerNoMatchHint,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      );
+    }
     if (_suggestField != field || _suggestions.isEmpty) {
       return const SizedBox.shrink();
     }
