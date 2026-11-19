@@ -162,6 +162,13 @@ Future<void> _capture(WidgetTester tester, String name) async {
   });
 }
 
+/// Scrolls the widget to the middle of the screen (clear of the keyboard and the Back/Next bar).
+Future<void> centre(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   test('Contract attachment URLs preserve absolute URLs and storage paths', () {
     expect(
@@ -421,16 +428,19 @@ void main() {
       _app(DepositRequestFormView(unit: _unit), keyboard: 260, scale: 1.3),
     );
     await tester.pumpAndSettle();
+    // the form opens on "Scan to pay"; move on to the customer step
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
     Future<void> fill(String label, String value) async {
       final field = find.widgetWithText(TextFormField, label);
-      await tester.ensureVisible(field);
+      await centre(tester, field);
       await tester.enterText(field, value);
       await tester.pumpAndSettle();
     }
 
     await fill('Surname and Name (Customer 1) *', 'Local UI Tester');
-    final gender = find.byKey(const ValueKey('gender-0'));
-    await tester.ensureVisible(gender);
+    final gender = find.byKey(const ValueKey('gender-false-null'));
+    await centre(tester, gender);
     await tester.tap(gender);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Male').last);
@@ -438,14 +448,18 @@ void main() {
     await fill('Line 1 *', '012345678');
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('2 / 4'), findsOneWidget);
+    expect(find.text('3 / 5'), findsOneWidget);
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
     await fill('Deposit amount (\$) *', '500');
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('4 / 4'), findsOneWidget);
-    await tester.ensureVisible(find.byKey(const ValueKey('payment-0')));
+    expect(find.text('5 / 5'), findsOneWidget);
+    await centre(tester, find.text('Add payment option'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add payment option'));
+    await tester.pumpAndSettle();
+    await centre(tester, find.byKey(const ValueKey('payment-0')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('payment-0')));
     await tester.pumpAndSettle();
@@ -515,9 +529,12 @@ void main() {
         final l = AppLocalizations.of(
           tester.element(find.byType(DepositRequestFormView)),
         )!;
+        // the form opens on "Scan to pay"; move on to the customer step
+        await tester.tap(find.text(l.nextLabel));
+        await tester.pumpAndSettle();
         Future<void> fill(String label, String value) async {
           final field = find.widgetWithText(TextFormField, label);
-          await tester.ensureVisible(field);
+          await centre(tester, field);
           await tester.enterText(field, value);
           await tester.pumpAndSettle();
         }
@@ -529,8 +546,8 @@ void main() {
         }
 
         await fill(l.customerOneNameLabel, 'Local UI Tester');
-        await tester.ensureVisible(find.byKey(const ValueKey('gender-0')));
-        await tester.tap(find.byKey(const ValueKey('gender-0')));
+        await centre(tester, find.byKey(const ValueKey('gender-false-null')));
+        await tester.tap(find.byKey(const ValueKey('gender-false-null')));
         await tester.pumpAndSettle();
         await tester.tap(find.text(l.male).last);
         await tester.pumpAndSettle();
@@ -539,7 +556,11 @@ void main() {
         await next();
         await fill('${l.depositAmount} (\$) *', '500');
         await next();
-        await tester.ensureVisible(find.byKey(const ValueKey('payment-0')));
+        await centre(tester, find.text(l.paymentOptionAdd));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l.paymentOptionAdd));
+        await tester.pumpAndSettle();
+        await centre(tester, find.byKey(const ValueKey('payment-0')));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('payment-0')));
         await tester.pumpAndSettle();
@@ -549,12 +570,12 @@ void main() {
           of: find.byType(SegmentedButton<bool>),
           matching: find.text(l.otherLabel),
         );
-        await tester.ensureVisible(special);
+        await centre(tester, special);
         await tester.pumpAndSettle();
         await tester.tap(special);
         await tester.pumpAndSettle();
         final down = find.byType(DropdownButtonFormField<bool>);
-        await tester.ensureVisible(down);
+        await centre(tester, down);
         await tester.pumpAndSettle();
         await tester.tap(down);
         await tester.pumpAndSettle();
@@ -562,7 +583,7 @@ void main() {
         await tester.pumpAndSettle();
         await fill(l.downPaymentAmountLabel, '20000');
         await fill(l.installmentMonthsLabel, '120');
-        await tester.ensureVisible(
+        await centre(tester, 
           find.widgetWithText(TextFormField, l.remark),
         );
         await tester.pumpAndSettle();
@@ -735,9 +756,9 @@ void main() {
       }
 
       await fill('Surname and Name (Customer 1) *', 'Local UI Tester');
-      await tester.ensureVisible(find.byKey(const ValueKey('gender-0')));
+      await tester.ensureVisible(find.byKey(const ValueKey('gender-false-null')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('gender-0')));
+      await tester.tap(find.byKey(const ValueKey('gender-false-null')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Male').last);
       await tester.pumpAndSettle();

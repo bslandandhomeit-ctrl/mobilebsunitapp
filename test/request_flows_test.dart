@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:bs_contract_flutter/app/theme/app_theme.dart';
 import 'package:bs_contract_flutter/core/network/api_client.dart';
 import 'package:bs_contract_flutter/features/deposit/views/deposit_request_form_view.dart';
@@ -6,6 +9,7 @@ import 'package:bs_contract_flutter/features/projects/models/unit.dart';
 import 'package:bs_contract_flutter/l10n/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart' hide Response;
@@ -48,10 +52,51 @@ Future<void> tap(WidgetTester tester, String text) async {
   }
 }
 
+/// The deposit form opens on the "Scan to pay" step; this moves on to the customer step.
+Future<void> openCustomerStep(WidgetTester tester) async {
+  await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
+  await tester.pumpAndSettle();
+  await tap(tester, 'Next');
+}
+
+/// A 1x1 picture the fake photo picker hands back, so ID and transfer-proof photos can be "taken".
+final String testPhotoPath = () {
+  final file = File('${Directory.systemTemp.path}/request_flows_test_photo.png');
+  file.writeAsBytesSync(
+    base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+    ),
+  );
+  return file.path;
+}();
+
+/// Scrolls the widget to the middle of the screen (clear of the Back/Next bar), then taps it.
+Future<void> tapCentered(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
+/// The form needs the ID card (front and back) and the bank transfer proof before it saves.
+Future<void> attachPhotos(WidgetTester tester) async {
+  for (final label in [
+    'ID card - front *',
+    'ID card - back *',
+    'Bank transfer proof - the customer has transferred to the company bank *',
+  ]) {
+    final tile = find.text(label);
+    await tapCentered(tester, tile);
+    await tester.tap(find.text('Choose from gallery'));
+    await tester.pumpAndSettle();
+  }
+}
+
 Future<void> customers(WidgetTester tester) async {
   await fill(tester, 'Surname and Name (Customer 1) *', 'Local Tester');
-  await tester.ensureVisible(find.byKey(const ValueKey('gender-0')));
-  await tester.tap(find.byKey(const ValueKey('gender-0')));
+  await tester.ensureVisible(find.byKey(const ValueKey('gender-false-null')));
+  await tester.tap(find.byKey(const ValueKey('gender-false-null')));
   await tester.pumpAndSettle();
   await tap(tester, 'Male');
   await fill(tester, 'Line 1 *', '012345678');
@@ -59,6 +104,7 @@ Future<void> customers(WidgetTester tester) async {
   await tap(tester, 'Next');
   await fill(tester, 'Deposit amount (\$) *', '500');
   await tap(tester, 'Next');
+  await attachPhotos(tester);
 }
 
 void main() {
@@ -66,6 +112,11 @@ void main() {
   bool supportsAdditionalCustomers = true;
   bool missingCustomerCapabilities = false;
   setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/image_picker'),
+          (call) async => call.method == 'pickImage' ? testPhotoPath : null,
+        );
     Get.testMode = true;
     sent = null;
     supportsAdditionalCustomers = true;
@@ -144,10 +195,9 @@ void main() {
   testWidgets('Required customer fields prevent advancing or submitting', (
     tester,
   ) async {
-    await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
-    await tester.pumpAndSettle();
+    await openCustomerStep(tester);
     await tap(tester, 'Next');
-    expect(find.text('1 / 4'), findsOneWidget);
+    expect(find.text('2 / 5'), findsOneWidget);
     expect(sent, isNull);
     await fill(tester, 'Line 1 *', '123');
     await tap(tester, 'Next');
@@ -161,8 +211,7 @@ void main() {
     testWidgets('Three buyers: server support = $mode', (tester) async {
       supportsAdditionalCustomers = supported;
       missingCustomerCapabilities = mode == 'missing';
-      await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
-      await tester.pumpAndSettle();
+      await openCustomerStep(tester);
       final add = find.widgetWithText(OutlinedButton, 'Add customer');
       tester.testTextInput.hide();
       await tester.ensureVisible(add);
@@ -170,7 +219,7 @@ void main() {
       await tester.tap(add);
       await tester.pumpAndSettle();
       await fill(tester, 'Surname and Name (Customer 2)', 'Second Buyer');
-      final secondGender = find.byKey(const ValueKey('gender-true'));
+      final secondGender = find.byKey(const ValueKey('gender-true-null'));
       await tester.ensureVisible(secondGender);
       await tester.tap(secondGender);
       await tester.pumpAndSettle();
@@ -211,20 +260,20 @@ void main() {
   testWidgets('Added customer requires a name and gender and is submitted', (
     tester,
   ) async {
-    await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
-    await tester.pumpAndSettle();
+    await openCustomerStep(tester);
     expect(find.text('Surname and Name (Customer 2)'), findsNothing);
     await tester.ensureVisible(find.byType(SwitchListTile));
     await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
     await tap(tester, 'Next');
-    expect(find.text('1 / 4'), findsOneWidget);
+    expect(find.text('2 / 5'), findsOneWidget);
     await fill(tester, 'Surname and Name (Customer 2)', 'Second Buyer');
-    final gender = find.byKey(const ValueKey('gender-true'));
+    final gender = find.byKey(const ValueKey('gender-true-null'));
     await tester.ensureVisible(gender);
     await tester.tap(gender);
     await tester.pumpAndSettle();
     await tap(tester, 'Female');
+    await fill(tester, 'Line 2', '098765432');
     await customers(tester);
     await tap(tester, 'Save');
     expect(sent!['customer2_name'], 'Second Buyer');
@@ -234,17 +283,14 @@ void main() {
   testWidgets(
     'None payment option and a single customer submit the customers list',
     (tester) async {
-      await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
-      await tester.pumpAndSettle();
+      await openCustomerStep(tester);
       await customers(tester);
       await tap(tester, 'Save');
       expect(sent!['is_selected_payment_option'], 0);
       expect(sent!['customer_name'], 'Local Tester');
       expect(sent!['customer_phone_number'], '012345678');
       expect(sent!.containsKey('customer2_name'), isFalse);
-      final custs = sent!['customers'] as List;
-      expect(custs.length, 1);
-      expect((custs.first as Map)['name'], 'Local Tester');
+      expect(sent!.containsKey('additional_customers'), isFalse);
       expect(sent!['deposit_amount'], 500);
       expect(
         sent!.containsKey('discount_promotion'),
@@ -252,50 +298,38 @@ void main() {
       ); // Backend calculates promotions.
     },
   );
-  testWidgets('Add more customer sends a second customer in the list', (
+  testWidgets('Add customer button adds a second customer to the request', (
     tester,
   ) async {
-    await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
+    await openCustomerStep(tester);
+    final add = find.widgetWithText(OutlinedButton, 'Add customer');
+    tester.testTextInput.hide();
+    await tester.ensureVisible(add);
     await tester.pumpAndSettle();
-    await fill(tester, 'Surname and Name (Customer 1) *', 'Local Tester');
-    await tester.tap(find.byKey(const ValueKey('gender-0')));
+    await tester.tap(add);
     await tester.pumpAndSettle();
-    await tap(tester, 'Male');
-    await fill(tester, 'Line 1 *', '012345678');
-    await tap(tester, 'Add more customer');
-    // the 2nd customer's fields share the same labels; fill the last ones
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Surname and Name (Customer 1) *').last,
-      'Second Buyer',
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('gender-1')));
+    await fill(tester, 'Surname and Name (Customer 2)', 'Second Buyer');
+    final gender = find.byKey(const ValueKey('gender-true-null'));
+    await tester.ensureVisible(gender);
+    await tester.tap(gender);
     await tester.pumpAndSettle();
     await tap(tester, 'Female');
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Line 1 *').last,
-      '098765432',
-    );
-    await tester.pumpAndSettle();
-    await tap(tester, 'Next');
-    await tap(tester, 'Next');
-    await fill(tester, 'Deposit amount (\$) *', '500');
-    await tap(tester, 'Next');
+    await fill(tester, 'Line 2', '098765432');
+    await customers(tester);
     await tap(tester, 'Save');
     expect(sent!['customer_name'], 'Local Tester');
     expect(sent!['customer2_name'], 'Second Buyer');
+    expect(sent!['customer2_gender'], 2);
     expect(sent!['customer_phone_number2'], '098765432');
-    final custs = sent!['customers'] as List;
-    expect(custs.length, 2);
-    expect((custs[1] as Map)['name'], 'Second Buyer');
+    expect(sent!.containsKey('additional_customers'), isFalse);
   });
   testWidgets(
     'Custom terms submit months and down payment amount, not percentage',
     (tester) async {
-      await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
-      await tester.pumpAndSettle();
+      await openCustomerStep(tester);
       await customers(tester);
-      await tester.tap(find.byKey(const ValueKey('payment-0')));
+      await tapCentered(tester, find.text('Add payment option'));
+      await tapCentered(tester, find.byKey(const ValueKey('payment-0')));
       await tester.pumpAndSettle();
       await tap(tester, 'Other');
       final down = find.byType(DropdownButtonFormField<bool>);
@@ -319,10 +353,10 @@ void main() {
   testWidgets(
     'Preset payment option submits its ID without custom term overrides',
     (tester) async {
-      await tester.pumpWidget(app(DepositRequestFormView(unit: unit)));
-      await tester.pumpAndSettle();
+      await openCustomerStep(tester);
       await customers(tester);
-      await tester.tap(find.byKey(const ValueKey('payment-0')));
+      await tapCentered(tester, find.text('Add payment option'));
+      await tapCentered(tester, find.byKey(const ValueKey('payment-0')));
       await tester.pumpAndSettle();
       await tap(tester, 'Standard plan');
       await tap(tester, 'Save');

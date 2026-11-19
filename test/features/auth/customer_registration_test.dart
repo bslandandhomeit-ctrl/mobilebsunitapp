@@ -74,7 +74,11 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Customer Project'), findsOneWidget);
-    expect(find.byIcon(Icons.logout_rounded), findsOneWidget);
+    // customers have no tabs: their account actions (including log out) live in the account menu
+    expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.account_circle_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Log out'), findsOneWidget);
     expect(find.byIcon(Icons.lock_clock_outlined), findsNothing);
     expect(find.byIcon(Icons.payments_outlined), findsNothing);
     expect(find.byIcon(Icons.settings_rounded), findsNothing);
